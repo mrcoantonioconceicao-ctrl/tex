@@ -107,6 +107,14 @@ components:
           type: integer
           minimum: 0
 
+    OriginCategory:
+      type: string
+      enum: [Measured, Published, Derived, Inferred, Synthetic]
+      description: >
+        Linhagem do dado: Measured (sensor), Published (artigo), Derived (cálculo),
+        Inferred (IA), Synthetic (teste/mock/simulação). Único mecanismo de marcação
+        de dado sintético. Hoje a telemetria e o contexto são sempre Synthetic.
+
     RiskLevel:
       type: string
       enum: [NOMINAL, MODERATE_WARNING, CRITICAL_SUPPRESSION_ACTIVE]
@@ -125,6 +133,7 @@ components:
         - flame_spread_rate_mm_s
         - risk_level
         - suppression_active
+        - origin_category
       properties:
         experiment_id:
           type: string
@@ -154,6 +163,8 @@ components:
           $ref: '#/components/schemas/RiskLevel'
         suppression_active:
           type: boolean
+        origin_category:
+          $ref: '#/components/schemas/OriginCategory'
 
     Metrics:
       type: object
@@ -190,8 +201,10 @@ components:
 
     McpContext:
       type: object
-      required: [protocol, status, compressed_context, token_metrics]
+      required: [protocol, status, compressed_context, token_metrics, origin_category]
       properties:
+        origin_category:
+          $ref: '#/components/schemas/OriginCategory'
         protocol:
           type: string
           example: MCP-Enterprise-v1

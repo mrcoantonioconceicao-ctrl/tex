@@ -15,6 +15,7 @@ use crate::engine::{
     AstTelemetryParser, AsterEventBus, GraphRAGKnowledgeEngine, McpContextResponse,
     McpEnterpriseServer, Web3AuditSmartContract,
 };
+use crate::lineage::OriginCategory;
 use crate::simulation::{RiskLevel, Simulation, EXPERIMENT_ID};
 
 const DEFAULT_MCP_QUERY: &str = "general_fire_safety";
@@ -124,6 +125,7 @@ pub struct TelemetryResponse {
     flame_spread_rate_mm_s: f64,
     risk_level: RiskLevel,
     suppression_active: bool,
+    origin_category: OriginCategory,
 }
 
 impl TelemetryResponse {
@@ -140,6 +142,8 @@ impl TelemetryResponse {
             flame_spread_rate_mm_s: round_to(sim.flame_spread_mm_s, 2),
             risk_level: sim.risk_level,
             suppression_active: sim.suppression_active,
+            // A telemetria inteira vem da simulação: não é dado da ISS
+            origin_category: OriginCategory::Synthetic,
         }
     }
 }
@@ -286,6 +290,7 @@ mod tests {
         assert_eq!(body["risk_level"], "NOMINAL");
         assert_eq!(body["suppression_active"], false);
         assert_eq!(body["sequence"], 0);
+        assert_eq!(body["origin_category"], "Synthetic");
         assert!(body["timestamp"].as_str().unwrap().ends_with('Z'));
     }
 
@@ -336,6 +341,7 @@ mod tests {
             .unwrap()
             .contains("oxigênio"));
         assert_eq!(body["protocol"], "MCP-Enterprise-v1");
+        assert_eq!(body["origin_category"], "Synthetic");
 
         let (_, metrics) = call(&state, "GET", "/api/v1/metrics", None).await;
         assert!(metrics["token_crusher_efficiency_pct"].as_f64().unwrap() > 0.0);

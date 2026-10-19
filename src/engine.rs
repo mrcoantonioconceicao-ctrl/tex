@@ -8,6 +8,7 @@ use std::time::Instant;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 
+use crate::lineage::OriginCategory;
 use crate::simulation::{Simulation, EXPERIMENT_ID};
 
 // ---- Token Crusher ----
@@ -71,6 +72,7 @@ pub struct McpContextResponse {
     pub status: String,
     pub compressed_context: String,
     pub token_metrics: TokenMetrics,
+    pub origin_category: OriginCategory,
 }
 
 pub struct McpEnterpriseServer;
@@ -90,6 +92,8 @@ impl McpEnterpriseServer {
             status: "ACTIVE_OPTIMIZED".to_string(),
             compressed_context,
             token_metrics,
+            // Stub: o contexto ainda não vem da base de conhecimento real
+            origin_category: OriginCategory::Synthetic,
         }
     }
 }

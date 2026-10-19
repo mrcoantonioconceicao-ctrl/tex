@@ -5,6 +5,7 @@
 
 mod api;
 mod engine;
+mod lineage;
 mod simulation;
 
 use std::net::SocketAddr;
