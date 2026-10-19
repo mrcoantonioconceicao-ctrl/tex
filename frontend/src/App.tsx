@@ -11,6 +11,7 @@ import {
   ReadingTile,
   RiskPanel,
   ScenarioPicker,
+  SimulationControls,
   StatusBanner,
 } from './dashboard/panels'
 import { TrendChart } from './dashboard/TrendChart'
@@ -60,7 +61,10 @@ function App() {
         {telemetry.data && (
           <>
             <div className="grid gap-4 lg:grid-cols-3">
-              <RiskPanel telemetry={telemetry.data} outdated={outdated} />
+              <div className="space-y-4">
+                <RiskPanel telemetry={telemetry.data} outdated={outdated} />
+                <SimulationControls suppressionActive={telemetry.data.suppression_active} />
+              </div>
               <div className="grid gap-4 sm:grid-cols-3 lg:col-span-2">
                 <ReadingTile
                   label="Temperatura da câmara"

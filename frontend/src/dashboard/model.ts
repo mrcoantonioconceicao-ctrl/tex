@@ -4,7 +4,7 @@ import type { CombustionTelemetry, RiskLevel } from '../api/types'
 
 // ---- Risco ----
 
-export type RiskTone = 'warning' | 'critical' | 'unknown'
+export type RiskTone = 'ok' | 'warning' | 'critical' | 'unknown'
 
 export interface RiskInfo {
   tone: RiskTone
@@ -13,6 +13,11 @@ export interface RiskInfo {
 }
 
 const KNOWN_RISKS: Record<string, RiskInfo> = {
+  NOMINAL: {
+    tone: 'ok',
+    label: 'Nominal',
+    description: 'Temperatura dentro do limite seguro, sem supressão.',
+  },
   MODERATE_WARNING: {
     tone: 'warning',
     label: 'Alerta moderado',
@@ -21,7 +26,7 @@ const KNOWN_RISKS: Record<string, RiskInfo> = {
   CRITICAL_SUPPRESSION_ACTIVE: {
     tone: 'critical',
     label: 'Crítico: supressão ativa',
-    description: 'Mitigação autônoma acionada pelo backend (oxigênio reduzido).',
+    description: 'Supressão ativa: resfriando a câmara e reduzindo o oxigênio até voltar a 870 °C.',
   },
 }
 
@@ -35,11 +40,12 @@ export function describeRisk(level: RiskLevel): RiskInfo {
   )
 }
 
-// Limiares do laço de simulação do backend (src/main.rs): acima de 900 °C vira
-// crítico e abaixo de 870 °C volta a moderado. NÃO são limites oficiais da NASA.
+// Limiares da simulação do backend (src/simulation.rs): acima de 900 °C a supressão
+// liga; acima de 870 °C o risco é moderado e é onde a supressão desliga.
+// NÃO são limites oficiais da NASA.
 export const TEMPERATURE_THRESHOLDS = [
-  { value: 900, label: '900 °C: crítico (simulação do backend)' },
-  { value: 870, label: '870 °C: volta a moderado' },
+  { value: 900, label: '900 °C: supressão automática' },
+  { value: 870, label: '870 °C: alerta / fim da supressão' },
 ]
 
 // ---- Conexão ----

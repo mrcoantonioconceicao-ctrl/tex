@@ -9,6 +9,8 @@ import {
   getSystemMetrics,
   NetworkError,
   postMcpContext,
+  resetSimulation,
+  triggerSuppression,
 } from './client'
 
 describe('getLatestTelemetry', () => {
@@ -16,11 +18,14 @@ describe('getLatestTelemetry', () => {
     const telemetry = await getLatestTelemetry()
 
     expect(telemetry).toEqual({
-      experiment_id: 'NASA-ISS-CIR-042',
+      experiment_id: 'SIM-TEX-001',
+      timestamp: expect.stringMatching(/Z$/),
+      sequence: 0,
       chamber_temperature_c: 854.5,
-      oxygen_concentration_pct: 21.2,
+      oxygen_concentration_pct: 21,
       flame_spread_rate_mm_s: 1.45,
-      risk_level: 'MODERATE_WARNING',
+      risk_level: 'NOMINAL',
+      suppression_active: false,
     })
   })
 
@@ -75,10 +80,13 @@ describe('getLatestTelemetry', () => {
       http.get('*/api/v1/telemetry/latest', () =>
         HttpResponse.json({
           experiment_id: 'X',
+          timestamp: '2026-10-19T22:00:00.000Z',
+          sequence: 1,
           chamber_temperature_c: 1,
           oxygen_concentration_pct: 1,
           flame_spread_rate_mm_s: 1,
           risk_level: 'MODERATE_WARNING',
+          suppression_active: false,
           new_field: true,
         }),
       ),
@@ -201,17 +209,51 @@ describe('cenários do mock', () => {
     await expect(getLatestTelemetry()).rejects.toThrow(/flame_spread_rate_mm_s/)
   })
 
-  it('simulacao oscila, entra em supressão crítica e depois recomeça', async () => {
+  it('simulacao aquece, aciona a supressão, esfria e volta ao nominal', async () => {
     setMockScenario('simulacao')
 
     const readings = []
     for (let i = 0; i < 40; i++) readings.push(await getLatestTelemetry())
-    const temperatures = readings.map((r) => r.chamber_temperature_c)
 
-    expect(new Set(temperatures).size).toBeGreaterThan(10)
-    const critical = readings.find((r) => r.risk_level === 'CRITICAL_SUPPRESSION_ACTIVE')
-    expect(critical?.oxygen_concentration_pct).toBe(12)
-    // passou de 960 °C e voltou ao valor inicial
-    expect(temperatures.lastIndexOf(854.5)).toBeGreaterThan(0)
+    const firstCritical = readings.findIndex((r) => r.suppression_active)
+    expect(firstCritical).toBeGreaterThan(0)
+    expect(readings[firstCritical].chamber_temperature_c).toBeGreaterThan(900)
+
+    const afterCritical = readings.slice(firstCritical)
+    const recovered = afterCritical.find((r) => !r.suppression_active)
+    expect(recovered?.risk_level).toBe('NOMINAL')
+    expect(recovered?.chamber_temperature_c).toBeLessThanOrEqual(870)
+    for (const r of readings) expect(r.oxygen_concentration_pct).toBeGreaterThanOrEqual(12)
+  })
+})
+
+describe('controles da simulação', () => {
+  it('triggerSuppression liga a supressão e devolve a leitura', async () => {
+    const telemetry = await triggerSuppression()
+
+    expect(telemetry.suppression_active).toBe(true)
+    expect(telemetry.risk_level).toBe('CRITICAL_SUPPRESSION_ACTIVE')
+  })
+
+  it('resetSimulation volta ao estado inicial', async () => {
+    await triggerSuppression()
+
+    const telemetry = await resetSimulation()
+
+    expect(telemetry).toMatchObject({ sequence: 0, risk_level: 'NOMINAL', suppression_active: false })
+  })
+
+  it('usa POST nos dois controles', async () => {
+    const methods: string[] = []
+    server.use(
+      http.all('*/api/v1/simulation/*', ({ request }) => {
+        methods.push(request.method)
+        return new HttpResponse(null, { status: 500 })
+      }),
+    )
+
+    await expect(triggerSuppression()).rejects.toThrow('POST /simulation/suppress falhou (500)')
+    await expect(resetSimulation()).rejects.toThrow('POST /simulation/reset falhou (500)')
+    expect(methods).toEqual(['POST', 'POST'])
   })
 })

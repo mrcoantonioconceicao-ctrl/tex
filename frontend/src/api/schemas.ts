@@ -6,10 +6,13 @@ import type { CombustionTelemetry, McpContextResponse, SystemPerformanceMetrics 
 
 export const combustionTelemetrySchema = z.object({
   experiment_id: z.string(),
+  timestamp: z.iso.datetime(),
+  sequence: z.number().int().nonnegative(),
   chamber_temperature_c: z.number(),
   oxygen_concentration_pct: z.number(),
   flame_spread_rate_mm_s: z.number(),
   risk_level: z.string(),
+  suppression_active: z.boolean(),
 }) satisfies z.ZodType<CombustionTelemetry>
 
 // Latências são u64 no Rust
@@ -20,6 +23,7 @@ export const systemPerformanceMetricsSchema = z.object({
   token_crusher_efficiency_pct: z.number(),
   memory_safety_guarantee: z.string(),
   uptime_status: z.string(),
+  uptime_seconds: z.number().int().nonnegative(),
 }) satisfies z.ZodType<SystemPerformanceMetrics>
 
 export const mcpContextResponseSchema = z.object({

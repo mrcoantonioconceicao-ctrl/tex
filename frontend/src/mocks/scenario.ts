@@ -3,8 +3,8 @@
 // Todos os cenários usam dados SINTÉTICOS (não são dados da NASA).
 
 export const MOCK_SCENARIOS = {
-  backend: 'Espelho do backend (valores fixos do main.rs)',
-  simulacao: 'Simulação dinâmica (oscila como o laço do backend)',
+  backend: 'Espelho do backend (leitura parada; muda pelos controles)',
+  simulacao: 'Simulação dinâmica (mesma física do backend)',
   critico: 'Risco crítico com supressão ativa',
   offline: 'Backend fora do ar',
   lento: 'Backend lento (4 s por resposta)',

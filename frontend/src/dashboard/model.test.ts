@@ -17,6 +17,7 @@ function reading(at: number, overrides: Partial<Reading> = {}): Reading {
 
 describe('describeRisk', () => {
   it('classifica os níveis conhecidos do backend', () => {
+    expect(describeRisk('NOMINAL').tone).toBe('ok')
     expect(describeRisk('MODERATE_WARNING').tone).toBe('warning')
     expect(describeRisk('CRITICAL_SUPPRESSION_ACTIVE').tone).toBe('critical')
   })
@@ -77,10 +78,13 @@ describe('appendReading', () => {
     const r = toReading(
       {
         experiment_id: 'X',
+        timestamp: '2026-10-19T22:00:00.000Z',
+        sequence: 0,
         chamber_temperature_c: 1,
         oxygen_concentration_pct: 2,
         flame_spread_rate_mm_s: 3,
         risk_level: 'MODERATE_WARNING',
+        suppression_active: false,
       },
       42,
     )
