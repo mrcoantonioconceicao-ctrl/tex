@@ -1,0 +1,54 @@
+openapi: 3.0.3
+info:
+  title: Tex Labs - NASA Space Apps 2026 API
+  version: 0.1.0
+  description: Contrato de API SOA/Microservices para o motor de segurança contra incêndios em microgravidade.
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Servidor de Desenvolvimento Local (Rust Backend)
+paths:
+  /telemetry/latest:
+    get:
+      summary: Retorna a última telemetria de combustão simulada ou processada
+      responses:
+        '200':
+          description: Dados de telemetria recuperados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  experiment_id:
+                    type: string
+                  chamber_temperature_c:
+                    type: number
+                  oxygen_concentration_pct:
+                    type: number
+                  flame_spread_rate_mm_s:
+                    type: number
+                  risk_level:
+                    type: string
+  /analysis/graphrag:
+    post:
+      summary: Envia dados para o motor GraphRAG e retorna insights de segurança
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+      responses:
+        '200':
+          description: Insights gerados com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  insights:
+                    type: string
