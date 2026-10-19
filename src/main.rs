@@ -1,89 +1,99 @@
-use axum::{
-    routing::get,
-    Json, Router,
-};
-use serde::Serialize;
-use std::sync::{Arc, Mutex};
-use std::time::Duration;
-use tokio::time;
+//! Tex Labs: backend Axum do NASA Space Apps Challenge 2026 (Free-Fall Flame).
+//!
+//! main.rs só inicia o servidor. Simulação em simulation.rs, componentes do
+//! pipeline em engine.rs e rotas HTTP em api.rs (contrato em docs/api-spec.yaml).
 
-#[derive(Serialize, Clone)]
-struct TelemetryState {
-    temperature: f64,
-    oxygen_level: f64,
-    flame_propagation: f64,
-    risk_level: String,
-    suppression_active: bool,
-    counter: u64,
-}
+mod api;
+mod engine;
+mod simulation;
+
+use std::net::SocketAddr;
+use std::sync::Arc;
+use std::time::Duration;
+
+use api::AppState;
+
+const TICK_INTERVAL: Duration = Duration::from_secs(5);
+const CONFIG_PATH: &str = "config/system.json";
+const DEFAULT_PORT: u16 = 8080;
 
 #[tokio::main]
 async fn main() {
-    let state = Arc::new(Mutex::new(TelemetryState {
-        temperature: 854.5,
-        oxygen_level: 21.0,
-        flame_propagation: 1.45,
-        risk_level: "NOMINAL".to_string(),
-        suppression_active: false,
-        counter: 0,
-    }));
+    println!("==================================================");
+    println!("         TEX LABS - SPACE APPS 2026               ");
+    println!("  Microgravity Fire Safety & GraphRAG Engine      ");
+    println!("==================================================");
+    print_config();
 
-    // Background simulation loop
-    let state_clone = Arc::clone(&state);
+    let state = Arc::new(AppState::default());
+
+    // Laço de simulação: um ciclo a cada 5 s
+    let ticker = Arc::clone(&state);
     tokio::spawn(async move {
-        let mut interval = time::interval(Duration::from_secs(5));
+        let mut interval = tokio::time::interval(TICK_INTERVAL);
+        interval.tick().await; // o primeiro tick é imediato; a leitura inicial vale um ciclo inteiro
         loop {
             interval.tick().await;
-            let mut s = state_clone.lock().unwrap();
-            s.counter += 1;
-
-            if s.suppression_active {
-                // Resfriamento ativo e sufocamento por gás inerte
-                s.temperature -= 18.5;
-                s.oxygen_level = (s.oxygen_level - 1.2).max(12.0);
-                
-                if s.temperature <= 870.0 {
-                    s.suppression_active = false;
-                    s.risk_level = "NOMINAL".to_string();
-                } else {
-                    s.risk_level = "CRITICAL_SUPPRESSION_ACTIVE".to_string();
-                }
-            } else {
-                if s.counter % 2 == 0 {
-                    s.temperature += 12.0;
-                } else {
-                    s.temperature -= 4.0;
-                }
-                
-                s.oxygen_level = (s.oxygen_level + 0.5).min(21.0);
-
-                if s.temperature > 900.0 {
-                    s.suppression_active = true;
-                    s.risk_level = "CRITICAL_SUPPRESSION_ACTIVE".to_string();
-                } else if s.temperature > 870.0 {
-                    s.risk_level = "MODERATE_WARNING".to_string();
-                } else {
-                    s.risk_level = "NOMINAL".to_string();
-                }
-            }
+            ticker.tick();
         }
     });
 
-    let app = Router::new().route(
-        "/telemetry/latest",
-        get({
-            let state = Arc::clone(&state);
-            move || {
-                let s = state.lock().unwrap().clone();
-                async move { Json(s) }
-            }
-        }),
-    );
+    let port = std::env::var("PORT")
+        .ok()
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(DEFAULT_PORT);
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
+    println!("Servidor em http://{addr} (rotas em /api/v1)");
 
-    let addr = "0.0.0.0:8080".parse().unwrap();
-    println!("Server running on http://0.0.0.0:8080");
     axum::Server::bind(&addr)
-        .serve(app.into_make_service())
+        .serve(api::router(state).into_make_service())
+        .with_graceful_shutdown(shutdown_signal())
         .await
-        .unwrap();
+        .expect("falha no servidor HTTP");
+}
+
+/// Mostra o projeto e os domínios do config/system.json. Sem o arquivo o
+/// servidor continua: ele não altera o comportamento da API.
+fn print_config() {
+    let config = std::fs::read_to_string(CONFIG_PATH)
+        .map_err(|error| error.to_string())
+        .and_then(|raw| {
+            serde_json::from_str::<serde_json::Value>(&raw).map_err(|error| error.to_string())
+        });
+
+    match config {
+        Ok(config) => {
+            println!(
+                "[✔] Projeto: {}",
+                config["project"].as_str().unwrap_or("(sem nome)")
+            );
+            println!("[i] Domínios DDD: {}", config["architecture"]["domains"]);
+        }
+        Err(error) => eprintln!("[!] {CONFIG_PATH} não carregado ({error}); seguindo sem ele"),
+    }
+}
+
+/// Ctrl+C ou SIGTERM (docker stop): encerra respondendo as requisições em andamento
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("falha ao escutar Ctrl+C");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("falha ao escutar SIGTERM")
+            .recv()
+            .await;
+    };
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+    println!("Encerrando o servidor...");
 }
