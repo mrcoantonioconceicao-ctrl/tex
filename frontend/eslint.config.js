@@ -5,7 +5,8 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  // mockServiceWorker.js é gerado pelo MSW (npx msw init)
+  { ignores: ['dist', 'public/mockServiceWorker.js'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
