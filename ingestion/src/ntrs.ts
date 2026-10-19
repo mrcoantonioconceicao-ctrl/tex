@@ -60,6 +60,8 @@ export interface AuthorRow {
 export interface CitationRow {
   id: number
   title: string
+  // Página pública do documento (documents.canonical_url)
+  canonicalUrl: string
   abstract: string | null
   stiType: string | null
   centerCode: string | null
@@ -103,6 +105,7 @@ export function toCitationRow(citation: NtrsCitation, raw: unknown): CitationRow
   return {
     id: citation.id,
     title: citation.title,
+    canonicalUrl: `${NTRS_BASE_URL}/citations/${citation.id}`,
     abstract: citation.abstract ?? null,
     stiType: citation.stiType ?? null,
     centerCode: citation.center?.code ?? null,

@@ -36,7 +36,9 @@ make db-reset     # recria o banco do zero (APAGA os dados)
 Exemplos no psql:
 
 ```sql
-SELECT id, title, center_code FROM ntrs_citations LIMIT 10;
+SELECT id_ntrs, title, canonical_url FROM documents LIMIT 10;
+SELECT d.title, a.name FROM document_authors da
+  JOIN documents d USING (document_id) JOIN authors a USING (author_id) LIMIT 10;
 SELECT * FROM ingestion_runs ORDER BY id DESC LIMIT 5;
 ```
 
@@ -57,7 +59,7 @@ TEX_TEST_DATABASE_URL=postgres://tex:tex@127.0.0.1:5433/tex npm test
 | `src/ntrs.ts` | Busca paginada (`page.from` / `page.size`), validação com Zod e conversão para linhas |
 | `src/db.ts` | Upsert por `id` em transação, autores regravados, registro de execuções |
 | `src/cli.ts` | Linha de comando |
-| `db/schema.sql` | Tabelas `ntrs_citations`, `ntrs_authors` e `ingestion_runs` |
+| `db/schema.sql` | Schema mínimo do `CLAUDE.md` (documents, authors, experimentos, medições com linhagem) + `raw` JSONB e `ingestion_runs`; Postgres com pgvector |
 
 - **Nada é inventado:** cada linha vem da API do NTRS, e o registro original completo
   fica na coluna `raw` (jsonb).

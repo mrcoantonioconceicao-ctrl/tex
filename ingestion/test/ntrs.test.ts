@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs'
 import pg from 'pg'
 import { describe, expect, it } from 'vitest'
-import { finishRun, startRun, upsertCitations } from '../src/db.ts'
+import { finishRun, startRun, upsertDocuments } from '../src/db.ts'
 import { buildSearchUrl, fetchSearchPage, iterateSearch, parseNtrsDate } from '../src/ntrs.ts'
 
 interface Fixture {
@@ -61,6 +61,7 @@ describe('fetchSearchPage', () => {
     expect(first).toMatchObject({
       id: 20150023100,
       title: 'NASA Microgravity Combustion Program',
+      canonicalUrl: 'https://ntrs.nasa.gov/citations/20150023100',
       stiType: 'PRESENTATION',
       centerCode: 'GRC',
       keywords: ['combustion', 'microgravity'],
@@ -160,24 +161,33 @@ describe('iterateSearch', () => {
 //   TEX_TEST_DATABASE_URL=postgres://tex:tex@127.0.0.1:5433/tex npm test
 const databaseUrl = process.env.TEX_TEST_DATABASE_URL
 
-describe.skipIf(!databaseUrl)('upsertCitations (PostgreSQL)', () => {
-  it('grava citações e autores, e reexecutar não duplica', async () => {
+describe.skipIf(!databaseUrl)('upsertDocuments (PostgreSQL)', () => {
+  it('grava documentos e autores, e reexecutar não duplica', async () => {
     const { impl } = fakeFetch(fixture)
     const page = await fetchSearchPage({ query: 'x', from: 0, size: 3 }, impl)
     const client = new pg.Client({ connectionString: databaseUrl })
     await client.connect()
     try {
       const runId = await startRun(client, 'ntrs-test', 'fixture')
-      await upsertCitations(client, page.rows)
-      await upsertCitations(client, page.rows)
+      await upsertDocuments(client, page.rows)
+      await upsertDocuments(client, page.rows)
       await finishRun(client, runId, { fetched: 3, upserted: 3, status: 'ok' })
 
       const ids = page.rows.map((r) => r.id)
-      const citations = await client.query('SELECT count(*)::int AS n FROM ntrs_citations WHERE id = ANY($1)', [ids])
-      const authors = await client.query('SELECT count(*)::int AS n FROM ntrs_authors WHERE citation_id = ANY($1)', [ids])
+      const documents = await client.query(
+        'SELECT count(*)::int AS n, bool_and(raw IS NOT NULL) AS has_raw FROM documents WHERE id_ntrs = ANY($1)',
+        [ids],
+      )
+      const links = await client.query(
+        `SELECT count(*)::int AS n FROM document_authors da
+           JOIN documents d USING (document_id) WHERE d.id_ntrs = ANY($1)`,
+        [ids],
+      )
+      const authors = await client.query('SELECT count(*)::int AS n FROM authors WHERE name = $1', ['Urban, David L.'])
       const run = await client.query('SELECT status FROM ingestion_runs WHERE id = $1', [runId])
-      expect(citations.rows[0].n).toBe(3)
-      expect(authors.rows[0].n).toBe(3)
+      expect(documents.rows[0]).toEqual({ n: 3, has_raw: true })
+      expect(links.rows[0].n).toBe(3)
+      expect(authors.rows[0].n).toBe(1) // mesmo autor em duas execuções vira um só
       expect(run.rows[0].status).toBe('ok')
     } finally {
       await client.end()
