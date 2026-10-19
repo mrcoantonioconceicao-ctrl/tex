@@ -1,0 +1,22 @@
+{
+  "project": "Tex Labs - Microgravity Fire Safety Engine",
+  "challenge": "Free-Fall Flame: AI-Driven Fire Safety Insights from Microgravity Combustion Data",
+  "architecture": {
+    "pattern": "DDD + SOA Microservices",
+    "domains": [
+      "CombustionAnalysisDomain",
+      "GraphRAGKnowledgeDomain",
+      "Web3AuditTrailDomain",
+      "ComplianceDomain"
+    ]
+  },
+  "protocols": {
+    "graphiql_enterprise": true,
+    "mcp_enterprise": true
+  },
+  "compliance": {
+    "lgpd_enabled": true,
+    "cookie_consent_required": true,
+    "audit_trail": true
+  }
+}
