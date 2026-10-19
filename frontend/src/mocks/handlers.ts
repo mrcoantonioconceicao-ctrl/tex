@@ -89,6 +89,7 @@ function toTelemetry(state: MockSimulation): CombustionTelemetry {
     flame_spread_rate_mm_s: FLAME_SPREAD_MM_S,
     risk_level: state.risk,
     suppression_active: state.suppression,
+    origin_category: 'Synthetic',
   }
 }
 
@@ -102,6 +103,7 @@ const CRITICAL_TELEMETRY: Omit<CombustionTelemetry, 'timestamp'> = {
   flame_spread_rate_mm_s: FLAME_SPREAD_MM_S,
   risk_level: 'CRITICAL_SUPPRESSION_ACTIVE',
   suppression_active: true,
+  origin_category: 'Synthetic',
 }
 
 // Valores de exemplo; o backend real devolve as últimas medições dos componentes
@@ -183,6 +185,7 @@ export const handlers = [
         compressed_tokens: tokens,
         compression_efficiency_pct: 0,
       },
+      origin_category: 'Synthetic',
     })
   }),
 ]

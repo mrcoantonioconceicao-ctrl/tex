@@ -9,6 +9,9 @@ export type RiskLevel =
   | 'CRITICAL_SUPPRESSION_ACTIVE'
   | (string & {})
 
+// Linhagem do dado; Synthetic = teste, mock ou simulação (único marcador de dado sintético)
+export type OriginCategory = 'Measured' | 'Published' | 'Derived' | 'Inferred' | 'Synthetic'
+
 // GET /api/v1/telemetry/latest (também a resposta de /simulation/suppress e /reset)
 export interface CombustionTelemetry {
   experiment_id: string
@@ -21,6 +24,7 @@ export interface CombustionTelemetry {
   flame_spread_rate_mm_s: number
   risk_level: RiskLevel
   suppression_active: boolean
+  origin_category: OriginCategory
 }
 
 // GET /api/v1/metrics (últimas medições reais dos componentes)
@@ -50,4 +54,5 @@ export interface McpContextResponse {
   status: string
   compressed_context: string
   token_metrics: TokenMetrics
+  origin_category: OriginCategory
 }

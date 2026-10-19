@@ -85,6 +85,7 @@ describe('appendReading', () => {
         flame_spread_rate_mm_s: 3,
         risk_level: 'MODERATE_WARNING',
         suppression_active: false,
+        origin_category: 'Synthetic',
       },
       42,
     )

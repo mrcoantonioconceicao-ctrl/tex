@@ -26,6 +26,7 @@ describe('getLatestTelemetry', () => {
       flame_spread_rate_mm_s: 1.45,
       risk_level: 'NOMINAL',
       suppression_active: false,
+      origin_category: 'Synthetic',
     })
   })
 
@@ -87,6 +88,7 @@ describe('getLatestTelemetry', () => {
           flame_spread_rate_mm_s: 1,
           risk_level: 'MODERATE_WARNING',
           suppression_active: false,
+          origin_category: 'Synthetic',
           new_field: true,
         }),
       ),
@@ -113,6 +115,7 @@ describe('postMcpContext', () => {
             compressed_tokens: 4,
             compression_efficiency_pct: 0,
           },
+          origin_category: 'Synthetic',
         })
       }),
     )
