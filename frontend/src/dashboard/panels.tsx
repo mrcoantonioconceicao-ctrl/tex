@@ -104,19 +104,40 @@ export function ReadingTile({ label, value, unit, digits = 1, outdated }: Readin
 
 const CONNECTION_STYLES: Record<ConnectionStatus, { dot: string; label: string }> = {
   connecting: { dot: 'bg-slate-400', label: 'Conectando…' },
-  live: { dot: 'bg-emerald-400', label: 'Ao vivo' },
+  live: { dot: 'bg-emerald-400', label: 'Conectado' },
   stale: { dot: 'bg-amber-400', label: 'Desatualizado' },
   error: { dot: 'bg-red-500', label: 'Falha na conexão' },
 }
 
+interface ConnectionBadgeProps {
+  status: ConnectionStatus
+  ageSeconds: number | null
+  // origin_category === 'Synthetic': nunca dar a entender que é telemetria real
+  synthetic: boolean
+}
+
 // Sem aria-live de propósito: muda a cada segundo. Quem anuncia é o StatusBanner.
-export function ConnectionBadge({ status, ageSeconds }: { status: ConnectionStatus; ageSeconds: number | null }) {
+export function ConnectionBadge({ status, ageSeconds, synthetic }: ConnectionBadgeProps) {
   const style = CONNECTION_STYLES[status]
+  const showSource = synthetic && (status === 'live' || status === 'stale')
   return (
     <p className="flex items-center gap-2 rounded-full border border-slate-700 px-3 py-1 text-sm">
       <span aria-hidden="true" className={`size-2.5 rounded-full ${style.dot} ${status === 'live' ? 'animate-pulse' : ''}`} />
-      <span>{style.label}</span>
+      <span>
+        {style.label}
+        {showSource && ' · simulação'}
+      </span>
       {ageSeconds !== null && <span className="text-slate-400">· atualizado há {formatAge(ageSeconds)}</span>}
+    </p>
+  )
+}
+
+// Fixo enquanto o dado for sintético: protege contra a leitura de "telemetria real da ISS"
+export function SyntheticDataNotice() {
+  return (
+    <p role="note" className="rounded-lg border border-sky-700 bg-sky-950/40 px-4 py-2 text-sm text-sky-100">
+      <strong>Dados simulados.</strong> Os valores desta tela vêm de uma simulação com dados sintéticos e não
+      representam telemetria real da ISS.
     </p>
   )
 }
@@ -194,6 +215,11 @@ export function SimulationControls({ suppressionActive }: { suppressionActive: b
 
 // ---- Métricas ----
 
+// O backend mede em µs inteiros e arredonda para baixo: 0 significa "menos de 1 µs"
+function formatLatency(microseconds: number): string {
+  return microseconds === 0 ? '< 1 µs' : `${microseconds} µs`
+}
+
 interface MetricsPanelProps {
   data: SystemPerformanceMetrics | undefined
   error: Error | null
@@ -212,11 +238,11 @@ export function MetricsPanel({ data, error }: MetricsPanelProps) {
           <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
             <div>
               <dt className="text-slate-400">Parser AST</dt>
-              <dd className="text-lg tabular-nums">{data.ast_parsing_latency_us} µs</dd>
+              <dd className="text-lg tabular-nums">{formatLatency(data.ast_parsing_latency_us)}</dd>
             </div>
             <div>
               <dt className="text-slate-400">Consulta GraphRAG</dt>
-              <dd className="text-lg tabular-nums">{data.graphrag_query_latency_us} µs</dd>
+              <dd className="text-lg tabular-nums">{formatLatency(data.graphrag_query_latency_us)}</dd>
             </div>
             <div>
               <dt className="text-slate-400">Eficiência do Token Crusher</dt>
@@ -250,7 +276,7 @@ export function McpPanel() {
   return (
     <section aria-labelledby="mcp-title" className={CARD}>
       <h2 id="mcp-title" className="font-medium">
-        Consulta de contexto técnico (MCP)
+        Consulta de contexto técnico
       </h2>
       <form onSubmit={handleSubmit} className="mt-3 flex gap-2">
         <label htmlFor="mcp-query" className="sr-only">

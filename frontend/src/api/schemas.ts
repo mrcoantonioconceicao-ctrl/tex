@@ -4,6 +4,8 @@
 import { z } from 'zod'
 import type { CombustionTelemetry, McpContextResponse, SystemPerformanceMetrics } from './types'
 
+const originCategorySchema = z.enum(['Measured', 'Published', 'Derived', 'Inferred', 'Synthetic'])
+
 export const combustionTelemetrySchema = z.object({
   experiment_id: z.string(),
   timestamp: z.iso.datetime(),
@@ -13,6 +15,7 @@ export const combustionTelemetrySchema = z.object({
   flame_spread_rate_mm_s: z.number(),
   risk_level: z.string(),
   suppression_active: z.boolean(),
+  origin_category: originCategorySchema,
 }) satisfies z.ZodType<CombustionTelemetry>
 
 // Latências são u64 no Rust
@@ -35,4 +38,5 @@ export const mcpContextResponseSchema = z.object({
     compressed_tokens: z.number(),
     compression_efficiency_pct: z.number(),
   }),
+  origin_category: originCategorySchema,
 }) satisfies z.ZodType<McpContextResponse>

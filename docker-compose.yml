@@ -42,9 +42,10 @@ services:
       timeout: 3s
       retries: 5
 
-  # PostgreSQL da ingestão (ingestion/). Credenciais só de desenvolvimento local.
+  # PostgreSQL 16 + pgvector (busca vetorial do GraphRAG) para a ingestão (ingestion/).
+  # Credenciais só de desenvolvimento local.
   db:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: tex_db
     environment:
       POSTGRES_USER: ${TEX_DB_USER:-tex}

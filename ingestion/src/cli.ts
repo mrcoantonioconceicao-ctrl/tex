@@ -4,7 +4,7 @@
 // DATABASE_URL sobrescreve o banco padrão (Postgres do docker-compose.yml).
 import { parseArgs } from 'node:util'
 import pg from 'pg'
-import { DEFAULT_DATABASE_URL, finishRun, startRun, upsertCitations } from './db.ts'
+import { DEFAULT_DATABASE_URL, finishRun, startRun, upsertDocuments } from './db.ts'
 import { iterateSearch, type SearchPage } from './ntrs.ts'
 
 const HELP = `Uso: npm run ingest:ntrs -- [opções]
@@ -63,7 +63,7 @@ async function main(): Promise<void> {
     for await (const page of iterateSearch({ query, max, pageSize })) {
       logPage(page)
       fetched += page.received
-      upserted += await upsertCitations(client, page.rows)
+      upserted += await upsertDocuments(client, page.rows)
     }
     await finishRun(client, runId, { fetched, upserted, status: 'ok' })
     console.log(`✔ execução #${runId}: ${fetched} recebidos, ${upserted} gravados`)

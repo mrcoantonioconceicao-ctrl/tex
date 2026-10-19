@@ -83,7 +83,9 @@ describe('Painel', () => {
     expect(screen.getByText('854,5')).toBeInTheDocument()
     expect(screen.getByText('1,45')).toBeInTheDocument()
     expect(await screen.findByText('14 µs')).toBeInTheDocument()
-    expect(screen.getByText('Ao vivo')).toBeInTheDocument()
+    // nunca "ao vivo": o dado é sintético e a tela precisa dizer isso
+    expect(screen.getByText('Conectado · simulação')).toBeInTheDocument()
+    expect(screen.getByRole('note')).toHaveTextContent('não representam telemetria real da ISS')
   })
 
   it('anuncia o risco crítico para leitores de tela', async () => {
@@ -106,6 +108,7 @@ describe('Painel', () => {
           flame_spread_rate_mm_s: 1,
           risk_level: 'NOVO_NIVEL',
           suppression_active: false,
+          origin_category: 'Synthetic',
         }),
       ),
     )

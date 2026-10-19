@@ -13,6 +13,7 @@ import {
   ScenarioPicker,
   SimulationControls,
   StatusBanner,
+  SyntheticDataNotice,
 } from './dashboard/panels'
 import { TrendChart } from './dashboard/TrendChart'
 
@@ -34,6 +35,8 @@ function App() {
   })
   const ageSeconds = telemetry.data ? secondsSince(telemetry.dataUpdatedAt, now) : null
   const outdated = status === 'stale' || status === 'error'
+  // Mock é sempre sintético; com o backend, quem diz é o origin_category da leitura
+  const synthetic = usingMocks || telemetry.data?.origin_category === 'Synthetic'
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -52,9 +55,11 @@ function App() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             {usingMocks && <ScenarioPicker />}
-            <ConnectionBadge status={status} ageSeconds={ageSeconds} />
+            <ConnectionBadge status={status} ageSeconds={ageSeconds} synthetic={synthetic} />
           </div>
         </header>
+
+        {synthetic && <SyntheticDataNotice />}
 
         <StatusBanner status={status} error={telemetry.error} hasData={telemetry.data !== undefined} />
 
@@ -65,7 +70,7 @@ function App() {
                 <RiskPanel telemetry={telemetry.data} outdated={outdated} />
                 <SimulationControls suppressionActive={telemetry.data.suppression_active} />
               </div>
-              <div className="grid gap-4 sm:grid-cols-3 lg:col-span-2">
+              <div className="grid content-start gap-4 sm:grid-cols-3 lg:col-span-2">
                 <ReadingTile
                   label="Temperatura da câmara"
                   value={telemetry.data.chamber_temperature_c}
