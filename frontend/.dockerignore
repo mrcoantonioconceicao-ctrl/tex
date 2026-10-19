@@ -1,0 +1,12 @@
+# node_modules do host têm binários nativos (glibc) que não rodam no Alpine
+node_modules
+dist
+coverage
+*.log
+
+# Variáveis locais nunca entram na imagem (VITE_USE_MOCKS vem como build arg)
+.env*
+!.env.example
+
+Dockerfile
+.dockerignore

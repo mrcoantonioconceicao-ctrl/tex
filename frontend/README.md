@@ -16,6 +16,21 @@ npm run dev
 - `VITE_USE_MOCKS=false`: chama o Axum em `127.0.0.1:8080` pelo proxy do Vite
   (rode `cargo run` na raiz do repositório antes).
 
+## Com Docker
+
+Na raiz do repositório (`make help` lista todos os comandos):
+
+```bash
+make up        # backend + frontend + banco; painel em http://localhost:3000
+make up-mock   # só o frontend, com os mocks (plano B para demo sem backend)
+make smoke     # checagem rápida da stack
+make down
+```
+
+A imagem (`frontend/Dockerfile`) faz o build com Node 22 e serve o `dist` com nginx
+sem root. O nginx (`frontend/nginx.conf`) encaminha `/api` para o serviço `tex-backend`:
+tela e API ficam na mesma origem, sem precisar de CORS.
+
 ## Cenários de mock
 
 Com mocks ligados, o seletor "Cenário do mock" no topo da tela troca o comportamento
@@ -23,15 +38,18 @@ da API falsa. Também dá para abrir direto pela URL, ex.: `http://localhost:517
 
 | Cenário | O que simula |
 | --- | --- |
-| `backend` (padrão) | Os mesmos valores fixos do `src/main.rs` |
-| `simulacao` | Temperatura oscilando como o laço do backend, entrando e saindo do crítico |
+| `backend` (padrão) | Leitura inicial do backend (`SIM-TEX-001`); muda pelos botões de controle |
+| `simulacao` | Mesma física do backend: aquece, aciona a supressão acima de 900 °C e esfria até 870 °C |
 | `critico` | Supressão ativa (`CRITICAL_SUPPRESSION_ACTIVE`) |
 | `offline` | Backend fora do ar (falha de rede) |
 | `lento` | 4 s por resposta (dispara o aviso de dado desatualizado) |
 | `fora-do-contrato` | Resposta sem `flame_spread_rate_mm_s` (dispara o erro de contrato) |
 
-Todos os valores dos cenários são **sintéticos** (`experiment_id` começando com
-`SINTETICO`), exceto `backend`, que copia o mock do próprio Axum. Nenhum é dado da NASA.
+Todos os valores são **sintéticos** (`experiment_id` `SIM-TEX-001`, igual ao backend,
+ou começando com `SINTETICO`). Nenhum é dado da NASA.
+
+Os botões **Acionar supressão** e **Reiniciar simulação** (abaixo do nível de risco)
+chamam `POST /api/v1/simulation/suppress` e `/reset`, tanto no mock quanto no backend real.
 
 ## Estrutura
 

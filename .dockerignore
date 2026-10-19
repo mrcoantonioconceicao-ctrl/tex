@@ -12,6 +12,8 @@ target
 **/.env*
 !**/.env.example
 
-# Fora da imagem (pipeline de dados roda à parte)
+# Fora da imagem do backend: o front tem Dockerfile próprio (contexto ./frontend)
+# e a ingestão roda à parte
+frontend
 ingestion
 docs
