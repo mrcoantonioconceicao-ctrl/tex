@@ -2,7 +2,7 @@
 // `satisfies` garante que cada schema continua compatível com o tipo em ./types:
 // se um dos dois mudar sem o outro, o build quebra.
 import { z } from 'zod'
-import type { CombustionTelemetry, McpContextResponse } from './types'
+import type { CombustionTelemetry, McpContextResponse, SystemPerformanceMetrics } from './types'
 
 export const combustionTelemetrySchema = z.object({
   experiment_id: z.string(),
@@ -11,6 +11,16 @@ export const combustionTelemetrySchema = z.object({
   flame_spread_rate_mm_s: z.number(),
   risk_level: z.string(),
 }) satisfies z.ZodType<CombustionTelemetry>
+
+// Latências são u64 no Rust
+export const systemPerformanceMetricsSchema = z.object({
+  system_target: z.string(),
+  ast_parsing_latency_us: z.number().int().nonnegative(),
+  graphrag_query_latency_us: z.number().int().nonnegative(),
+  token_crusher_efficiency_pct: z.number(),
+  memory_safety_guarantee: z.string(),
+  uptime_status: z.string(),
+}) satisfies z.ZodType<SystemPerformanceMetrics>
 
 export const mcpContextResponseSchema = z.object({
   protocol: z.string(),

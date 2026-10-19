@@ -1,11 +1,16 @@
 // Camada única de acesso à API. Componentes nunca chamam fetch direto:
 // trocar mock por API real (ou mudar formato) se resolve só aqui.
 import { z } from 'zod'
-import { combustionTelemetrySchema, mcpContextResponseSchema } from './schemas'
+import {
+  combustionTelemetrySchema,
+  mcpContextResponseSchema,
+  systemPerformanceMetricsSchema,
+} from './schemas'
 import type {
   CombustionTelemetry,
   McpContextRequest,
   McpContextResponse,
+  SystemPerformanceMetrics,
 } from './types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
@@ -28,12 +33,25 @@ export class ContractError extends Error {
   }
 }
 
+// A requisição nem chegou a ter resposta (backend desligado, sem rede, CORS).
+export class NetworkError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'NetworkError'
+  }
+}
+
 async function request<T>(path: string, schema: z.ZodType<T>, init?: RequestInit): Promise<T> {
   const label = `${init?.method ?? 'GET'} ${path}`
-  const response = await fetch(`${BASE_URL}${path}`, {
-    ...init,
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
-  })
+  let response: Response
+  try {
+    response = await fetch(`${BASE_URL}${path}`, {
+      ...init,
+      headers: { 'Content-Type': 'application/json', ...init?.headers },
+    })
+  } catch {
+    throw new NetworkError(`${label} sem conexão com o backend`)
+  }
   if (!response.ok) {
     throw new ApiError(response.status, `${label} falhou (${response.status})`)
   }
@@ -46,6 +64,10 @@ async function request<T>(path: string, schema: z.ZodType<T>, init?: RequestInit
 
 export function getLatestTelemetry(): Promise<CombustionTelemetry> {
   return request('/telemetry/latest', combustionTelemetrySchema)
+}
+
+export function getSystemMetrics(): Promise<SystemPerformanceMetrics> {
+  return request('/metrics', systemPerformanceMetricsSchema)
 }
 
 export function postMcpContext(body: McpContextRequest): Promise<McpContextResponse> {

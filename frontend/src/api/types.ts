@@ -17,6 +17,16 @@ export interface CombustionTelemetry {
   risk_level: RiskLevel
 }
 
+// GET /api/v1/metrics (no backend atual os valores são fixos no handler)
+export interface SystemPerformanceMetrics {
+  system_target: string
+  ast_parsing_latency_us: number
+  graphrag_query_latency_us: number
+  token_crusher_efficiency_pct: number
+  memory_safety_guarantee: string
+  uptime_status: string
+}
+
 // POST /api/v1/mcp/context
 export interface McpContextRequest {
   query: string
