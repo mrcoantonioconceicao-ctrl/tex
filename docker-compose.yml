@@ -1,3 +1,7 @@
+# Stack local do Tex Labs. Atalhos no Makefile (make help).
+# Portas no host podem ser trocadas por variáveis de ambiente (TEX_*_PORT).
+name: tex
+
 services:
   tex-backend:
     build:
@@ -5,7 +9,60 @@ services:
       dockerfile: Dockerfile
     container_name: tex_space_fire_backend
     ports:
-      - "8080:8080"
+      - "${TEX_BACKEND_PORT:-8080}:8080"
     environment:
       - RUST_LOG=info
     restart: unless-stopped
+    healthcheck:
+      # A imagem não tem curl/wget: faz o GET /api/v1/health pelo /dev/tcp do bash
+      test:
+        - CMD
+        - bash
+        - -c
+        - exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /api/v1/health HTTP/1.0\r\n\r\n' >&3 && grep -q '"status":"ok"' <&3
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # true = mocks MSW no navegador (make up-mock)
+        VITE_USE_MOCKS: ${TEX_USE_MOCKS:-false}
+    container_name: tex_frontend
+    # nginx serve o painel e encaminha /api para o tex-backend
+    ports:
+      - "${TEX_FRONTEND_PORT:-3000}:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # PostgreSQL da ingestão (ingestion/). Credenciais só de desenvolvimento local.
+  db:
+    image: postgres:16-alpine
+    container_name: tex_db
+    environment:
+      POSTGRES_USER: ${TEX_DB_USER:-tex}
+      POSTGRES_PASSWORD: ${TEX_DB_PASSWORD:-tex}
+      POSTGRES_DB: ${TEX_DB_NAME:-tex}
+    ports:
+      # 5433 para não colidir com outro Postgres na 5432
+      - "127.0.0.1:${TEX_DB_PORT:-5433}:5432"
+    volumes:
+      - tex_pgdata:/var/lib/postgresql/data
+      # Executado só na primeira subida (volume vazio)
+      - ./ingestion/db/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  tex_pgdata:

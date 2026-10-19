@@ -9,8 +9,8 @@
   },
   "scripts": {
     "ingest:ntrs": "node src/cli.ts",
-    "db:up": "docker compose up -d db",
-    "db:down": "docker compose down",
+    "db:up": "docker compose -f ../docker-compose.yml up -d --wait db",
+    "db:down": "docker compose -f ../docker-compose.yml stop db",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

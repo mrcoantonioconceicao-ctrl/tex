@@ -3,7 +3,7 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ApiError, ContractError, NetworkError } from '../api/client'
-import { useMcpContext } from '../api/hooks'
+import { useMcpContext, useSimulationControl } from '../api/hooks'
 import type { CombustionTelemetry, SystemPerformanceMetrics } from '../api/types'
 import { getMockScenario, isMockScenario, MOCK_SCENARIOS, setMockScenario } from '../mocks/scenario'
 import { describeRisk, formatAge, formatNumber, STALE_AFTER_POLLS, type ConnectionStatus, type RiskTone } from './model'
@@ -13,6 +13,7 @@ const CARD = 'rounded-lg border border-slate-700 bg-slate-900 p-4'
 // ---- Risco ----
 
 const RISK_STYLES: Record<RiskTone, string> = {
+  ok: 'border-emerald-500 bg-emerald-950/40 text-emerald-100',
   warning: 'border-amber-400 bg-amber-950/40 text-amber-100',
   critical: 'border-red-500 bg-red-950/60 text-red-100',
   unknown: 'border-slate-500 bg-slate-800 text-slate-100',
@@ -21,6 +22,12 @@ const RISK_STYLES: Record<RiskTone, string> = {
 function RiskIcon({ tone }: { tone: RiskTone }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="size-8 shrink-0">
+      {tone === 'ok' && (
+        <>
+          <circle cx="12" cy="12" r="11" className="fill-emerald-500" />
+          <path d="m6.5 12.5 3.5 3.5 7.5-8" fill="none" strokeWidth="2.5" className="stroke-slate-950" />
+        </>
+      )}
       {tone === 'warning' && (
         <>
           <path d="M12 2 23 21H1Z" className="fill-amber-400" />
@@ -55,6 +62,11 @@ export function RiskPanel({ telemetry, outdated }: { telemetry: CombustionTeleme
         <p className="text-2xl font-semibold">{risk.label}</p>
       </div>
       <p className="mt-2 text-sm opacity-90">{risk.description}</p>
+      {telemetry.suppression_active && (
+        <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-current px-3 py-1 text-sm font-medium">
+          <span aria-hidden="true">❄</span> Supressão ativa
+        </p>
+      )}
       <p className="mt-3 text-xs opacity-75">
         Código <code>{telemetry.risk_level}</code> · Experimento <code>{telemetry.experiment_id}</code>
       </p>
@@ -145,6 +157,39 @@ export function StatusBanner({ status, error, hasData }: StatusBannerProps) {
     )
   }
   return null
+}
+
+// ---- Controles da simulação (demo) ----
+
+export function SimulationControls({ suppressionActive }: { suppressionActive: boolean }) {
+  const control = useSimulationControl()
+
+  return (
+    <section aria-labelledby="controls-title" className={CARD}>
+      <h2 id="controls-title" className="text-xs font-medium uppercase tracking-wide text-slate-400">
+        Controles da simulação
+      </h2>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => control.mutate('suppress')}
+          disabled={control.isPending || suppressionActive}
+          className="rounded border border-sky-500 px-4 py-2 text-sky-200 hover:bg-sky-950 disabled:opacity-50"
+        >
+          Acionar supressão
+        </button>
+        <button
+          type="button"
+          onClick={() => control.mutate('reset')}
+          disabled={control.isPending}
+          className="rounded border border-slate-500 px-4 py-2 text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+        >
+          Reiniciar simulação
+        </button>
+      </div>
+      {control.isError && <p className="mt-2 text-sm text-red-300">{control.error.message}</p>}
+    </section>
+  )
 }
 
 // ---- Métricas ----

@@ -1,13 +1,21 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
-import { getLatestTelemetry, getSystemMetrics, postMcpContext } from './client'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  getLatestTelemetry,
+  getSystemMetrics,
+  postMcpContext,
+  resetSimulation,
+  triggerSuppression,
+} from './client'
 
 export const TELEMETRY_POLL_MS = Number(import.meta.env.VITE_TELEMETRY_POLL_MS ?? 2000)
-// Métricas mudam pouco (no backend atual são fixas): polling mais espaçado
+// Métricas mudam pouco: polling mais espaçado
 const METRICS_POLL_MS = 10_000
+
+const TELEMETRY_KEY = ['telemetry', 'latest'] as const
 
 export function useLatestTelemetry() {
   return useQuery({
-    queryKey: ['telemetry', 'latest'],
+    queryKey: TELEMETRY_KEY,
     queryFn: getLatestTelemetry,
     refetchInterval: TELEMETRY_POLL_MS,
   })
@@ -23,4 +31,15 @@ export function useSystemMetrics() {
 
 export function useMcpContext() {
   return useMutation({ mutationFn: postMcpContext })
+}
+
+export type SimulationAction = 'suppress' | 'reset'
+
+// A resposta já é a leitura nova: entra direto no cache, sem esperar o próximo polling
+export function useSimulationControl() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (action: SimulationAction) => (action === 'suppress' ? triggerSuppression() : resetSimulation()),
+    onSuccess: (telemetry) => queryClient.setQueryData(TELEMETRY_KEY, telemetry),
+  })
 }

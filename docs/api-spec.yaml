@@ -1,36 +1,57 @@
 openapi: 3.0.3
 info:
   title: Tex Labs - NASA Space Apps 2026 API
-  version: 0.1.0
-  description: Contrato de API SOA/Microservices para o motor de segurança contra incêndios em microgravidade.
+  version: 1.0.0
+  description: >
+    Contrato da API do backend Axum (src/api.rs). É a fonte de verdade para o
+    backend e para o frontend (frontend/src/api/types.ts e schemas.ts): mudou
+    aqui, muda nos dois lados. A telemetria vem de uma simulação com dados
+    SINTÉTICOS (experiment_id SIM-TEX-001), não de dados da NASA.
 servers:
   - url: http://localhost:8080/api/v1
-    description: Servidor de Desenvolvimento Local (Rust Backend)
+    description: Backend direto (cargo run ou docker compose)
+  - url: http://localhost:3000/api/v1
+    description: Via nginx do frontend (docker compose)
 paths:
-  /telemetry/latest:
+  /health:
     get:
-      summary: Retorna a última telemetria de combustão simulada ou processada
+      summary: Verificação de saúde (usada pelo healthcheck do Docker)
       responses:
         '200':
-          description: Dados de telemetria recuperados com sucesso
+          description: Servidor no ar
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  experiment_id:
-                    type: string
-                  chamber_temperature_c:
-                    type: number
-                  oxygen_concentration_pct:
-                    type: number
-                  flame_spread_rate_mm_s:
-                    type: number
-                  risk_level:
-                    type: string
-  /analysis/graphrag:
+                $ref: '#/components/schemas/Health'
+
+  /telemetry/latest:
+    get:
+      summary: Última leitura da câmara de combustão (atualizada a cada 5 s)
+      responses:
+        '200':
+          description: Leitura atual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Telemetry'
+
+  /metrics:
+    get:
+      summary: Métricas de desempenho dos componentes (últimas medições reais)
+      responses:
+        '200':
+          description: Métricas atuais
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metrics'
+
+  /mcp/context:
     post:
-      summary: Envia dados para o motor GraphRAG e retorna insights de segurança
+      summary: Contexto técnico otimizado para IA (MCP + GraphRAG + Token Crusher)
+      description: >
+        Ainda é um stub: devolve um contexto marcado como [SIMULADO] até a
+        ingestão do NTRS alimentar a base de conhecimento.
       requestBody:
         required: true
         content:
@@ -40,15 +61,152 @@ paths:
               properties:
                 query:
                   type: string
+                  description: Consulta; vazia ou ausente usa "general_fire_safety"
+                  example: supressão de oxigênio
       responses:
         '200':
-          description: Insights gerados com sucesso
+          description: Contexto gerado
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                  insights:
-                    type: string
+                $ref: '#/components/schemas/McpContext'
+
+  /simulation/suppress:
+    post:
+      summary: Aciona a supressão manualmente (controle para demo)
+      description: A partir do próximo ciclo a temperatura cai 18,5 °C por ciclo até 870 °C.
+      responses:
+        '200':
+          description: Leitura logo após acionar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Telemetry'
+
+  /simulation/reset:
+    post:
+      summary: Volta a simulação ao estado inicial (controle para demo)
+      responses:
+        '200':
+          description: Leitura inicial
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Telemetry'
+
+components:
+  schemas:
+    Health:
+      type: object
+      required: [status, uptime_seconds]
+      properties:
+        status:
+          type: string
+          example: ok
+        uptime_seconds:
+          type: integer
+          minimum: 0
+
+    RiskLevel:
+      type: string
+      enum: [NOMINAL, MODERATE_WARNING, CRITICAL_SUPPRESSION_ACTIVE]
+      description: >
+        NOMINAL até 870 °C; MODERATE_WARNING acima de 870 °C;
+        CRITICAL_SUPPRESSION_ACTIVE acima de 900 °C ou com supressão manual.
+
+    Telemetry:
+      type: object
+      required:
+        - experiment_id
+        - timestamp
+        - sequence
+        - chamber_temperature_c
+        - oxygen_concentration_pct
+        - flame_spread_rate_mm_s
+        - risk_level
+        - suppression_active
+      properties:
+        experiment_id:
+          type: string
+          example: SIM-TEX-001
+        timestamp:
+          type: string
+          format: date-time
+          description: Momento da leitura, RFC 3339 em UTC
+          example: '2026-10-19T22:00:00.000Z'
+        sequence:
+          type: integer
+          minimum: 0
+          description: Número do ciclo da simulação; volta a 0 no reset
+        chamber_temperature_c:
+          type: number
+          description: Temperatura da câmara em °C (1 casa decimal)
+          example: 854.5
+        oxygen_concentration_pct:
+          type: number
+          description: Oxigênio em % (entre 12 e 21)
+          example: 21.0
+        flame_spread_rate_mm_s:
+          type: number
+          description: Propagação da chama em mm/s
+          example: 1.45
+        risk_level:
+          $ref: '#/components/schemas/RiskLevel'
+        suppression_active:
+          type: boolean
+
+    Metrics:
+      type: object
+      required:
+        - system_target
+        - ast_parsing_latency_us
+        - graphrag_query_latency_us
+        - token_crusher_efficiency_pct
+        - memory_safety_guarantee
+        - uptime_status
+        - uptime_seconds
+      properties:
+        system_target:
+          type: string
+        ast_parsing_latency_us:
+          type: integer
+          minimum: 0
+          description: Latência medida da última validação de leitura
+        graphrag_query_latency_us:
+          type: integer
+          minimum: 0
+          description: Latência medida da última consulta MCP (0 antes da primeira)
+        token_crusher_efficiency_pct:
+          type: number
+          description: Redução de tokens da última consulta MCP (0 antes da primeira)
+        memory_safety_guarantee:
+          type: string
+        uptime_status:
+          type: string
+          example: NOMINAL_ACTIVE
+        uptime_seconds:
+          type: integer
+          minimum: 0
+
+    McpContext:
+      type: object
+      required: [protocol, status, compressed_context, token_metrics]
+      properties:
+        protocol:
+          type: string
+          example: MCP-Enterprise-v1
+        status:
+          type: string
+          example: ACTIVE_OPTIMIZED
+        compressed_context:
+          type: string
+        token_metrics:
+          type: object
+          required: [original_estimated_tokens, compressed_tokens, compression_efficiency_pct]
+          properties:
+            original_estimated_tokens:
+              type: integer
+            compressed_tokens:
+              type: integer
+            compression_efficiency_pct:
+              type: number

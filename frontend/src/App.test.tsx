@@ -24,8 +24,8 @@ describe('App', () => {
   it('mostra a telemetria recebida da API', async () => {
     renderApp()
 
-    expect(await screen.findByText(/NASA-ISS-CIR-042/)).toBeInTheDocument()
-    expect(screen.getByText(/MODERATE_WARNING/)).toBeInTheDocument()
+    expect(await screen.findByText('SIM-TEX-001')).toBeInTheDocument()
+    expect(screen.getByText('NOMINAL')).toBeInTheDocument()
     expect(screen.getByText('Fonte de dados: mock (MSW)')).toBeInTheDocument()
   })
 
@@ -79,7 +79,7 @@ describe('Painel', () => {
   it('mostra risco, leituras formatadas e métricas', async () => {
     renderApp()
 
-    expect(await screen.findByText('Alerta moderado')).toBeInTheDocument()
+    expect(await screen.findByText('Nominal')).toBeInTheDocument()
     expect(screen.getByText('854,5')).toBeInTheDocument()
     expect(screen.getByText('1,45')).toBeInTheDocument()
     expect(await screen.findByText('14 µs')).toBeInTheDocument()
@@ -99,10 +99,13 @@ describe('Painel', () => {
       http.get('*/api/v1/telemetry/latest', () =>
         HttpResponse.json({
           experiment_id: 'X',
+          timestamp: '2026-10-19T22:00:00.000Z',
+          sequence: 0,
           chamber_temperature_c: 1,
           oxygen_concentration_pct: 1,
           flame_spread_rate_mm_s: 1,
           risk_level: 'NOVO_NIVEL',
+          suppression_active: false,
         }),
       ),
     )
@@ -131,25 +134,49 @@ describe('Painel', () => {
 
   it('mantém a última leitura visível quando o backend cai depois', async () => {
     renderApp()
-    expect(await screen.findByText('Alerta moderado')).toBeInTheDocument()
+    expect(await screen.findByText('Nominal')).toBeInTheDocument()
 
     server.use(http.get('*/api/v1/telemetry/latest', () => HttpResponse.error()))
 
     expect(await screen.findByText('Sem conexão com o backend', {}, { timeout: 5000 })).toBeInTheDocument()
     expect(screen.getByText(/Exibindo a última leitura recebida/)).toBeInTheDocument()
-    expect(screen.getByText('Alerta moderado')).toBeInTheDocument()
+    expect(screen.getByText('Nominal')).toBeInTheDocument()
     expect(screen.getByText(/última leitura recebida\)/)).toBeInTheDocument()
   }, 10_000)
 
   it('troca de cenário pelo seletor', async () => {
     const user = userEvent.setup()
     renderApp()
-    expect(await screen.findByText('Alerta moderado')).toBeInTheDocument()
+    expect(await screen.findByText('Nominal')).toBeInTheDocument()
 
     await user.selectOptions(screen.getByLabelText('Cenário do mock'), 'critico')
 
     expect(await screen.findByText('Crítico: supressão ativa')).toBeInTheDocument()
     expect(window.location.search).toBe('?cenario=critico')
+  })
+
+  it('aciona a supressão pelo botão e mostra o selo', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    expect(await screen.findByText('Nominal')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Acionar supressão' }))
+
+    expect(await screen.findByText('Crítico: supressão ativa')).toBeInTheDocument()
+    expect(screen.getByText(/Supressão ativa$/)).toBeInTheDocument()
+    // com a supressão já ativa, o botão fica desabilitado
+    expect(screen.getByRole('button', { name: 'Acionar supressão' })).toBeDisabled()
+  })
+
+  it('reinicia a simulação pelo botão', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    await user.click(await screen.findByRole('button', { name: 'Acionar supressão' }))
+    expect(await screen.findByText('Crítico: supressão ativa')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Reiniciar simulação' }))
+
+    expect(await screen.findByText('Nominal')).toBeInTheDocument()
   })
 })
 

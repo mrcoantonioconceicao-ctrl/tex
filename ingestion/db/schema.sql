@@ -1,6 +1,6 @@
 -- Schema inicial da ingestão (PostgreSQL 16).
 -- Executado automaticamente na PRIMEIRA subida do container (docker-entrypoint-initdb.d).
--- Para recriar do zero: npm run db:down -- -v && npm run db:up
+-- Para recriar do zero (apaga os dados): make db-reset, na raiz do repositório
 
 -- Citações do NASA Technical Reports Server (https://ntrs.nasa.gov)
 CREATE TABLE IF NOT EXISTS ntrs_citations (

@@ -66,6 +66,15 @@ export function getLatestTelemetry(): Promise<CombustionTelemetry> {
   return request('/telemetry/latest', combustionTelemetrySchema)
 }
 
+// Controles da simulação (demo): devolvem a leitura logo após a ação
+export function triggerSuppression(): Promise<CombustionTelemetry> {
+  return request('/simulation/suppress', combustionTelemetrySchema, { method: 'POST' })
+}
+
+export function resetSimulation(): Promise<CombustionTelemetry> {
+  return request('/simulation/reset', combustionTelemetrySchema, { method: 'POST' })
+}
+
 export function getSystemMetrics(): Promise<SystemPerformanceMetrics> {
   return request('/metrics', systemPerformanceMetricsSchema)
 }

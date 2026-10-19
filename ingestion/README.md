@@ -26,14 +26,19 @@ npm run ingest:ntrs -- --query "microgravity combustion" --max 50
 Opções: `npm run ingest:ntrs -- --help`.
 `DATABASE_URL` sobrescreve o banco padrão (`postgres://tex:tex@127.0.0.1:5433/tex`).
 
-Para conferir o que entrou:
+O Postgres é o serviço `db` do `docker-compose.yml` da raiz. Da raiz do repositório:
 
 ```bash
-docker compose exec db psql -U tex -d tex -c "SELECT id, title, center_code FROM ntrs_citations LIMIT 10;"
-docker compose exec db psql -U tex -d tex -c "SELECT * FROM ingestion_runs ORDER BY id DESC LIMIT 5;"
+make db-shell     # psql dentro do container
+make db-reset     # recria o banco do zero (APAGA os dados)
 ```
 
-Recriar o banco do zero (apaga os dados): `npm run db:down -- -v` e depois `npm run db:up`.
+Exemplos no psql:
+
+```sql
+SELECT id, title, center_code FROM ntrs_citations LIMIT 10;
+SELECT * FROM ingestion_runs ORDER BY id DESC LIMIT 5;
+```
 
 ## Testes
 
