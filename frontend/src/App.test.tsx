@@ -4,7 +4,9 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 import App from './App'
+import { TrendChart } from './dashboard/TrendChart'
 import { server } from './mocks/node'
+import { setMockScenario } from './mocks/scenario'
 
 function renderApp() {
   // retry desligado para os testes de erro não esperarem as novas tentativas
@@ -62,5 +64,107 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: 'Enviar' }))
 
     expect(calls).toBe(0)
+  })
+})
+
+describe('Painel', () => {
+  it('mostra risco, leituras formatadas e métricas', async () => {
+    renderApp()
+
+    expect(await screen.findByText('Alerta moderado')).toBeInTheDocument()
+    expect(screen.getByText('854,5')).toBeInTheDocument()
+    expect(screen.getByText('1,45')).toBeInTheDocument()
+    expect(await screen.findByText('14 µs')).toBeInTheDocument()
+    expect(screen.getByText('Ao vivo')).toBeInTheDocument()
+  })
+
+  it('anuncia o risco crítico para leitores de tela', async () => {
+    setMockScenario('critico')
+    renderApp()
+
+    expect(await screen.findByText('Crítico: supressão ativa')).toBeInTheDocument()
+    expect(screen.getByRole('alert')).toHaveTextContent(/Alerta crítico/)
+  })
+
+  it('não quebra com nível de risco desconhecido', async () => {
+    server.use(
+      http.get('*/api/v1/telemetry/latest', () =>
+        HttpResponse.json({
+          experiment_id: 'X',
+          chamber_temperature_c: 1,
+          oxygen_concentration_pct: 1,
+          flame_spread_rate_mm_s: 1,
+          risk_level: 'NOVO_NIVEL',
+        }),
+      ),
+    )
+    renderApp()
+
+    expect(await screen.findByText('Nível não reconhecido')).toBeInTheDocument()
+  })
+
+  it('mostra banner de sem conexão quando o backend está fora', async () => {
+    setMockScenario('offline')
+    renderApp()
+
+    expect(await screen.findByText('Sem conexão com o backend')).toBeInTheDocument()
+    expect(screen.getByText('Falha na conexão')).toBeInTheDocument()
+  })
+
+  it('mostra banner de contrato quebrado', async () => {
+    setMockScenario('fora-do-contrato')
+    renderApp()
+
+    // findByRole: o mesmo texto também existe como opção do seletor de cenário
+    const banner = await screen.findByRole('alert')
+    expect(banner).toHaveTextContent('Resposta fora do contrato')
+    expect(banner).toHaveTextContent(/flame_spread_rate_mm_s/)
+  })
+
+  it('mantém a última leitura visível quando o backend cai depois', async () => {
+    renderApp()
+    expect(await screen.findByText('Alerta moderado')).toBeInTheDocument()
+
+    server.use(http.get('*/api/v1/telemetry/latest', () => HttpResponse.error()))
+
+    expect(await screen.findByText('Sem conexão com o backend', {}, { timeout: 5000 })).toBeInTheDocument()
+    expect(screen.getByText(/Exibindo a última leitura recebida/)).toBeInTheDocument()
+    expect(screen.getByText('Alerta moderado')).toBeInTheDocument()
+    expect(screen.getByText(/última leitura recebida\)/)).toBeInTheDocument()
+  }, 10_000)
+
+  it('troca de cenário pelo seletor', async () => {
+    const user = userEvent.setup()
+    renderApp()
+    expect(await screen.findByText('Alerta moderado')).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByLabelText('Cenário do mock'), 'critico')
+
+    expect(await screen.findByText('Crítico: supressão ativa')).toBeInTheDocument()
+    expect(window.location.search).toBe('?cenario=critico')
+  })
+})
+
+describe('TrendChart', () => {
+  const readings = [850, 860, 870].map((temperature, i) => ({
+    at: i * 2000,
+    experimentId: 'SINTETICO-A',
+    temperature,
+    oxygen: 21,
+    flameSpread: 1,
+  }))
+
+  it('descreve a série para leitores de tela', () => {
+    render(<TrendChart title="Temperatura" unit="°C" readings={readings} select={(r) => r.temperature} />)
+
+    expect(
+      screen.getByRole('img', { name: 'Temperatura: atual 870,0 °C, mínimo 850,0, máximo 870,0, 3 leituras em 4 s' }),
+    ).toBeInTheDocument()
+  })
+
+  it('pede para aguardar com menos de duas leituras', () => {
+    render(<TrendChart title="Temperatura" unit="°C" readings={readings.slice(0, 1)} select={(r) => r.temperature} />)
+
+    expect(screen.getByText(/Aguardando leituras/)).toBeInTheDocument()
   })
 })

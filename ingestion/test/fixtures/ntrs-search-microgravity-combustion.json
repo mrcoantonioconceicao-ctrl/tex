@@ -1,0 +1,2645 @@
+{
+  "stats": {
+    "took": 59,
+    "total": 1076,
+    "estimate": false,
+    "maxScore": 204.32864
+  },
+  "results": [
+    {
+      "_meta": {
+        "score": 204.32864
+      },
+      "copyright": {
+        "thirdPartyPermissionsProduced": false,
+        "disclosedToPublic": false,
+        "containsIndication": false,
+        "publisherPermissionOrRightsToDistribute": false,
+        "belongsToUsGov": false,
+        "determinationType": "GOV_PUBLIC_USE_PERMITTED",
+        "thirdPartyContentCondition": "NOT_SET",
+        "belongsToContractor": false,
+        "disclosedInvention": false,
+        "submissionId": 20150023100,
+        "containsThirdPartyMaterial": false,
+        "belongsToPublisher": false,
+        "id": "a7e63511e33c49058b17b9f760a2db26",
+        "belongsToAuthors": false
+      },
+      "subjectCategories": [
+        "Propellants And Fuels"
+      ],
+      "keywords": [
+        "combustion",
+        "microgravity"
+      ],
+      "exportControl": {
+        "isExportControl": "NO",
+        "submissionId": 20150023100,
+        "ear": "NO",
+        "id": "0107f4857bae4f1ba20587ddcad0b84d",
+        "itar": "NO"
+      },
+      "distributionDate": "2019-07-12T00:00:00.0000000+00:00",
+      "otherReportNumbers": [
+        "GRC-E-DAA-TN27493",
+        "Report Number: GRC-E-DAA-TN27493"
+      ],
+      "fundingNumbers": [
+        {
+          "number": "WBS 904211.01.02.20.01",
+          "submissionId": 20150023100,
+          "id": "fa87c509aa54412081edbacf166b9756",
+          "type": "WBS"
+        }
+      ],
+      "title": "NASA Microgravity Combustion Program",
+      "stiType": "PRESENTATION",
+      "distribution": "PUBLIC",
+      "submittedDate": "2015-12-15T13:08:57.3370000+00:00",
+      "authorAffiliations": [
+        {
+          "sequence": 0,
+          "submissionId": 20150023100,
+          "meta": {
+            "author": {
+              "name": "Urban, David L."
+            },
+            "organization": {
+              "name": "NASA Glenn Research Center",
+              "location": "Cleveland, OH United States"
+            }
+          },
+          "id": "109a3dd54a2940df9c99fceeb46672d1"
+        }
+      ],
+      "stiTypeDetails": "Presentation",
+      "technicalReviewType": "TECHNICAL_REVIEW_TYPE_NONE",
+      "modified": "2025-08-31T18:39:21.7150190+00:00",
+      "id": 20150023100,
+      "legacyMeta": {
+        "__type": "LegacyMetaIndex, StrivesApi.ServiceModel",
+        "accessionNumber": ""
+      },
+      "created": "2015-12-15T13:08:57.3370000+00:00",
+      "center": {
+        "code": "GRC",
+        "name": "Glenn Research Center",
+        "id": "19eeb25fa404421d9eaa5f876e853e3c"
+      },
+      "onlyAbstract": false,
+      "sensitiveInformation": 2,
+      "abstract": "These slides present an overview NASA's Microgravity Combustion Program to be presented to the MultiAgency Coordinating Committee on Combustion Research committee meeting.",
+      "isLessonsLearned": false,
+      "disseminated": "DOCUMENT_AND_METADATA",
+      "meetings": [
+        {
+          "country": "United States",
+          "submissionId": 20150023100,
+          "sponsors": [
+            {
+              "organizationId": "7386c03a67a641668e0b7608c4c9c6d2",
+              "meta": {
+                "organization": {
+                  "name": "Sandia National Labs.",
+                  "location": "Livermore, CA, United States"
+                }
+              },
+              "meetingId": "a22ded54b16a4e468f96104fe224103d",
+              "id": "972e1749cd10486caeee62acb1a2550b"
+            }
+          ],
+          "name": "Team Meeting of MACCCR",
+          "location": "Livermore, CA",
+          "id": "a22ded54b16a4e468f96104fe224103d",
+          "startDate": "2015-10-19T00:00:00.0000000+00:00"
+        }
+      ],
+      "publications": [
+        {
+          "submissionId": 20150023100,
+          "id": "919698df3c704df59c3e58461a0ea202",
+          "publicationDate": "2015-10-20T00:00:00.0000000+00:00"
+        }
+      ],
+      "status": "CURATED",
+      "related": [],
+      "downloads": [
+        {
+          "draft": false,
+          "mimetype": "application/pdf",
+          "name": "20150023100.pdf",
+          "type": "STI",
+          "links": {
+            "original": "/api/citations/20150023100/downloads/20150023100.pdf",
+            "pdf": "/api/citations/20150023100/downloads/20150023100.pdf",
+            "fulltext": "/api/citations/20150023100/downloads/20150023100.txt"
+          }
+        }
+      ],
+      "downloadsAvailable": true,
+      "index": "submissions-2026-10-15-05-24"
+    },
+    {
+      "_meta": {
+        "score": 198.95578
+      },
+      "copyright": {
+        "disclosedToPublic": false,
+        "containsIndication": false,
+        "publisherPermissionOrRightsToDistribute": false,
+        "belongsToUsGov": false,
+        "determinationType": "GOV_PUBLIC_USE_PERMITTED",
+        "thirdPartyContentCondition": "NOT_SET",
+        "belongsToContractor": false,
+        "disclosedInvention": false,
+        "submissionId": 19970020547,
+        "containsThirdPartyMaterial": false,
+        "belongsToPublisher": false,
+        "id": "91261c0c90e540ec9490a94a974540f6",
+        "belongsToAuthors": false
+      },
+      "subjectCategories": [
+        "Materials Processing"
+      ],
+      "keywords": [
+        "Microgravity",
+        "Combustion",
+        "Fires",
+        "Flammability"
+      ],
+      "exportControl": {
+        "isExportControl": "NO",
+        "submissionId": 19970020547,
+        "ear": "NO",
+        "id": "7023785f987e488c81881ba9ede23091",
+        "category": [
+          {
+            "submissionExportControlId": "7023785f987e488c81881ba9ede23091",
+            "id": "7596df515f58482aafb2c46bf48f8d7a",
+            "category": 0
+          }
+        ],
+        "itar": "NO"
+      },
+      "distributionDate": "1997-07-15T04:00:00.0000000+00:00",
+      "otherReportNumbers": [
+        "NAS 1.55:10194",
+        "NASA-CP-10194",
+        "E-10678"
+      ],
+      "fundingNumbers": [
+        {
+          "number": "WU–963–80–0J",
+          "submissionId": 19970020547,
+          "id": "d456a9e4b21e4137a375555df14b4156",
+          "type": "OTHER"
+        },
+        {
+          "number": "RTOP 963-80-0J",
+          "submissionId": 19970020547,
+          "id": "ae7cc70f89c446729c3676cef42f5081",
+          "type": "PROJECT"
+        }
+      ],
+      "title": "Fourth International Microgravity Combustion Workshop",
+      "stiType": "CONFERENCE_PROCEEDINGS",
+      "distribution": "PUBLIC",
+      "submittedDate": "2013-09-06T22:26:00.0000000+00:00",
+      "authorAffiliations": [
+        {
+          "organizationId": "25b061d860a74d37b5938b104d1099ce",
+          "sequence": 0,
+          "submissionId": 19970020547,
+          "meta": {
+            "author": {
+              "name": "Kurt Sacksteder"
+            },
+            "organization": {
+              "name": "Lewis Research Center",
+              "location": "Cleveland, OH, United States"
+            }
+          },
+          "id": "dcf195d1a4ff4fd6aa3085fb5a8bb7da",
+          "userType": "OTHER"
+        }
+      ],
+      "stiTypeDetails": "Conference Proceedings",
+      "technicalReviewType": "NASA_TECHNICAL_MANAGEMENT",
+      "modified": "2026-09-09T14:37:19.3367210+00:00",
+      "id": 19970020547,
+      "legacyMeta": {
+        "__type": "LegacyMetaIndex, StrivesApi.ServiceModel",
+        "accessionNumber": "97N21820"
+      },
+      "created": "2013-09-06T22:26:00.0000000+00:00",
+      "center": {
+        "code": "GRC",
+        "name": "Glenn Research Center",
+        "id": "19eeb25fa404421d9eaa5f876e853e3c"
+      },
+      "onlyAbstract": false,
+      "sensitiveInformation": 2,
+      "abstract": "This proceedings document is a compilation about work performed by a community of researchers from universities, industry and government laboratories across the United States and in Europe and Japan who have recognized the value of the reduced-gravity environment in attacking the fundamental and practical problems of combustion science. On their behalf, I am pleased to present this document to the assembled participants at the Fourth International Microgravity Combustion Workshop, to be held near the NASA Lewis Research Center in Cleveland, Ohio, on May 19-21, 1997. ",
+      "isLessonsLearned": false,
+      "disseminated": "DOCUMENT_AND_METADATA",
+      "cui": {
+        "isCui": false,
+        "submissionId": 19970020547,
+        "id": "b24a6e2214324f38b900879d8f112ea4"
+      },
+      "meetings": [
+        {
+          "country": "US",
+          "submissionId": 19970020547,
+          "endDate": "1997-05-21T04:00:00.0000000+00:00",
+          "sponsors": [
+            {
+              "organizationId": "e53641f275f15469a1b19a8980e09171",
+              "meta": {
+                "organization": {
+                  "name": "National Aeronautics and Space Administration",
+                  "location": "Washington, United States"
+                }
+              },
+              "meetingId": "fb0a5b80f83a4b098ee486ab1065b725",
+              "id": "32a03f02c94843f79d6ea3e8e7bac48d"
+            }
+          ],
+          "name": "Fourth International Microgravity Combustion Workshop",
+          "location": "Cleveland, OH",
+          "id": "fb0a5b80f83a4b098ee486ab1065b725",
+          "startDate": "1997-05-19T04:00:00.0000000+00:00"
+        }
+      ],
+      "publications": [
+        {
+          "submissionId": 19970020547,
+          "publisher": "National Aeronautics and Space Administration",
+          "id": "1a28e402b8454532a215d4491b5b1b36",
+          "publicationName": "Fourth International Microgravity Combustion Workshop",
+          "publicationDate": "1997-05-01T04:00:00.0000000+00:00"
+        }
+      ],
+      "status": "CURATED",
+      "related": [
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020554,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "The Effect of Gravity on the Combustion of Bulk Metals",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020569,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Splitting of Forced Elliptic Jets and Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020619,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Influences of Water on Methanol Droplet Burning and Extinction",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020589,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Analysis of Hydrodynamic (Landau) Instability in Liquid-Propellant Combustion at Normal and Reduced Gravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020583,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Soot Formation in Freely-Propagating Laminar Premixed Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020620,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Science Support for Space-Based Droplet Combustion: Drop Tower Experiments and Detailed Numerical Modeling",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020576,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Structure of Microgravity Transitional and Pulsed Jet Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020618,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "A Novel Application of Ultrasonic Imaging to Study Smoldering Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020557,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Radiation Temperature and Extinction of Transient Gaseous Diffusion Flames in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020560,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Reactive Hydrodynamics in Rotating Spherical and Cylindrical Geometry",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020565,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Structure and Stability of Burke-Schumann Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020570,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Application of Shear Plate Interferometry to Jet Diffusion Flame Temperature Measurements",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020600,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Studies of Premixed Laminar and Turbulent Flames at Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020550,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Gravitational Effects in Smoldering and SHS",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020558,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Studies of Flame Structure in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020579,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Laminar Soot Processes",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020548,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "NASA Microgravity Combustion Science Program",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020624,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion of Interacting Droplet Arrays in a Microgravity Environment",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020627,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Pressure Effects in Droplet Combustion of Miscible Binary Fuels",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020555,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Internal and Surface Phenomena in Heterogenous Metal Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020597,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "LIF Thermometry of a Fuel Droplet Burning Under Microgravity in a Drop Shaft",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020617,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Extinguishment of a Diffusion Flame Over a PMMA Cylinder by Depressurization in Low-Gravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020578,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Vortex Ring/Diffusion Flame Interactions in Microgravity Conditions",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020603,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Dynamics and Structure of Weakly-Strained Flames at Normal and Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020588,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion of PTFE: The Effects of Gravity and Pigmentation on Ultrafine Particle Generation",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020631,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Recent Developments in Spray Combustion: Experiments and Modeling",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020592,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Real Time Quantitative 3-D Imaging of Diffusion Flame Species",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020562,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Strain-Rate-Free Diffusion Flames: Initiation, Properties, and Quenching",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020561,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Diffusion Flame Extinction in a Low Strain Flow",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020630,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Detailed Studies on the Structure and Dynamics of Reacting Dusty Flows at Normal and Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020615,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Flame Attachment in Flame Spread",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020588,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion of PTFE: The Effects of Gravity and Pigmentation on Ultrafine Particle Generation",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020622,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Emulsion Droplet Combustion in Microgravity: Water/Heptane Emulsions",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020593,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Elucidation of Free Radical and Optogalvanic Spectroscopy Associated with Microgravity Combustion via Conventional and Novel Laser Platforms",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020594,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Quantitative Measurement of Oxygen in Microgravity Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020595,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "OH Planar Laser-Induced Fluorescence from Microgravity Droplet Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020610,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Diffusive and Radiative Transport in Fires Experiment: DARTFire",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020564,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Radiative Extinction of Counterflow Premixed Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020551,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "The Effect of Gravity on the Combustion Synthesis of Porous Ceramics and Metal Matrix Composites",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020604,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Modeling of Microgravity Combustion Experiments",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020577,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Characteristics of Non-Premixed Turbulent Flames in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020609,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Reflight of the Solid Surface Combustion Experiment: Opposed-Flow Flame Spread Over Cylindrical Fuels",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020601,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Premixed Gas Combustion: An Excitable System",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020571,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Effects of Buoyancy on Laminar and Turbulent Premixed V-Flame",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020580,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Comparative Soot Diagnostics: Preliminary Results",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020581,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Temperature and Radiative Heat Flux Measurements in Microgravity Jet Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020629,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Heterogeneous Combustion of Porous Graphite Particles in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020556,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Interaction of Burning Metal Particles",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020621,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "The Effects of Sooting and Radiation on Droplet Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020613,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Ignition, Transition, Flame Spread in Multidimensional Configurations in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020567,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Computational and Experimental Study of Laminar Diffusion Flames in a Microgravity Environment",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020575,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Effects of Gravity on Sheared and Nonsheared Turbulent Nonpremixed Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020608,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Solid Surface Combustion Experiment: Thick Fuel Results",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020585,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Candle Flames in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020582,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Effect of Thermophoretic Force on Soot Agglomeration Process in Diffusion Flames Under Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020584,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Effects of Fuel Preheat on Soot Formation in Microgravity Laminar Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020628,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "High Pressure Burning of Methanol Droplets: A Comparison Between Parabolic Flight and Drop Tower Experiments",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020596,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Laser-Induced Incandescence in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020559,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Spherical Diffusion Flames: Structure and Dynamics",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020606,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Smoldering Combustion Experiments in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020590,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Stretched Diffusion Flames in von Karman Swirling Flows",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020549,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Fullerenes, PAH, Carbon Nanostructures, and Soot in Low Pressure Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020598,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Recent Developments and Applications of the Combustion Diagnostics at Bremen Drop Tower",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020553,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Gas-Phase Combustion Synthesis of Metal and Ceramic Nanoparticles",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020587,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Numerical Modeling for Combustion of Thermoplastic Materials in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020552,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "The Effects of Gravity on Combustion and Structure Formation During Combustion Synthesis in Gasless Systems",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020614,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Premixed Atmosphere and Convection Influences on Flame Inhibition and Combustion (PACIFIC)",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020573,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Unsteady Multidimensional Simulations of the Structure and Dynamics of Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020586,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Experimental Observations of PMMA Spheres Burning at Reduced Gravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020611,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Solid Inflammability Boundary at Low Speed (SIBAL)",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020626,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Microgravity Experiment on Flame Spread of a Fuel Droplet Array",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020616,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Interactions Between Flames on Parallel Solid Surfaces",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020568,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Shapes of Buoyant and Nonbuoyant Methane Laminar Jet Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020625,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Formation and Combustion of Unconfined Drop Clusters in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020607,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Flame Spread Across Liquids",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020599,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Microgravity Environment Characterization Program",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020591,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Selected Diagnostics for Microgravity Combustion Science",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020563,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Experimental Study on the Stability of a Diffusion Flame Established in a Laminar Boundary Layer",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020605,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Computational Modeling of the Structure and Extinction of Flame Balls in a Microgravity Environment",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020574,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Premixed Flame-Vortex Interactions Imaged in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020602,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Gravitational Influences on Flame Propagation Through Non-Uniform Premixed Gas Systems",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19970020566,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Study of Buoyancy Effects in Diffusion Flames Using Rainbow Schlieren Deflectometry",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020623,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion of Two-Component Miscible Droplets in Reduced Gravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020612,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Flow Effects on the Flammability Diagrams of Solid Fuels",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19970020572,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Turbulent Premixed Flame Propagation in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        }
+      ],
+      "downloads": [
+        {
+          "draft": false,
+          "mimetype": "application/pdf",
+          "name": "19970020547.pdf",
+          "type": "STI",
+          "links": {
+            "original": "/api/citations/19970020547/downloads/19970020547.pdf",
+            "pdf": "/api/citations/19970020547/downloads/19970020547.pdf",
+            "fulltext": "/api/citations/19970020547/downloads/19970020547.txt"
+          }
+        }
+      ],
+      "downloadsAvailable": true,
+      "index": "submissions-2026-10-15-05-24"
+    },
+    {
+      "_meta": {
+        "score": 182.63483
+      },
+      "copyright": {
+        "disclosedToPublic": false,
+        "containsIndication": false,
+        "publisherPermissionOrRightsToDistribute": false,
+        "belongsToUsGov": false,
+        "determinationType": "GOV_PUBLIC_USE_PERMITTED",
+        "thirdPartyContentCondition": "NOT_SET",
+        "belongsToContractor": false,
+        "disclosedInvention": false,
+        "licenseType": "NO",
+        "submissionId": 19990053965,
+        "containsThirdPartyMaterial": false,
+        "belongsToPublisher": false,
+        "id": "71ef9d26aaaf43f881d98e0fe7e410f4",
+        "belongsToAuthors": false
+      },
+      "subjectCategories": [
+        "Materials Processing"
+      ],
+      "exportControl": {
+        "isExportControl": "NO",
+        "submissionId": 19990053965,
+        "ear": "NO",
+        "id": "85aa9ae049f94e8a9dfe5a1d227bcbcf",
+        "category": [
+          {
+            "submissionExportControlId": "85aa9ae049f94e8a9dfe5a1d227bcbcf",
+            "id": "b7978f47be0b49a8868fc8726e246923",
+            "category": 0
+          }
+        ],
+        "itar": "NO"
+      },
+      "distributionDate": "1999-08-06T04:00:00.0000000+00:00",
+      "otherReportNumbers": [
+        "NAS 1.55:208917",
+        "E-11671",
+        "NASA/CP-1999-208917"
+      ],
+      "fundingNumbers": [
+        {
+          "number": "RTOP 962-22-00",
+          "submissionId": 19990053965,
+          "id": "2edc1fab628e4cb096630053f760e08f",
+          "type": "PROJECT"
+        }
+      ],
+      "title": "Fifth International Microgravity Combustion Workshop",
+      "stiType": "CONFERENCE_PUBLICATION",
+      "distribution": "PUBLIC",
+      "submittedDate": "2013-09-06T23:03:00.0000000+00:00",
+      "authorAffiliations": [
+        {
+          "organizationId": "fdea3daf3b5156699f511edf3e9b9ec4",
+          "sequence": 0,
+          "submissionId": 19990053965,
+          "meta": {
+            "author": {
+              "orcidId": "",
+              "name": "Kurt R Sacksteder"
+            },
+            "organization": {
+              "name": "Glenn Research Center",
+              "location": "Cleveland, Ohio, United States"
+            }
+          },
+          "id": "b7a5646192b349858a08a0206196455f",
+          "userType": "CIVIL",
+          "userId": "63b2e11f30b84051b1a56326db24067d"
+        }
+      ],
+      "stiTypeDetails": "Conference Publication (CP)",
+      "technicalReviewType": "TECHNICAL_REVIEW_TYPE_NONE",
+      "modified": "2026-03-19T15:31:19.4760590+00:00",
+      "id": 19990053965,
+      "legacyMeta": {
+        "__type": "LegacyMetaIndex, StrivesApi.ServiceModel",
+        "accessionNumber": ""
+      },
+      "created": "2013-09-06T23:03:00.0000000+00:00",
+      "center": {
+        "code": "GRC",
+        "name": "Glenn Research Center",
+        "id": "19eeb25fa404421d9eaa5f876e853e3c"
+      },
+      "onlyAbstract": false,
+      "sensitiveInformation": 2,
+      "abstract": "On behalf of the NASA Headquarters Microgravity Research Division and the Microgravity Combustion Science Discipline Working Group, we are pleased to present these proceedings of the Fifth International Microgravity Combustion Workshop. At the time we go to press we expect to welcome to the workshop over 250 presenters and participants from U.S. academia, industry, and government; and from at least 8 international partner countries. We come together for this workshop at the beginning of the International Space Station era, where the future of microgravity combustion science programs will unfold over the next few years. As we accelerate our preparations for the ISS, this book and the growing literature base cited herein provide a summary of the accomplishments of approximately forty space-flight experiment-missions (plus nearly countless drop tests and aircraft parabolas) and a valuable resource for the new experiment ideas of the future.",
+      "isLessonsLearned": false,
+      "disseminated": "DOCUMENT_AND_METADATA",
+      "cui": {
+        "isCui": false,
+        "submissionId": 19990053965,
+        "id": "d8ed7989c9574fc983e2a17f01c130a4"
+      },
+      "meetings": [
+        {
+          "country": "US",
+          "submissionId": 19990053965,
+          "endDate": "1999-05-20T04:00:00.0000000+00:00",
+          "sponsors": [
+            {
+              "organizationId": "fdea3daf3b5156699f511edf3e9b9ec4",
+              "meta": {
+                "organization": {
+                  "name": "Glenn Research Center",
+                  "location": "Cleveland, Ohio, United States"
+                }
+              },
+              "meetingId": "8ef351bbbb83430caa22c1d7ac091ddf",
+              "id": "d9b21feb1b7a47399addba5b888264be"
+            }
+          ],
+          "name": "5th International Microgravity Combustion Workshop",
+          "location": "Cleveland, OH",
+          "id": "8ef351bbbb83430caa22c1d7ac091ddf",
+          "startDate": "1999-05-18T04:00:00.0000000+00:00"
+        }
+      ],
+      "publications": [
+        {
+          "volume": "NASA/CP-1999-208917",
+          "submissionId": 19990053965,
+          "publisher": "National Aeronautics and Space Administration",
+          "id": "9cc37071498d4d30a049f9ccb3fb91bd",
+          "publicationName": "Fifth International Microgravity Combustion Workshop",
+          "publicationDate": "1999-05-18T04:00:00.0000000+00:00",
+          "issuePublicationDate": "1999-05-01T04:00:00.0000000+00:00"
+        }
+      ],
+      "status": "CURATED",
+      "redistributedDate": "2021-08-27T00:00:00.0000000",
+      "related": [
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054025,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Characteristics of Non-Premixed Turbulent Flames in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054015,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion of Aerosolized Metal Particles in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053972,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Edge-Flames in Von Karman Swirling Flows",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054080,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Interferometer Development for Study of Interactions between Flames on Parallel Solid Surfaces",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054058,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion of Han-Based Monopropellant Droplets in Reduced Gravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054031,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Formation and Levitation of Unconfined Droplet Clusters",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053971,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Reflight of the Solid Surface Combustion Experiment: Flame Radiation Near Extinction",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053984,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Candle Flames in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053986,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Experimental Observations on a Low Strain Counter-Flow Diffusion Flame: Flow and Bouyancy Effects",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053998,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Monte Carlo Simulation of Nanoparticle Encapsulation in Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054075,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Carbon Monoxide and Soot Formation in Inverse Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053999,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion Synthesis of Advanced Porous Materials in Microgravity Environment",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054076,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Flow/Soot-Formation Interactions in Nonbuoyant Laminar Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054078,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Kinetics and Structure of Superagglomerates Produced by Silane and Acetylene",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054050,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Quantitative Interpretation of Optical Emission Sensors for Microgravity Experiments",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053991,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Effects of Buoyancy in Hydrogen Jet Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054061,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Synthesis of Graphite Encapsulated Metal Nanoparticles and Metal Catalyzed Nanotubes",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053978,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Gravitational Influences on Flame Propagation Through Non-Uniform Premixed Gas Systems",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054024,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Vortex/Flame Interactions in Microgravity Pulsed Jet Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053979,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Soot Formation in Laminar Premixed Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053975,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Radiant Extinction of Gaseous Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054004,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Diffusion Flames: Extinction and Stability",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054022,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Experimental Study of Nonane and Nonane/Hexanol Fuel Droplet Combustion in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053967,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Space Station Utilisation Initiatives of the European Space Agency ESA/ESTEC",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054027,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Flame-Vortex Interactions in Microgravity to Improve Models of Turbulent Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054019,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Heterogeneous Combustion of Porous Graphite Particles in Normal and Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054062,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "The Effects of Gravity on Combustion and Structure Formation During Synthesis of Advanced Materials",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054077,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "The Impact of Buoyancy and Flame Structure on Soot, Radiation and NOx Emissions from a Turbulent Diffusion Flame",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054041,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "The Three-D Flow Structures of Gas and Liquid Generated by a Spreading Flame Over Liquid Fuel",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054079,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Internal Heterogeneous Processes in Aluminum Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053973,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Flow Effects on the Flammability Diagrams of Solid Fuels: Microgravity Influence on Ignition Delay",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053988,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Influence of Buoyant Convection on the Stability of Enclosed Laminar Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053992,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Detailed Studies on the Structure and Dynamics of Reacting Dusty Flows at Normal and Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054039,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Flame Spread Across Liquids: Experimental Results",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053983,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Planar Strain-Rate-Free Diffusion Flames: Initiation, Properties, and Extinction",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053977,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Studies of Premixed Laminar and Turbulent Flames at Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054038,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Diffusive and Radiative Transport in Fires (DARTFire): Opposed-Flow Flame Spread in Low-Velocity Flows",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053985,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Hydrodynamics of Spherical Flows and Geometry of Premixed Flames near the Stagnation Point of Axisymmetric Viscous Counterflows",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053971,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Reflight of the Solid Surface Combustion Experiment: Flame Radiation Near Extinction",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053972,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Edge-Flames in Von Karman Swirling Flows",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054084,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Simulation of Combustion Systems with Realistic g-Jitter",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053969,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Some Recent Observations on the Burning of Isolated N-Heptane and Alcohol Droplets",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054014,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion of Metals in Reduced-Gravity and Extraterrestrial Environment",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054000,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Filtration Combustion in Smoldering and SHS",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054053,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "A Compact, Tunable Near-UV Source for Quantitative Microgravity Combustion Diagnostics",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054008,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Quantitative Species Measurements in Microgravity Combustion Flames using Near-Infrared Diode Lasers",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053976,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Preliminary Results of the Third Test Series of Nonmetal Material Flammability Evaluation In SKOROST Apparatus on the Space Station Mir",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19990053968,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Solid Inflammability Boundary at Low Speed (SIBAL)",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053996,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Laminar Soot Processes",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054026,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Effects of Buoyancy on the Flowfields of Lean Premixed Turbulent V-Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053990,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "The Effects of Buoyancy and Dilution on the Structure and Lift-off of Coflow Laminar Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054055,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Particle-Image Velocimetry in Microgravity Laminar Jet Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054063,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Numerical Study of Buoyancy and Differential Diffusion Effects on the Structure and Dynamics of Triple Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054083,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Electrical Aspects of Flames in Microgravity Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053997,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Synthesis of Fullerenes in Low Pressure Benzene/Oxygen Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053973,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Flow Effects on the Flammability Diagrams of Solid Fuels: Microgravity Influence on Ignition Delay",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053974,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion and Flammability Characteristics of Solids at Microgravity in very Small Velocity Flows",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053975,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Radiant Extinction of Gaseous Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053976,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Preliminary Results of the Third Test Series of Nonmetal Material Flammability Evaluation In SKOROST Apparatus on the Space Station Mir",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053977,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Studies of Premixed Laminar and Turbulent Flames at Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053978,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Gravitational Influences on Flame Propagation Through Non-Uniform Premixed Gas Systems",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053979,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Soot Formation in Laminar Premixed Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053980,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "A Study of Flame Propagation on Water-Mist Laden Gas Mixtures in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053983,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Planar Strain-Rate-Free Diffusion Flames: Initiation, Properties, and Extinction",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053984,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Candle Flames in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053985,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Hydrodynamics of Spherical Flows and Geometry of Premixed Flames near the Stagnation Point of Axisymmetric Viscous Counterflows",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053986,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Experimental Observations on a Low Strain Counter-Flow Diffusion Flame: Flow and Bouyancy Effects",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053987,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Bursting Bubbles from Combustion of Thermoplastic Materials in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053988,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Influence of Buoyant Convection on the Stability of Enclosed Laminar Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053990,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "The Effects of Buoyancy and Dilution on the Structure and Lift-off of Coflow Laminar Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053991,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Effects of Buoyancy in Hydrogen Jet Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053992,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Detailed Studies on the Structure and Dynamics of Reacting Dusty Flows at Normal and Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053994,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Laminar Dust Flames: A Program of Microgravity and Ground Based Studies at McGill",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053996,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Laminar Soot Processes",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053997,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Synthesis of Fullerenes in Low Pressure Benzene/Oxygen Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053998,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Monte Carlo Simulation of Nanoparticle Encapsulation in Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053999,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion Synthesis of Advanced Porous Materials in Microgravity Environment",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054000,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Filtration Combustion in Smoldering and SHS",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054002,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "A Theory of Oscillating Edge Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054003,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Investigation of Diffusion Flame Tip Thermodiffusive and Hydrodynamic Instability under Microgravity Conditions",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054004,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Diffusion Flames: Extinction and Stability",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054005,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Hydrodynamic Instability and Thermal Coupling in a Dynamic Model of Liquid-Propellant Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054006,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Low-Temperature Oxidation Reactions and Cool Flames at Earth and Reduced Gravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054007,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Detailed Multidimensional Simulations of the Structure and Dynamics of Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054008,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Quantitative Species Measurements in Microgravity Combustion Flames using Near-Infrared Diode Lasers",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054010,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Observations from the Microgravity Smoldering Combustion (MSC) Ultrasound Imaging System (UIS)",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054013,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Laser Optogalvanic Spectroscopy pf Neon and Argon in a Discharge Plasma and its Significance for Microgravity Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054014,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion of Metals in Reduced-Gravity and Extraterrestrial Environment",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054015,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion of Aerosolized Metal Particles in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054019,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Heterogeneous Combustion of Porous Graphite Particles in Normal and Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054020,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion of Two-Component Miscible Droplets in Reduced Gravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054022,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Experimental Study of Nonane and Nonane/Hexanol Fuel Droplet Combustion in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054024,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Vortex/Flame Interactions in Microgravity Pulsed Jet Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054025,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Characteristics of Non-Premixed Turbulent Flames in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054026,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Effects of Buoyancy on the Flowfields of Lean Premixed Turbulent V-Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054027,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Flame-Vortex Interactions in Microgravity to Improve Models of Turbulent Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054030,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion of Interacting Droplet Arrays in a Microgravity Environment",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054031,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Formation and Levitation of Unconfined Droplet Clusters",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054034,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Pressure Effects on Combustion of Methanol and Methanol-Docecanol Droplets",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054038,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Diffusive and Radiative Transport in Fires (DARTFire): Opposed-Flow Flame Spread in Low-Velocity Flows",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054039,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Flame Spread Across Liquids: Experimental Results",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054041,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "The Three-D Flow Structures of Gas and Liquid Generated by a Spreading Flame Over Liquid Fuel",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054042,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Ignition, Transition, Flame Spread in Multidimensional Configurations in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054043,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Transport and Chemical Effects on Concurrent and Opposed-Flow Flame Spread at Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054047,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "The Extinction of Low Strain Rate Diffusion Flames by a Suppressant",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054050,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Quantitative Interpretation of Optical Emission Sensors for Microgravity Experiments",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054051,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Detecting the Onset of Fire in an Aircraft by Employing Correlation Spectroscopy",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054053,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "A Compact, Tunable Near-UV Source for Quantitative Microgravity Combustion Diagnostics",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054055,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Particle-Image Velocimetry in Microgravity Laminar Jet Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054056,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Diode Laser Velocity Measurements by Modulated Filtered Rayleigh Scattering",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054058,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion of Han-Based Monopropellant Droplets in Reduced Gravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054059,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Computational and Experimental Study of Energetic Material in a Counterflow Microgravity Environment",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054061,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Synthesis of Graphite Encapsulated Metal Nanoparticles and Metal Catalyzed Nanotubes",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054062,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "The Effects of Gravity on Combustion and Structure Formation During Synthesis of Advanced Materials",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054063,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Numerical Study of Buoyancy and Differential Diffusion Effects on the Structure and Dynamics of Triple Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054068,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Investigation of Strain/Vorticity and Large-Scale Flow Structure in Turbulent Nonpremixed Jet Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054070,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "An Experiment Investigation of Fully-Modulated, Turbulent Diffusion Flames in Reduced Gravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054071,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Dynamics of Droplet Extinction in Slow Convective Flows",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054074,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Effects of Structure and Hydrodynamics on the Sooting Behavior of Spherical Microgravity Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054075,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Carbon Monoxide and Soot Formation in Inverse Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054076,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Flow/Soot-Formation Interactions in Nonbuoyant Laminar Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054077,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "The Impact of Buoyancy and Flame Structure on Soot, Radiation and NOx Emissions from a Turbulent Diffusion Flame",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054078,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Kinetics and Structure of Superagglomerates Produced by Silane and Acetylene",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054079,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Internal Heterogeneous Processes in Aluminum Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054080,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Interferometer Development for Study of Interactions between Flames on Parallel Solid Surfaces",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054081,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Low Stretch Diffusion Flames Over a Solid Fuel",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054083,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Electrical Aspects of Flames in Microgravity Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054084,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Simulation of Combustion Systems with Realistic g-Jitter",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054085,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Flame Spread and Extinction in Partial-Gravity Environments",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054070,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "An Experiment Investigation of Fully-Modulated, Turbulent Diffusion Flames in Reduced Gravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054085,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Flame Spread and Extinction in Partial-Gravity Environments",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054043,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Transport and Chemical Effects on Concurrent and Opposed-Flow Flame Spread at Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054056,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Diode Laser Velocity Measurements by Modulated Filtered Rayleigh Scattering",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054059,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Computational and Experimental Study of Energetic Material in a Counterflow Microgravity Environment",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054010,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Observations from the Microgravity Smoldering Combustion (MSC) Ultrasound Imaging System (UIS)",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053987,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Bursting Bubbles from Combustion of Thermoplastic Materials in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054005,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Hydrodynamic Instability and Thermal Coupling in a Dynamic Model of Liquid-Propellant Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053994,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Laminar Dust Flames: A Program of Microgravity and Ground Based Studies at McGill",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054051,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Detecting the Onset of Fire in an Aircraft by Employing Correlation Spectroscopy",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053970,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Dynamics and Structure of Weakly-Strained Flames In Normal- and Micro-Gravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054047,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "The Extinction of Low Strain Rate Diffusion Flames by a Suppressant",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054030,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion of Interacting Droplet Arrays in a Microgravity Environment",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053974,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion and Flammability Characteristics of Solids at Microgravity in very Small Velocity Flows",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054034,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Pressure Effects on Combustion of Methanol and Methanol-Docecanol Droplets",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990053980,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "A Study of Flame Propagation on Water-Mist Laden Gas Mixtures in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054042,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Ignition, Transition, Flame Spread in Multidimensional Configurations in Microgravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054006,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Low-Temperature Oxidation Reactions and Cool Flames at Earth and Reduced Gravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054003,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Investigation of Diffusion Flame Tip Thermodiffusive and Hydrodynamic Instability under Microgravity Conditions",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054081,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Low Stretch Diffusion Flames Over a Solid Fuel",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "DOCUMENT_AND_METADATA",
+          "id": 19990053966,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "NASA Microgravity Combustion Science Program",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054068,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Investigation of Strain/Vorticity and Large-Scale Flow Structure in Turbulent Nonpremixed Jet Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054020,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Combustion of Two-Component Miscible Droplets in Reduced Gravity",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054013,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Laser Optogalvanic Spectroscopy pf Neon and Argon in a Discharge Plasma and its Significance for Microgravity Combustion",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054007,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Detailed Multidimensional Simulations of the Structure and Dynamics of Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054002,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "A Theory of Oscillating Edge Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054074,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Effects of Structure and Hydrodynamics on the Sooting Behavior of Spherical Microgravity Diffusion Flames",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054071,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Dynamics of Droplet Extinction in Slow Convective Flows",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        },
+        {
+          "disseminated": "METADATA_ONLY",
+          "id": 19990054057,
+          "type": "ANALYTIC_SUBSIDIARY",
+          "title": "Initial Test Firing Results for Solid CO/GOX Cryogenic Hybrid Rocket Engine for Mars ISRU Propulsion Applications",
+          "stiType": "CONFERENCE_PAPER",
+          "distribution": "PUBLIC",
+          "status": "CURATED"
+        }
+      ],
+      "downloads": [
+        {
+          "draft": false,
+          "mimetype": "application/pdf",
+          "name": "19990053965.pdf",
+          "type": "STI",
+          "links": {
+            "original": "/api/citations/19990053965/downloads/19990053965.pdf",
+            "pdf": "/api/citations/19990053965/downloads/19990053965.pdf",
+            "fulltext": "/api/citations/19990053965/downloads/19990053965.txt"
+          }
+        }
+      ],
+      "downloadsAvailable": true,
+      "index": "submissions-2026-10-15-05-24"
+    }
+  ]
+}

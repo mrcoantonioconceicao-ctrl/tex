@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+/* Tema escuro do painel: controles nativos (select, input) acompanham */
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-slate-950;
+}
