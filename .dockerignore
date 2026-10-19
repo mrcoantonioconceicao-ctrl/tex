@@ -1,0 +1,17 @@
+# Contexto de build enxuto e reprodutível: nada gerado na máquina de quem builda.
+.git
+.github
+
+# Saída do Rust (centenas de MB) e dependências/artefatos do Node:
+# os node_modules do host têm binários nativos que não rodam no Alpine
+target
+**/node_modules
+**/dist
+
+# Variáveis locais nunca entram na imagem
+**/.env*
+!**/.env.example
+
+# Fora da imagem (pipeline de dados roda à parte)
+ingestion
+docs
