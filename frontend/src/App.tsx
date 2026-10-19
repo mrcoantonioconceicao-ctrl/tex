@@ -1,6 +1,7 @@
 // Painel de monitoramento (base estrutural). As telas específicas do desafio
 // serão desenhadas a partir de 14/11, com o enunciado oficial.
 import { TELEMETRY_POLL_MS, useLatestTelemetry, useSystemMetrics } from './api/hooks'
+import texLogo from './assets/texlabs.jpeg'
 import { useNow, useTelemetryHistory } from './dashboard/hooks'
 import { connectionStatus, secondsSince, TEMPERATURE_THRESHOLDS } from './dashboard/model'
 import {
@@ -37,9 +38,16 @@ function App() {
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <main className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
         <header className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold">Tex Labs: monitoramento de combustão</h1>
-            <p className="text-sm text-slate-400">Fonte de dados: {dataSource}</p>
+          <div className="flex items-center gap-3">
+            {/* A arte original tem muita margem preta: o span recorta só o oval do logo.
+                alt vazio porque o título ao lado já diz "Tex Labs". */}
+            <span className="block h-[49px] w-[72px] shrink-0 overflow-hidden rounded-[50%]">
+              <img src={texLogo} alt="" className="-mt-[11px] -ml-[30px] h-[72px] w-[132px] max-w-none" />
+            </span>
+            <div>
+              <h1 className="text-2xl font-semibold">Tex Labs: monitoramento de combustão</h1>
+              <p className="text-sm text-slate-400">Fonte de dados: {dataSource}</p>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             {usingMocks && <ScenarioPicker />}

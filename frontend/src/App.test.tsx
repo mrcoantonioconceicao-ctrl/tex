@@ -68,6 +68,14 @@ describe('App', () => {
 })
 
 describe('Painel', () => {
+  it('mostra o logo no canto superior esquerdo, decorativo para leitores de tela', () => {
+    const { container } = renderApp()
+
+    const logo = container.querySelector('header img')
+    expect(logo).toHaveAttribute('src', expect.stringContaining('texlabs'))
+    expect(logo).toHaveAttribute('alt', '')
+  })
+
   it('mostra risco, leituras formatadas e métricas', async () => {
     renderApp()
 
