@@ -1,6 +1,6 @@
 # Ferramentas da ingestão (migrações e coleta NTRS) sem depender de Node na máquina.
 # Node 22.18+ roda TypeScript direto (type stripping): sem etapa de build.
-FROM node:22-alpine
+FROM node:26-alpine
 WORKDIR /app
 
 COPY package.json package-lock.json ./
