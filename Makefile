@@ -1,5 +1,8 @@
 SHELL := /bin/bash
 
+# Mesmas variáveis que o docker compose lê do .env (modelo em .env.example)
+-include .env
+
 COMPOSE := docker compose
 FRONTEND_DIR := frontend
 INGESTION_DIR := ingestion
