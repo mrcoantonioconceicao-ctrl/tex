@@ -1,6 +1,8 @@
 # Atualizações automáticas de dependências e imagens base.
 # Semanal, com minor/patch agrupados num PR por ecossistema para não poluir o repo.
-# Major vem em PR separado: revisar com calma (pode quebrar API).
+# Major está IGNORADO em npm, Cargo e Docker até o fim do hackathon: troca de major
+# (axum 0.8, TypeScript 7, Node 26...) é decisão consciente, não PR surpresa.
+# Para reativar depois, remova os blocos "ignore".
 version: 2
 
 updates:
@@ -14,6 +16,9 @@ updates:
     groups:
       frontend-minor-patch:
         update-types: [minor, patch]
+    ignore:
+      - dependency-name: '*'
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: npm
     directory: /ingestion
@@ -25,6 +30,9 @@ updates:
     groups:
       ingestion-minor-patch:
         update-types: [minor, patch]
+    ignore:
+      - dependency-name: '*'
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: cargo
     directory: /
@@ -36,6 +44,9 @@ updates:
     groups:
       backend-minor-patch:
         update-types: [minor, patch]
+    ignore:
+      - dependency-name: '*'
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /
@@ -53,3 +64,6 @@ updates:
       day: monday
     commit-message:
       prefix: chore(docker)
+    ignore:
+      - dependency-name: '*'
+        update-types: [version-update:semver-major]
