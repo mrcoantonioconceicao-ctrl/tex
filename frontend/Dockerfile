@@ -1,6 +1,6 @@
 # --- Etapa 1: build do Vite ---
 # Node 22, o mesmo do CI (.github/workflows/frontend.yml)
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 
 COPY package.json package-lock.json ./
