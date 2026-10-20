@@ -1,7 +1,7 @@
--- Schema da ingestão (PostgreSQL 16 + pgvector).
+-- 0001: schema inicial da ingestão (PostgreSQL 16 + pgvector).
 -- Segue o schema mínimo obrigatório do CLAUDE.md: extensões são permitidas, remoções não.
--- Executado só na PRIMEIRA subida do container (volume vazio).
--- Para recriar do zero (apaga os dados): make db-reset, na raiz do repositório.
+-- Aplicada por `make migrate` (src/migrations.ts). NÃO edite uma migração já aplicada:
+-- crie a próxima (0002_descricao.sql). O executor recusa arquivo alterado (hash SHA-256).
 
 CREATE EXTENSION IF NOT EXISTS vector;
 

@@ -1,4 +1,4 @@
-// Escrita no PostgreSQL. Tabelas em ../db/schema.sql (schema mínimo do CLAUDE.md).
+// Escrita no PostgreSQL. Tabelas em ../db/migrations/ (schema mínimo do CLAUDE.md).
 import type { ClientBase } from 'pg'
 import type { CitationRow } from './ntrs.ts'
 
