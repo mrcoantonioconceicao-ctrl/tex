@@ -16,4 +16,4 @@ sha2 = "0.10"
 [dev-dependencies]
 # Testes das rotas HTTP (mesmas versões que o axum 0.6 já usa)
 tower = { version = "0.4", features = ["util"] }
-hyper = "0.14"
+hyper = "1.12"
