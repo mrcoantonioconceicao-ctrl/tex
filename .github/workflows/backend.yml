@@ -14,7 +14,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Mesma versão do Dockerfile (rust:1.99-slim-bookworm): atualizar os dois juntos
       - run: rustup toolchain install 1.99 --profile minimal --component rustfmt,clippy && rustup default 1.99
       - uses: Swatinem/rust-cache@v2
