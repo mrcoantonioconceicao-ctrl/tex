@@ -1,0 +1,46 @@
+name: Ingestion CI
+
+on:
+  push:
+    branches: [main]
+    paths: ['ingestion/**', '.github/workflows/ingestion.yml']
+  pull_request:
+    paths: ['ingestion/**', '.github/workflows/ingestion.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ingestion
+    # Mesmo banco do docker-compose.yml (credenciais descartáveis, só do CI)
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: tex
+          POSTGRES_PASSWORD: tex
+          POSTGRES_DB: tex
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U tex -d tex"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://tex:tex@localhost:5432/tex
+      TEX_TEST_DATABASE_URL: postgres://tex:tex@localhost:5432/tex
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ingestion/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run db:migrate
+      - run: npm test
