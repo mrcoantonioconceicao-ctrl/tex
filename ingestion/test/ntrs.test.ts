@@ -121,13 +121,105 @@ describe('fetchSearchPage', () => {
   it('falha com mensagem clara em erro HTTP', async () => {
     const { impl } = fakeFetch({}, 503)
 
-    await expect(fetchSearchPage({ query: 'x', from: 0, size: 3 }, impl)).rejects.toThrow(/NTRS respondeu 503/)
+    await expect(fetchSearchPage({ query: 'x', from: 0, size: 3 }, impl, { retries: 0 })).rejects.toThrow(
+      /NTRS respondeu 503/,
+    )
   })
 
   it('falha quando o envelope muda de formato', async () => {
     const { impl } = fakeFetch({ hits: [] })
 
     await expect(fetchSearchPage({ query: 'x', from: 0, size: 3 }, impl)).rejects.toThrow(/fora do formato/)
+  })
+})
+
+describe('fetchWithRetry', () => {
+  const okResponse = () => new Response(JSON.stringify(fixture), { status: 200 })
+  const status = (code: number, headers: Record<string, string> = {}) => new Response('{}', { status: code, headers })
+
+  // Cada chamada consome um passo; o último se repete
+  function sequenceFetch(steps: (Response | Error)[]) {
+    let calls = 0
+    const impl = (async () => {
+      const step = steps[Math.min(calls, steps.length - 1)]
+      calls++
+      if (step instanceof Error) throw step
+      return step.clone()
+    }) as typeof fetch
+    return { impl, calls: () => calls }
+  }
+
+  // Espera falsa: registra os tempos sem esperar de verdade
+  function recordedSleep() {
+    const delays: number[] = []
+    return { delays, sleep: async (ms: number) => void delays.push(ms) }
+  }
+
+  const params = { query: 'x', from: 0, size: 3 }
+
+  it('tenta de novo em 503 com espera crescente e segue quando o NTRS volta', async () => {
+    const { impl, calls } = sequenceFetch([status(503), status(503), okResponse()])
+    const { delays, sleep } = recordedSleep()
+
+    const page = await fetchSearchPage(params, impl, { baseDelayMs: 100, sleep })
+
+    expect(page.total).toBe(1076)
+    expect(delays).toEqual([100, 200])
+    expect(calls()).toBe(3)
+  })
+
+  it('respeita o Retry-After enviado pelo servidor', async () => {
+    const { impl } = sequenceFetch([status(429, { 'retry-after': '3' }), okResponse()])
+    const { delays, sleep } = recordedSleep()
+
+    await fetchSearchPage(params, impl, { sleep })
+
+    expect(delays).toEqual([3000])
+  })
+
+  it('limita a espera em maxDelayMs', async () => {
+    const { impl } = sequenceFetch([status(429, { 'retry-after': '120' }), okResponse()])
+    const { delays, sleep } = recordedSleep()
+
+    await fetchSearchPage(params, impl, { maxDelayMs: 5000, sleep })
+
+    expect(delays).toEqual([5000])
+  })
+
+  it('tenta de novo em falha de rede', async () => {
+    const { impl } = sequenceFetch([new TypeError('fetch failed'), okResponse()])
+    const { delays, sleep } = recordedSleep()
+
+    const page = await fetchSearchPage(params, impl, { sleep })
+
+    expect(page.rows).toHaveLength(3)
+    expect(delays).toEqual([1000])
+  })
+
+  it('desiste depois do limite e mostra o último status', async () => {
+    const { impl, calls } = sequenceFetch([status(503)])
+    const { delays, sleep } = recordedSleep()
+
+    await expect(fetchSearchPage(params, impl, { baseDelayMs: 100, sleep })).rejects.toThrow(/NTRS respondeu 503/)
+    expect(calls()).toBe(4)
+    expect(delays).toEqual([100, 200, 400])
+  })
+
+  it('não repete erro que não é passageiro (404)', async () => {
+    const { impl, calls } = sequenceFetch([status(404)])
+    const { sleep } = recordedSleep()
+
+    await expect(fetchSearchPage(params, impl, { sleep })).rejects.toThrow(/NTRS respondeu 404/)
+    expect(calls()).toBe(1)
+  })
+
+  it('falha de rede persistente vira erro claro', async () => {
+    const { impl } = sequenceFetch([new Error('ECONNRESET')])
+    const { sleep } = recordedSleep()
+
+    await expect(fetchSearchPage(params, impl, { retries: 1, sleep })).rejects.toThrow(
+      /sem resposta após 2 tentativa\(s\): ECONNRESET/,
+    )
   })
 })
 

@@ -148,9 +148,72 @@ export interface SearchPage {
   rejected: RejectedRecord[]
 }
 
-export async function fetchSearchPage(params: SearchParams, fetchImpl: typeof fetch = fetch): Promise<SearchPage> {
+// ---- Retry ----
+
+export interface RetryOptions {
+  // novas tentativas depois da primeira
+  retries?: number
+  baseDelayMs?: number
+  maxDelayMs?: number
+  // trocável nos testes, para não esperar de verdade
+  sleep?: (ms: number) => Promise<void>
+}
+
+// Falhas passageiras: vale tentar de novo. Um 404, por exemplo, não muda tentando.
+const RETRYABLE_STATUS = new Set([408, 429, 500, 502, 503, 504])
+
+const realSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+
+// Retry-After vem em segundos ou como data HTTP
+function retryAfterMs(response: Response): number | undefined {
+  const header = response.headers.get('retry-after')
+  if (!header) return undefined
+  const seconds = Number(header)
+  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000)
+  const date = Date.parse(header)
+  return Number.isNaN(date) ? undefined : Math.max(0, date - Date.now())
+}
+
+// Espera exponencial (base, 2x base, 4x base...), limitada a maxDelayMs; quando o
+// servidor manda Retry-After, vale o que ele pediu.
+export async function fetchWithRetry(
+  url: string,
+  init: RequestInit,
+  fetchImpl: typeof fetch = fetch,
+  { retries = 3, baseDelayMs = 1000, maxDelayMs = 30_000, sleep = realSleep }: RetryOptions = {},
+): Promise<Response> {
+  for (let attempt = 0; ; attempt++) {
+    let response: Response | undefined
+    let networkError: unknown
+    try {
+      response = await fetchImpl(url, init)
+    } catch (error) {
+      networkError = error
+    }
+
+    const retryable = response === undefined || RETRYABLE_STATUS.has(response.status)
+    if (!retryable || attempt >= retries) {
+      if (response) return response
+      const reason = networkError instanceof Error ? networkError.message : String(networkError)
+      throw new Error(`NTRS sem resposta após ${attempt + 1} tentativa(s): ${reason}`)
+    }
+
+    const backoff = baseDelayMs * 2 ** attempt
+    const delay = Math.min(maxDelayMs, (response && retryAfterMs(response)) ?? backoff)
+    const reason = response ? `HTTP ${response.status}` : 'falha de rede'
+    console.warn(`[NTRS] tentativa ${attempt + 1} falhou (${reason}); nova tentativa em ${delay} ms`)
+    await sleep(delay)
+  }
+}
+
+export async function fetchSearchPage(
+  params: SearchParams,
+  fetchImpl: typeof fetch = fetch,
+  retry: RetryOptions = {},
+): Promise<SearchPage> {
   const url = buildSearchUrl(params)
-  const response = await fetchImpl(url, { headers: { accept: 'application/json', 'user-agent': USER_AGENT } })
+  const init = { headers: { accept: 'application/json', 'user-agent': USER_AGENT } }
+  const response = await fetchWithRetry(url, init, fetchImpl, retry)
   if (!response.ok) throw new Error(`NTRS respondeu ${response.status} para ${url}`)
 
   const envelope = searchEnvelopeSchema.safeParse(await response.json())
@@ -175,14 +238,15 @@ export interface IterateOptions {
   // pausa entre páginas, para não martelar uma API pública
   delayMs?: number
   fetchImpl?: typeof fetch
+  retry?: RetryOptions
 }
 
 // Percorre as páginas até atingir `max` registros ou acabar o resultado
-export async function* iterateSearch({ query, max, pageSize, delayMs = 500, fetchImpl }: IterateOptions) {
+export async function* iterateSearch({ query, max, pageSize, delayMs = 500, fetchImpl, retry }: IterateOptions) {
   let from = 0
   while (from < max) {
     const size = Math.min(pageSize, max - from)
-    const page = await fetchSearchPage({ query, from, size }, fetchImpl)
+    const page = await fetchSearchPage({ query, from, size }, fetchImpl, retry)
     yield page
     from += page.received
     if (page.received === 0 || from >= page.total) return

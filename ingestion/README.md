@@ -78,6 +78,9 @@ TEX_TEST_DATABASE_URL=postgres://tex:tex@127.0.0.1:5433/tex npm test
   inválidos aparecem como "rejeitado" no terminal e o resto segue.
 - **Reexecutar é seguro:** o upsert atualiza em vez de duplicar.
 - **Educado com a API pública:** pausa de 500 ms entre páginas.
+- **Resiste a falha passageira:** rede, 408, 429 e 5xx são repetidos até 3 vezes com espera
+  crescente (1 s, 2 s, 4 s, no máximo 30 s), respeitando o `Retry-After` do servidor.
+  Erros que não mudam tentando de novo (ex.: 404) falham na hora.
 
 ## Próximos passos (após 14/11)
 
