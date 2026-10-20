@@ -55,15 +55,26 @@ services:
       # 5433 para não colidir com outro Postgres na 5432
       - "127.0.0.1:${TEX_DB_PORT:-5433}:5432"
     volumes:
+      # O schema é criado pelas migrações (make migrate), não pelo initdb do Postgres
       - tex_pgdata:/var/lib/postgresql/data
-      # Executado só na primeira subida (volume vazio)
-      - ./ingestion/db/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 3s
       retries: 10
+
+  # Ferramentas da ingestão: migrações (padrão) e coleta NTRS.
+  # Perfil "tools": não sobe com o make up; roda sob demanda (make migrate / make ingest).
+  ingestion:
+    build:
+      context: ./ingestion
+    profiles: [tools]
+    environment:
+      DATABASE_URL: postgres://${TEX_DB_USER:-tex}:${TEX_DB_PASSWORD:-tex}@db:5432/${TEX_DB_NAME:-tex}
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   tex_pgdata:

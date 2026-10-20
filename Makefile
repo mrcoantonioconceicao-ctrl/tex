@@ -14,7 +14,7 @@ ARGS ?= --max 50
 .DEFAULT_GOAL := help
 
 .PHONY: help up up-mock down restart rebuild status logs logs-backend logs-frontend logs-db \
-	docker-build db-reset db-shell smoke install frontend backend test test-frontend \
+	docker-build migrate db-reset db-shell smoke install frontend backend test test-frontend \
 	test-ingestion lint build verify ci ingest ingest-dry clean
 
 help: ## Lista os comandos disponíveis
@@ -22,9 +22,13 @@ help: ## Lista os comandos disponíveis
 
 # ---- Docker ----
 
-up: ## Sobe backend, frontend e banco (painel em http://localhost:3000)
+up: ## Sobe backend, frontend e banco e aplica as migrações (painel em http://localhost:3000)
 	$(COMPOSE) up -d --build --wait
+	@$(MAKE) --no-print-directory migrate
 	@echo "Painel: http://localhost:$(FRONTEND_PORT)  |  API: http://localhost:$(BACKEND_PORT)"
+
+migrate: ## Aplica as migrações pendentes do banco (seguro repetir)
+	$(COMPOSE) run --rm --build ingestion
 
 up-mock: ## Sobe só o frontend com os mocks MSW (demo sem backend)
 	TEX_USE_MOCKS=true $(COMPOSE) up -d --build --wait frontend
@@ -39,6 +43,7 @@ restart: ## Reinicia os serviços
 rebuild: ## Reconstrói as imagens e recria os containers
 	$(COMPOSE) down
 	$(COMPOSE) up -d --build --force-recreate --wait
+	@$(MAKE) --no-print-directory migrate
 
 status: ## Mostra o estado dos serviços
 	$(COMPOSE) ps
@@ -58,9 +63,9 @@ logs-db: ## Acompanha os logs do banco
 docker-build: ## Constrói as imagens sem subir os containers
 	$(COMPOSE) build
 
-db-reset: ## Recria o banco do zero (APAGA os dados) e sobe a stack
+db-reset: ## Recria o banco do zero (APAGA os dados), sobe a stack e aplica as migrações
 	$(COMPOSE) down -v
-	$(COMPOSE) up -d --build --wait
+	@$(MAKE) --no-print-directory up
 
 db-shell: ## Abre o psql dentro do container do banco
 	$(COMPOSE) exec db psql -U $${TEX_DB_USER:-tex} -d $${TEX_DB_NAME:-tex}
@@ -108,11 +113,11 @@ ci: verify docker-build ## Fluxo de CI local (verify + imagens Docker)
 
 # ---- Ingestão ----
 
-ingest: ## Ingestão NTRS no banco (make ingest ARGS='--max 100')
-	cd $(INGESTION_DIR) && npm run ingest:ntrs -- $(ARGS)
+ingest: ## Ingestão NTRS no banco, no container (make ingest ARGS='--max 100')
+	$(COMPOSE) run --rm --build ingestion node src/cli.ts $(ARGS)
 
 ingest-dry: ## Ingestão NTRS sem gravar no banco (só mostra)
-	cd $(INGESTION_DIR) && npm run ingest:ntrs -- --dry-run $(ARGS)
+	$(COMPOSE) run --rm --build ingestion node src/cli.ts --dry-run $(ARGS)
 
 clean: ## Remove artefatos de build locais
 	rm -rf $(FRONTEND_DIR)/dist

@@ -4,34 +4,32 @@ Esqueleto do pipeline de dados do Tex Labs. Por enquanto coleta citações públ
 [NASA Technical Reports Server](https://ntrs.nasa.gov) e grava no PostgreSQL local.
 As buscas específicas do desafio entram a partir de 14/11/2026, com o enunciado oficial.
 
-## Requisitos
+## Como rodar (Docker, recomendado)
 
-- Node.js 22.18 ou mais novo (roda TypeScript direto, sem build)
-- Docker (só para o Postgres local)
+Da raiz do repositório, sem precisar de Node na máquina:
 
-## Como rodar
+```bash
+make up                                   # sobe a stack e aplica as migrações
+make ingest-dry ARGS='--max 10'           # só busca e mostra, sem gravar
+make ingest ARGS='--query "microgravity combustion" --max 50'
+make db-shell                             # psql dentro do container
+```
+
+Opções da coleta: `make ingest-dry ARGS='--help'`.
+
+## Como rodar (Node local)
+
+Requer Node.js 22.18 ou mais novo (roda TypeScript direto, sem build).
 
 ```bash
 cd ingestion
 npm install
-
-# 1. Só buscar e mostrar, sem banco
+npm run db:up        # só o Postgres (porta 5433)
+npm run db:migrate
 npm run ingest:ntrs -- --dry-run --max 10
-
-# 2. Subir o Postgres (porta 5433) e gravar
-npm run db:up
-npm run ingest:ntrs -- --query "microgravity combustion" --max 50
 ```
 
-Opções: `npm run ingest:ntrs -- --help`.
 `DATABASE_URL` sobrescreve o banco padrão (`postgres://tex:tex@127.0.0.1:5433/tex`).
-
-O Postgres é o serviço `db` do `docker-compose.yml` da raiz. Da raiz do repositório:
-
-```bash
-make db-shell     # psql dentro do container
-make db-reset     # recria o banco do zero (APAGA os dados)
-```
 
 Exemplos no psql:
 
@@ -40,7 +38,19 @@ SELECT id_ntrs, title, canonical_url FROM documents LIMIT 10;
 SELECT d.title, a.name FROM document_authors da
   JOIN documents d USING (document_id) JOIN authors a USING (author_id) LIMIT 10;
 SELECT * FROM ingestion_runs ORDER BY id DESC LIMIT 5;
+SELECT * FROM schema_migrations;
 ```
+
+## Migrações
+
+O schema vive em `db/migrations/NNNN_descricao.sql`, aplicadas em ordem por `make migrate`
+(o `make up` já chama). Cada migração roda **uma vez só**, numa transação, e fica
+registrada em `schema_migrations` com o SHA-256 do arquivo.
+
+- **Mudou o schema?** Crie a próxima migração (`0002_adiciona_x.sql`). Não edite uma já
+  aplicada: o executor recusa arquivo alterado.
+- O schema segue o mínimo obrigatório do `CLAUDE.md`: extensões são permitidas, remoções não.
+- `make db-reset` apaga o banco e reaplica tudo do zero (só para desenvolvimento).
 
 ## Testes
 
@@ -48,7 +58,7 @@ SELECT * FROM ingestion_runs ORDER BY id DESC LIMIT 5;
 npm test          # unitários, com uma resposta real do NTRS como fixture
 npm run typecheck
 
-# integração com o Postgres (precisa do db:up antes)
+# integração com o Postgres (precisa do make up antes)
 TEX_TEST_DATABASE_URL=postgres://tex:tex@127.0.0.1:5433/tex npm test
 ```
 
@@ -57,9 +67,10 @@ TEX_TEST_DATABASE_URL=postgres://tex:tex@127.0.0.1:5433/tex npm test
 | Arquivo | Papel |
 | --- | --- |
 | `src/ntrs.ts` | Busca paginada (`page.from` / `page.size`), validação com Zod e conversão para linhas |
-| `src/db.ts` | Upsert por `id` em transação, autores regravados, registro de execuções |
-| `src/cli.ts` | Linha de comando |
-| `db/schema.sql` | Schema mínimo do `CLAUDE.md` (documents, authors, experimentos, medições com linhagem) + `raw` JSONB e `ingestion_runs`; Postgres com pgvector |
+| `src/db.ts` | Upsert por `id_ntrs` em transação, autores em tabela própria, registro de execuções |
+| `src/migrations.ts` | Executor de migrações (ordem, transação, hash, trava contra execução simultânea) |
+| `src/cli.ts` / `src/migrate-cli.ts` | Linhas de comando da coleta e das migrações |
+| `db/migrations/` | Schema mínimo do `CLAUDE.md` + `raw` JSONB e `ingestion_runs`; Postgres com pgvector |
 
 - **Nada é inventado:** cada linha vem da API do NTRS, e o registro original completo
   fica na coluna `raw` (jsonb).
