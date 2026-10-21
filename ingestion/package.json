@@ -1,28 +1,19 @@
 {
   "name": "tex-ingestion",
-  "private": true,
   "version": "0.0.0",
-  "type": "module",
-  "description": "Ingestão de dados públicos da NASA (NTRS) para o PostgreSQL do Tex Labs",
-  "engines": {
-    "node": ">=22.18"
-  },
+  "description": "Tex Labs Space Fire - Data Ingestion & Connectors",
+  "main": "src/index.ts",
   "scripts": {
-    "ingest:ntrs": "node src/cli.ts",
-    "db:migrate": "node src/migrate-cli.ts",
-    "db:up": "docker compose -f ../docker-compose.yml up -d --wait db",
-    "db:down": "docker compose -f ../docker-compose.yml stop db",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "cli": "tsx src/cli.ts"
   },
   "dependencies": {
-    "pg": "^8.23.1",
-    "zod": "^4.6.7"
+    "pg": "^8.11.3"
   },
   "devDependencies": {
-    "@types/node": "^22.20.5",
-    "@types/pg": "^8.23.1",
-    "typescript": "~5.9.3",
-    "vitest": "^5.0.5"
+    "@types/node": "^20.11.0",
+    "@types/pg": "^8.11.0",
+    "tsx": "^4.7.0",
+    "vitest": "^1.2.0"
   }
 }
