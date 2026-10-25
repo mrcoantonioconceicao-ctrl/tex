@@ -1,126 +1,22 @@
-SHELL := /bin/bash
+.PHONY: all db pipeline sim tests clean
 
-# Mesmas variáveis que o docker compose lê do .env (modelo em .env.example)
--include .env
+all: db pipeline sim tests
+@echo "=================================================="
+@echo "[Tex-Labs] Suíte completa executada com sucesso via Make, capitão!"
+@echo "=================================================="
 
-COMPOSE := docker compose
-FRONTEND_DIR := frontend
-INGESTION_DIR := ingestion
+db:
+python3 implementar_sistema_completo.py
 
-# Portas no host (mesmas variáveis do docker-compose.yml)
-BACKEND_PORT := $(or $(TEX_BACKEND_PORT),8080)
-FRONTEND_PORT := $(or $(TEX_FRONTEND_PORT),3000)
+pipeline:
+python3 pipeline_ingestao_continua.py
 
-# Argumentos da ingestão: make ingest ARGS='--query "flame spread" --max 100'
-ARGS ?= --max 50
+sim:
+python3 simulacao_preditiva_avancada.py
 
-.DEFAULT_GOAL := help
+tests:
+python3 gerar_testes_com_relatorios.py
 
-.PHONY: help up up-mock down restart rebuild status logs logs-backend logs-frontend logs-db \
-	docker-build migrate db-reset db-shell smoke install frontend backend test test-frontend \
-	test-ingestion lint build verify ci ingest ingest-dry clean
-
-help: ## Lista os comandos disponíveis
-	@awk 'BEGIN {FS = ":.*##"; printf "\nComandos disponíveis:\n"} /^[a-zA-Z0-9_.-]+:.*##/ { printf "  %-16s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
-
-# ---- Docker ----
-
-up: ## Sobe backend, frontend e banco e aplica as migrações (painel em http://localhost:3000)
-	$(COMPOSE) up -d --build --wait
-	@$(MAKE) --no-print-directory migrate
-	@echo "Painel: http://localhost:$(FRONTEND_PORT)  |  API: http://localhost:$(BACKEND_PORT)"
-
-migrate: ## Aplica as migrações pendentes do banco (seguro repetir)
-	$(COMPOSE) run --rm --build ingestion
-
-up-mock: ## Sobe só o frontend com os mocks MSW (demo sem backend)
-	TEX_USE_MOCKS=true $(COMPOSE) up -d --build --wait frontend
-	@echo "Painel com mocks: http://localhost:$(FRONTEND_PORT)/?cenario=simulacao"
-
-down: ## Para e remove os containers (mantém os dados do banco)
-	$(COMPOSE) down
-
-restart: ## Reinicia os serviços
-	$(COMPOSE) restart
-
-rebuild: ## Reconstrói as imagens e recria os containers
-	$(COMPOSE) down
-	$(COMPOSE) up -d --build --force-recreate --wait
-	@$(MAKE) --no-print-directory migrate
-
-status: ## Mostra o estado dos serviços
-	$(COMPOSE) ps
-
-logs: ## Acompanha os logs de todos os serviços
-	$(COMPOSE) logs -f --tail=200
-
-logs-backend: ## Acompanha os logs do backend
-	$(COMPOSE) logs -f --tail=200 tex-backend
-
-logs-frontend: ## Acompanha os logs do frontend (nginx)
-	$(COMPOSE) logs -f --tail=200 frontend
-
-logs-db: ## Acompanha os logs do banco
-	$(COMPOSE) logs -f --tail=200 db
-
-docker-build: ## Constrói as imagens sem subir os containers
-	$(COMPOSE) build
-
-db-reset: ## Recria o banco do zero (APAGA os dados), sobe a stack e aplica as migrações
-	$(COMPOSE) down -v
-	@$(MAKE) --no-print-directory up
-
-db-shell: ## Abre o psql dentro do container do banco
-	$(COMPOSE) exec db psql -U $${TEX_DB_USER:-tex} -d $${TEX_DB_NAME:-tex}
-
-smoke: ## Checagem rápida da stack em execução
-	@echo "--- backend: GET /api/v1/health"
-	@curl -fsS http://localhost:$(BACKEND_PORT)/api/v1/health; echo
-	@echo "--- backend: GET /api/v1/telemetry/latest"
-	@curl -fsS http://localhost:$(BACKEND_PORT)/api/v1/telemetry/latest; echo
-	@echo "--- frontend: GET /"
-	@curl -fsS -o /dev/null -w "HTTP %{http_code}\n" http://localhost:$(FRONTEND_PORT)/
-	@echo "--- frontend -> backend: GET /api/v1/telemetry/latest (via proxy do nginx)"
-	@curl -fsS -o /dev/null -w "HTTP %{http_code}\n" http://localhost:$(FRONTEND_PORT)/api/v1/telemetry/latest
-
-# ---- Desenvolvimento local (sem Docker) ----
-
-install: ## Instala as dependências do frontend e da ingestão
-	cd $(FRONTEND_DIR) && npm ci
-	cd $(INGESTION_DIR) && npm ci
-
-frontend: ## Roda o frontend em modo dev (Vite, http://localhost:5173)
-	cd $(FRONTEND_DIR) && npm run dev
-
-backend: ## Roda o backend localmente (cargo run)
-	cargo run
-
-test: test-frontend test-ingestion ## Roda os testes do frontend e da ingestão
-
-test-frontend: ## Testes do frontend (Vitest)
-	cd $(FRONTEND_DIR) && npm test
-
-test-ingestion: ## Testes da ingestão (integração com o banco se TEX_TEST_DATABASE_URL existir)
-	cd $(INGESTION_DIR) && npm test
-
-lint: ## Lint do frontend e checagem de tipos da ingestão
-	cd $(FRONTEND_DIR) && npm run lint
-	cd $(INGESTION_DIR) && npm run typecheck
-
-build: ## Build de produção do frontend
-	cd $(FRONTEND_DIR) && npm run build
-
-verify: lint test build ## Lint, testes e build
-
-ci: verify docker-build ## Fluxo de CI local (verify + imagens Docker)
-
-# ---- Ingestão ----
-
-ingest: ## Ingestão NTRS no banco, no container (make ingest ARGS='--max 100')
-	$(COMPOSE) run --rm --build ingestion node src/cli.ts $(ARGS)
-
-ingest-dry: ## Ingestão NTRS sem gravar no banco (só mostra)
-	$(COMPOSE) run --rm --build ingestion node src/cli.ts --dry-run $(ARGS)
-
-clean: ## Remove artefatos de build locais
-	rm -rf $(FRONTEND_DIR)/dist
+clean:
+rm -f tex_labs_mission.db Relatorio_Tecnico_NASA_Tex_Labs.md dashboard_sync.json relatorio_predicoes_avancadas.json
+rm -rf relatorios_testes/

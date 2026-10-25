@@ -1,0 +1,30 @@
+[
+  {
+    "material": "PMMA Espesso",
+    "o2_pct": 26.99,
+    "pressao_kpa": 79.7,
+    "co_projetado_ppm": 135.73,
+    "status_risco": "MODERADO - Excede SMAC 24h"
+  },
+  {
+    "material": "Nomex/Cotton",
+    "o2_pct": 24.4,
+    "pressao_kpa": 99.3,
+    "co_projetado_ppm": 102.76,
+    "status_risco": "MODERADO - Excede SMAC 24h"
+  },
+  {
+    "material": "Algodão-Fibra de Vidro (SIBAL)",
+    "o2_pct": 21.04,
+    "pressao_kpa": 86.8,
+    "co_projetado_ppm": 81.33,
+    "status_risco": "SEGURO - Dentro dos limites"
+  },
+  {
+    "material": "Gotícula de Heptano",
+    "o2_pct": 29.6,
+    "pressao_kpa": 57.5,
+    "co_projetado_ppm": 93.26,
+    "status_risco": "SEGURO - Dentro dos limites"
+  }
+]
