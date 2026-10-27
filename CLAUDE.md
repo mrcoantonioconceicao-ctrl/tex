@@ -42,12 +42,13 @@ Em respostas, código e documentação, separar sempre:
 - **Backend** (`src/`): Rust 2021, Axum 0.6, Tokio, porta 8080. `main.rs` (servidor), `simulation.rs` (física da simulação), `engine.rs` (AST, Aster Event Bus, GraphRAG, MCP, Token Crusher, auditoria SHA-256), `api.rs` (rotas `/api/v1`). Domínios DDD planejados: CombustionAnalysis, GraphRAGKnowledge, Web3AuditTrail, Compliance.
 - **Frontend** (`frontend/`): SPA Vite + React + TypeScript, TanStack Query, Zod, MSW, Tailwind. Acesso à API isolado em `src/api/` (trocar mock por API real sem refatorar telas).
 - **Ingestão** (`ingestion/`): TypeScript no Node 22, separada do front.
+- **Simulação preditiva** (`simulation/`): Python, só biblioteca padrão. `predicoes.py` calibra um modelo de ΔCO nos testes publicados do Saffire IV a VI (NTRS 20240002981) e grava `frontend/src/data/predicoes.json`, que o painel lê sem passar pelo backend. Testes publicados saem como `Published`; projeções, como `Synthetic`. Mudou o modelo: `make simulate` (a CI barra JSON desatualizado).
 - **Banco:** PostgreSQL com `pgvector` (imagem `pgvector/pgvector:pg16`). Embeddings só quando houver dados reais.
 - **IA e recuperação:**
   - SQL direto: só para cálculos exatos, médias, limites numéricos e medições validadas.
   - RAG/GraphRAG: busca bibliográfica e navegação entre entidades (ARTIGO → EXPERIMENTO → EXECUÇÃO → MATERIAL; AUTOR também é nó do grafo).
   - MCP de verdade (servidor com ferramentas `search_documents`, `get_measurements`) fica para depois de 14/11; a linguagem é decisão do Marco. Até lá, `/api/v1/mcp/context` é um **endpoint de contexto** e não deve ser chamado de MCP no pitch.
-- **Rodar:** `make up` (backend + front em http://localhost:3000 + banco), `make up-mock` (só o front com mocks), `make help` para o resto.
+- **Rodar:** `make up` (backend + front em http://localhost:3000 + banco), `make up-mock` (só o front com mocks), `make help` para o resto. Sem Docker (a máquina do Willian não roda Docker): `make install`, `make frontend` com `VITE_USE_MOCKS=true` e `make verify`.
 
 ## Dados: schema PostgreSQL e linhagem
 Schema **mínimo obrigatório** (nomes em minúsculas no SQL). **Extensões são permitidas, remoções não.**
