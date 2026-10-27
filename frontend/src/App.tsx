@@ -15,6 +15,7 @@ import {
   StatusBanner,
   SyntheticDataNotice,
 } from './dashboard/panels'
+import { PredictionsPanel } from './dashboard/PredictionsPanel'
 import { TrendChart } from './dashboard/TrendChart'
 
 const usingMocks = import.meta.env.VITE_USE_MOCKS === 'true'
@@ -105,6 +106,9 @@ function App() {
             </div>
           </>
         )}
+
+        {/* Não depende da telemetria: o relatório é estático e aparece mesmo com o backend fora */}
+        <PredictionsPanel />
 
         <div className="grid gap-4 lg:grid-cols-2">
           <MetricsPanel data={metrics.data} error={metrics.error} />
