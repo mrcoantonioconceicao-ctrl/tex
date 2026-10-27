@@ -34,10 +34,13 @@ def get_latest_telemetry():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Relatório gerado por simulation/predicoes.py (make simulate); é o mesmo que o painel exibe
+PREDICTIONS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend", "src", "data", "predicoes.json")
+
 @app.get("/api/v1/simulation/summary")
 def get_simulation_summary():
-    if os.path.exists("relatorio_predicoes_avancadas.json"):
-        with open("relatorio_predicoes_avancadas.json", "r", encoding="utf-8") as f:
+    if os.path.exists(PREDICTIONS_PATH):
+        with open(PREDICTIONS_PATH, "r", encoding="utf-8") as f:
             return json.load(f)
     raise HTTPException(status_code=404, detail="Relatório de predição não encontrado.")
 
