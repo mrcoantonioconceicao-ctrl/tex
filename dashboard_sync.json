@@ -1,7 +1,0 @@
-{
-  "integracao_nginx": "HTTP 200 OK",
-  "endpoint": "/api/v1/simulation/summary",
-  "estado_sistema": "OPERACIONAL_PREDITIVO",
-  "total_cenarios_analisados": 3,
-  "alerta_ativo": true
-}
