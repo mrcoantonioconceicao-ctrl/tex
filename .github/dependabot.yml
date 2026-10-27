@@ -1,69 +1,7 @@
-# Atualizações automáticas de dependências e imagens base.
-# Semanal, com minor/patch agrupados num PR por ecossistema para não poluir o repo.
-# Major está IGNORADO em npm, Cargo e Docker até o fim do hackathon: troca de major
-# (axum 0.8, TypeScript 7, Node 26...) é decisão consciente, não PR surpresa.
-# Para reativar depois, remova os blocos "ignore".
 version: 2
-
 updates:
-  - package-ecosystem: npm
-    directory: /frontend
+  - package-ecosystem: "pip"
+    directory: "/"
     schedule:
-      interval: weekly
-      day: monday
-    commit-message:
-      prefix: chore(deps)
-    groups:
-      frontend-minor-patch:
-        update-types: [minor, patch]
-    ignore:
-      - dependency-name: '*'
-        update-types: [version-update:semver-major]
-
-  - package-ecosystem: npm
-    directory: /ingestion
-    schedule:
-      interval: weekly
-      day: monday
-    commit-message:
-      prefix: chore(deps)
-    groups:
-      ingestion-minor-patch:
-        update-types: [minor, patch]
-    ignore:
-      - dependency-name: '*'
-        update-types: [version-update:semver-major]
-
-  - package-ecosystem: cargo
-    directory: /
-    schedule:
-      interval: weekly
-      day: monday
-    commit-message:
-      prefix: chore(deps)
-    groups:
-      backend-minor-patch:
-        update-types: [minor, patch]
-    ignore:
-      - dependency-name: '*'
-        update-types: [version-update:semver-major]
-
-  - package-ecosystem: github-actions
-    directory: /
-    schedule:
-      interval: weekly
-      day: monday
-    commit-message:
-      prefix: chore(ci)
-
-  # Imagens base dos Dockerfiles (rust, debian, node, nginx)
-  - package-ecosystem: docker
-    directories: [/, /frontend, /ingestion]
-    schedule:
-      interval: weekly
-      day: monday
-    commit-message:
-      prefix: chore(docker)
-    ignore:
-      - dependency-name: '*'
-        update-types: [version-update:semver-major]
+      interval: "daily"
+    open-pull-requests-limit: 10
