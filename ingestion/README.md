@@ -1,8 +1,10 @@
-# Ingestão de dados (NTRS → PostgreSQL)
+# Ingestão de dados (NTRS e PSI → PostgreSQL)
 
-Esqueleto do pipeline de dados do Tex Labs. Por enquanto coleta citações públicas do
-[NASA Technical Reports Server](https://ntrs.nasa.gov) e grava no PostgreSQL local.
-As buscas específicas do desafio entram a partir de 14/11/2026, com o enunciado oficial.
+Esqueleto do pipeline de dados do Tex Labs. Coleta:
+- citações públicas do [NASA Technical Reports Server](https://ntrs.nasa.gov);
+- metadados das investigações do [PSI](https://psi.nasa.gov/physci/repo/search?q=combustion), a fonte de dados do enunciado (ver `docs/conhecimento/psi.md`).
+
+Tudo é gravado no PostgreSQL local. Baixar as tabelas experimentais (CSV) do PSI começa a partir de 14/11/2026.
 
 ## Como rodar (Docker, recomendado)
 
@@ -27,6 +29,7 @@ npm install
 npm run db:up        # só o Postgres (porta 5433)
 npm run db:migrate
 npm run ingest:ntrs -- --dry-run --max 10
+npm run ingest:psi -- --dry-run --max 5     # metadados das investigações do PSI
 ```
 
 `DATABASE_URL` sobrescreve o banco padrão (`postgres://tex:tex@127.0.0.1:5433/tex`).
@@ -69,8 +72,9 @@ TEX_TEST_DATABASE_URL=postgres://tex:tex@127.0.0.1:5433/tex npm test
 | `src/ntrs.ts` | Busca paginada (`page.from` / `page.size`), validação com Zod e conversão para linhas |
 | `src/db.ts` | Upsert por `id_ntrs` em transação, autores em tabela própria, registro de execuções |
 | `src/migrations.ts` | Executor de migrações (ordem, transação, hash, trava contra execução simultânea) |
-| `src/cli.ts` / `src/migrate-cli.ts` | Linhas de comando da coleta e das migrações |
-| `db/migrations/` | Schema mínimo do `CLAUDE.md` + `raw` JSONB e `ingestion_runs`; Postgres com pgvector |
+| `src/psi.ts` | Busca e metadados do PSI (API JSON `geode-py`), validação com Zod, programa e datas normalizados |
+| `src/cli.ts` / `src/psi-cli.ts` / `src/migrate-cli.ts` | Linhas de comando da coleta (NTRS, PSI) e das migrações |
+| `db/migrations/` | `0001`: schema mínimo do `CLAUDE.md` + `raw` JSONB e `ingestion_runs`; `0002`: investigações do PSI (`experiments` estendida, `experiment_files`), lacunas de condições e medições |
 
 - **Nada é inventado:** cada linha vem da API do NTRS, e o registro original completo
   fica na coluna `raw` (jsonb).
@@ -84,7 +88,6 @@ TEX_TEST_DATABASE_URL=postgres://tex:tex@127.0.0.1:5433/tex npm test
 
 ## Próximos passos (após 14/11)
 
-- Termos de busca definidos a partir do enunciado do desafio
-- Baixar e extrair o texto completo (`fulltext_url`) para o GraphRAG
-- Fonte PSI (dados de experimentos FLEX/ACME/Saffire), após checagem manual do portal
+- PSI: baixar as 25 tabelas experimentais (CSV, ~226 KB), gravar `sha256` em `experiment_files` e normalizar cada tabela em `experimental_runs`, `experiment_conditions` e `measurements` (`origin_category: "Measured"`). As colunas mudam por investigação: mapear CSV a CSV.
+- Baixar e extrair o texto completo (`fulltext_url`) do NTRS para o GraphRAG
 - Banco na Azure (PostgreSQL Flexible Server) quando o ambiente for definido

@@ -157,6 +157,8 @@ export interface RetryOptions {
   maxDelayMs?: number
   // trocável nos testes, para não esperar de verdade
   sleep?: (ms: number) => Promise<void>
+  // nome da fonte nas mensagens (o mesmo retry serve ao PSI)
+  label?: string
 }
 
 // Falhas passageiras: vale tentar de novo. Um 404, por exemplo, não muda tentando.
@@ -180,7 +182,7 @@ export async function fetchWithRetry(
   url: string,
   init: RequestInit,
   fetchImpl: typeof fetch = fetch,
-  { retries = 3, baseDelayMs = 1000, maxDelayMs = 30_000, sleep = realSleep }: RetryOptions = {},
+  { retries = 3, baseDelayMs = 1000, maxDelayMs = 30_000, sleep = realSleep, label = 'NTRS' }: RetryOptions = {},
 ): Promise<Response> {
   for (let attempt = 0; ; attempt++) {
     let response: Response | undefined
@@ -195,13 +197,13 @@ export async function fetchWithRetry(
     if (!retryable || attempt >= retries) {
       if (response) return response
       const reason = networkError instanceof Error ? networkError.message : String(networkError)
-      throw new Error(`NTRS sem resposta após ${attempt + 1} tentativa(s): ${reason}`)
+      throw new Error(`${label} sem resposta após ${attempt + 1} tentativa(s): ${reason}`)
     }
 
     const backoff = baseDelayMs * 2 ** attempt
     const delay = Math.min(maxDelayMs, (response && retryAfterMs(response)) ?? backoff)
     const reason = response ? `HTTP ${response.status}` : 'falha de rede'
-    console.warn(`[NTRS] tentativa ${attempt + 1} falhou (${reason}); nova tentativa em ${delay} ms`)
+    console.warn(`[${label}] tentativa ${attempt + 1} falhou (${reason}); nova tentativa em ${delay} ms`)
     await sleep(delay)
   }
 }
