@@ -11,6 +11,7 @@ Esta pasta serve para três coisas:
 
 | Arquivo | Conteúdo |
 |---|---|
+| [enunciado.md](enunciado.md) | Enunciado oficial (28/10): o que a NASA pede, investigações citadas, recursos e confronto com o Tex |
 | [visao-geral.md](visao-geral.md) | Física da chama em microgravidade, instalações (CIR, MSG, Cygnus), programa da NASA, onde estão os dados (PSI) |
 | [flex.md](flex.md) | FLEX: gotas de combustível, extinção, limite de oxigênio, chamas frias |
 | [acme.md](acme.md) | ACME: chamas de gás, fuligem, campo elétrico, autoextinção |
