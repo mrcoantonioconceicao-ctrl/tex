@@ -1,15 +1,18 @@
 // Camada única de acesso à API. Componentes nunca chamam fetch direto:
 // trocar mock por API real (ou mudar formato) se resolve só aqui.
 import { z } from 'zod'
+import predictionReportJson from '../data/predicoes.json'
 import {
   combustionTelemetrySchema,
   mcpContextResponseSchema,
+  predictionReportSchema,
   systemPerformanceMetricsSchema,
 } from './schemas'
 import type {
   CombustionTelemetry,
   McpContextRequest,
   McpContextResponse,
+  PredictionReport,
   SystemPerformanceMetrics,
 } from './types'
 
@@ -77,6 +80,16 @@ export function resetSimulation(): Promise<CombustionTelemetry> {
 
 export function getSystemMetrics(): Promise<SystemPerformanceMetrics> {
   return request('/metrics', systemPerformanceMetricsSchema)
+}
+
+// Relatório estático gerado por simulation/predicoes.py e embutido no build: funciona
+// igual com mock ou backend. O parâmetro existe para os testes injetarem um arquivo quebrado.
+export async function getPredictionReport(raw: unknown = predictionReportJson): Promise<PredictionReport> {
+  const result = predictionReportSchema.safeParse(raw)
+  if (!result.success) {
+    throw new ContractError(`data/predicoes.json fora do contrato:\n${z.prettifyError(result.error)}`)
+  }
+  return result.data
 }
 
 export function postMcpContext(body: McpContextRequest): Promise<McpContextResponse> {

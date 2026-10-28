@@ -1,0 +1,248 @@
+{
+  "schema_version": 1,
+  "generated_by": "simulation/predicoes.py",
+  "seed": 20240002981,
+  "smac_co": {
+    "limit_1h_ppm": 425.0,
+    "limit_24h_ppm": 100.0,
+    "source": "NTRS 20240002981 p.5, citando JSC 20584 Rev. A (2020)",
+    "divergence": "NTRS 20210011385 p.16 (BASS-II) cita 55 ppm para 1 h; conferir a revisão vigente da JSC 20584"
+  },
+  "reference_tests": [
+    {
+      "test_id": "Saffire IV-1",
+      "material": "SIBAL",
+      "specimen": "SIBAL, 50 cm",
+      "pressure_kpa": 100.0,
+      "o2_pct": 22.0,
+      "free_volume_m3": 17.9,
+      "burn_time_s": 130,
+      "delta_co_ppm": 80.0,
+      "origin_category": "Published",
+      "source": "NTRS 20240002981 (Tabela 1, p.3; Tabela 2, p.6)"
+    },
+    {
+      "test_id": "Saffire V-2",
+      "material": "Algodão",
+      "specimen": "malha de algodão, 50 cm",
+      "pressure_kpa": 70.7,
+      "o2_pct": 26.2,
+      "free_volume_m3": 19.0,
+      "burn_time_s": 200,
+      "delta_co_ppm": 83.0,
+      "origin_category": "Published",
+      "source": "NTRS 20240002981 (Tabela 1, p.3; Tabela 2, p.6)"
+    },
+    {
+      "test_id": "Saffire VI-2",
+      "material": "SIBAL",
+      "specimen": "SIBAL, 50 cm",
+      "pressure_kpa": 54.1,
+      "o2_pct": 31.0,
+      "free_volume_m3": 16.7,
+      "burn_time_s": 112,
+      "delta_co_ppm": 120.0,
+      "origin_category": "Published",
+      "source": "NTRS 20240002981 (Tabela 1, p.3; Tabela 2, p.6)"
+    },
+    {
+      "test_id": "Saffire VI-3",
+      "material": "PMMA",
+      "specimen": "PMMA 2 lados (1 cm), 18 cm",
+      "pressure_kpa": 54.6,
+      "o2_pct": 30.3,
+      "free_volume_m3": 16.7,
+      "burn_time_s": 780,
+      "delta_co_ppm": 308.0,
+      "origin_category": "Published",
+      "source": "NTRS 20240002981 (Tabela 1, p.3; Tabela 2, p.6)"
+    },
+    {
+      "test_id": "Saffire VI-4",
+      "material": "PMMA",
+      "specimen": "PMMA 1 lado (0,5 cm), 18 cm",
+      "pressure_kpa": 55.2,
+      "o2_pct": 28.8,
+      "free_volume_m3": 16.7,
+      "burn_time_s": 1200,
+      "delta_co_ppm": 320.0,
+      "origin_category": "Published",
+      "source": "NTRS 20240002981 (Tabela 1, p.3; Tabela 2, p.6)"
+    }
+  ],
+  "not_ignited": [
+    {
+      "material": "Nomex",
+      "test": "Saffire VI",
+      "source": "NTRS 20240002981 p.4"
+    }
+  ],
+  "model": {
+    "description": "Monte Carlo do ΔCO por material e fração de O₂, calibrado nos testes publicados do Saffire IV a VI.",
+    "coefficients_ppm_per_o2_pct": {
+      "Algodão": 3.168,
+      "PMMA": 10.638,
+      "SIBAL": 3.754
+    },
+    "coefficient_sigma": 0.2,
+    "hypotheses": [
+      "ΔCO proporcional à fração de O₂ (um coeficiente por material, ajustado nos testes publicados).",
+      "Pressão, espessura da amostra, volume livre e ventilação não entram no modelo.",
+      "Dispersão log-normal de 20% no coeficiente entre queimas do mesmo material.",
+      "O ΔCO de pico é comparado ao SMAC, que é média no tempo de exposição: a comparação é conservadora.",
+      "Projeções só dentro da faixa de O₂ testada (22% a 31%); fora dela é extrapolação."
+    ],
+    "origin_category": "Synthetic"
+  },
+  "fit_check": [
+    {
+      "test_id": "Saffire IV-1",
+      "measured_ppm": 80.0,
+      "predicted_ppm": 82.6,
+      "error_pct": 3.2
+    },
+    {
+      "test_id": "Saffire V-2",
+      "measured_ppm": 83.0,
+      "predicted_ppm": 83.0,
+      "error_pct": 0.0
+    },
+    {
+      "test_id": "Saffire VI-2",
+      "measured_ppm": 120.0,
+      "predicted_ppm": 116.4,
+      "error_pct": -3.0
+    },
+    {
+      "test_id": "Saffire VI-3",
+      "measured_ppm": 308.0,
+      "predicted_ppm": 322.3,
+      "error_pct": 4.7
+    },
+    {
+      "test_id": "Saffire VI-4",
+      "measured_ppm": 320.0,
+      "predicted_ppm": 306.4,
+      "error_pct": -4.3
+    }
+  ],
+  "projections": [
+    {
+      "material": "Algodão",
+      "o2_pct": 22.0,
+      "samples": 5000,
+      "co_p05_ppm": 49.9,
+      "co_p50_ppm": 69.8,
+      "co_p95_ppm": 96.8,
+      "prob_exceeds_24h": 0.037,
+      "prob_exceeds_1h": 0.0,
+      "risk_level": "WITHIN_SMAC",
+      "origin_category": "Synthetic",
+      "quality_status": "PENDING_VALIDATION"
+    },
+    {
+      "material": "Algodão",
+      "o2_pct": 26.0,
+      "samples": 5000,
+      "co_p05_ppm": 59.2,
+      "co_p50_ppm": 82.6,
+      "co_p95_ppm": 113.4,
+      "prob_exceeds_24h": 0.165,
+      "prob_exceeds_1h": 0.0,
+      "risk_level": "EXCEEDS_SMAC_24H",
+      "origin_category": "Synthetic",
+      "quality_status": "PENDING_VALIDATION"
+    },
+    {
+      "material": "Algodão",
+      "o2_pct": 31.0,
+      "samples": 5000,
+      "co_p05_ppm": 71.1,
+      "co_p50_ppm": 98.1,
+      "co_p95_ppm": 136.8,
+      "prob_exceeds_24h": 0.461,
+      "prob_exceeds_1h": 0.0,
+      "risk_level": "EXCEEDS_SMAC_24H",
+      "origin_category": "Synthetic",
+      "quality_status": "PENDING_VALIDATION"
+    },
+    {
+      "material": "PMMA",
+      "o2_pct": 22.0,
+      "samples": 5000,
+      "co_p05_ppm": 168.6,
+      "co_p50_ppm": 234.9,
+      "co_p95_ppm": 324.4,
+      "prob_exceeds_24h": 1.0,
+      "prob_exceeds_1h": 0.002,
+      "risk_level": "EXCEEDS_SMAC_24H",
+      "origin_category": "Synthetic",
+      "quality_status": "PENDING_VALIDATION"
+    },
+    {
+      "material": "PMMA",
+      "o2_pct": 26.0,
+      "samples": 5000,
+      "co_p05_ppm": 199.5,
+      "co_p50_ppm": 276.5,
+      "co_p95_ppm": 380.6,
+      "prob_exceeds_24h": 1.0,
+      "prob_exceeds_1h": 0.015,
+      "risk_level": "EXCEEDS_SMAC_24H",
+      "origin_category": "Synthetic",
+      "quality_status": "PENDING_VALIDATION"
+    },
+    {
+      "material": "PMMA",
+      "o2_pct": 31.0,
+      "samples": 5000,
+      "co_p05_ppm": 237.3,
+      "co_p50_ppm": 330.0,
+      "co_p95_ppm": 458.5,
+      "prob_exceeds_24h": 1.0,
+      "prob_exceeds_1h": 0.104,
+      "risk_level": "EXCEEDS_SMAC_1H",
+      "origin_category": "Synthetic",
+      "quality_status": "PENDING_VALIDATION"
+    },
+    {
+      "material": "SIBAL",
+      "o2_pct": 22.0,
+      "samples": 5000,
+      "co_p05_ppm": 59.6,
+      "co_p50_ppm": 82.5,
+      "co_p95_ppm": 114.3,
+      "prob_exceeds_24h": 0.171,
+      "prob_exceeds_1h": 0.0,
+      "risk_level": "EXCEEDS_SMAC_24H",
+      "origin_category": "Synthetic",
+      "quality_status": "PENDING_VALIDATION"
+    },
+    {
+      "material": "SIBAL",
+      "o2_pct": 26.0,
+      "samples": 5000,
+      "co_p05_ppm": 70.6,
+      "co_p50_ppm": 97.1,
+      "co_p95_ppm": 134.8,
+      "prob_exceeds_24h": 0.44,
+      "prob_exceeds_1h": 0.0,
+      "risk_level": "EXCEEDS_SMAC_24H",
+      "origin_category": "Synthetic",
+      "quality_status": "PENDING_VALIDATION"
+    },
+    {
+      "material": "SIBAL",
+      "o2_pct": 31.0,
+      "samples": 5000,
+      "co_p05_ppm": 83.7,
+      "co_p50_ppm": 116.9,
+      "co_p95_ppm": 161.2,
+      "prob_exceeds_24h": 0.777,
+      "prob_exceeds_1h": 0.0,
+      "risk_level": "EXCEEDS_SMAC_24H",
+      "origin_category": "Synthetic",
+      "quality_status": "PENDING_VALIDATION"
+    }
+  ]
+}
