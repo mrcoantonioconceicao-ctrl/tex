@@ -23,6 +23,16 @@ rustc-ice-*.txt
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# Dependências e caches (em qualquer pasta)
+node_modules/
+__pycache__/
+*.pyc
+
+# Bancos locais gerados por scripts (o banco do projeto é o PostgreSQL do docker-compose.yml)
+*.db
+*.sqlite
+*.sqlite3
+
 # Variáveis locais (o modelo versionado é o .env.example)
 .env
 .env.*

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   getLatestTelemetry,
+  getPredictionReport,
   getSystemMetrics,
   postMcpContext,
   resetSimulation,
@@ -26,6 +27,15 @@ export function useSystemMetrics() {
     queryKey: ['metrics'],
     queryFn: getSystemMetrics,
     refetchInterval: METRICS_POLL_MS,
+  })
+}
+
+// Arquivo estático: não muda enquanto a página estiver aberta
+export function usePredictionReport() {
+  return useQuery({
+    queryKey: ['predictions'],
+    queryFn: () => getPredictionReport(),
+    staleTime: Infinity,
   })
 }
 

@@ -56,3 +56,80 @@ export interface McpContextResponse {
   token_metrics: TokenMetrics
   origin_category: OriginCategory
 }
+
+// ---- Relatório de predições (não é endpoint) ----
+// Arquivo gerado por simulation/predicoes.py em ../data/predicoes.json.
+// Mudou lá, muda aqui e em schemas.ts.
+
+export interface SmacCoLimits {
+  limit_1h_ppm: number
+  limit_24h_ppm: number
+  source: string
+  divergence: string
+}
+
+// Teste publicado (Saffire IV a VI): é fato, com fonte
+export interface ReferenceTest {
+  test_id: string
+  material: string
+  specimen: string
+  pressure_kpa: number
+  o2_pct: number
+  free_volume_m3: number
+  burn_time_s: number
+  delta_co_ppm: number
+  origin_category: OriginCategory
+  source: string
+}
+
+export interface NotIgnitedMaterial {
+  material: string
+  test: string
+  source: string
+}
+
+export interface PredictionModel {
+  description: string
+  coefficients_ppm_per_o2_pct: Record<string, number>
+  coefficient_sigma: number
+  hypotheses: string[]
+  origin_category: OriginCategory
+}
+
+export interface FitCheck {
+  test_id: string
+  measured_ppm: number
+  predicted_ppm: number
+  error_pct: number
+}
+
+export type PredictionRisk = 'WITHIN_SMAC' | 'EXCEEDS_SMAC_24H' | 'EXCEEDS_SMAC_1H'
+
+export type QualityStatus = 'EXTRACTED' | 'PENDING_VALIDATION' | 'VALIDATED' | 'REJECTED'
+
+// Projeção do modelo: é hipótese (Synthetic)
+export interface Projection {
+  material: string
+  o2_pct: number
+  samples: number
+  co_p05_ppm: number
+  co_p50_ppm: number
+  co_p95_ppm: number
+  prob_exceeds_24h: number
+  prob_exceeds_1h: number
+  risk_level: PredictionRisk
+  origin_category: OriginCategory
+  quality_status: QualityStatus
+}
+
+export interface PredictionReport {
+  schema_version: 1
+  generated_by: string
+  seed: number
+  smac_co: SmacCoLimits
+  reference_tests: ReferenceTest[]
+  not_ignited: NotIgnitedMaterial[]
+  model: PredictionModel
+  fit_check: FitCheck[]
+  projections: Projection[]
+}
