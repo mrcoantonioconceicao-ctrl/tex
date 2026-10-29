@@ -1,24 +1,35 @@
 //! API HTTP v1 (Axum). Contrato documentado em docs/api-spec.yaml.
 
 use std::sync::{Arc, Mutex};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use axum::{
     extract::State,
+    http::{header, HeaderValue, Method, StatusCode, Uri},
     routing::{get, post},
     Json, Router,
 };
 use chrono::{DateTime, SecondsFormat, Utc};
 use serde::Serialize;
+use sqlx::PgPool;
+use tower_http::{
+    cors::{AllowOrigin, CorsLayer},
+    timeout::TimeoutLayer,
+};
 
+use crate::db::{self, DatabaseStatus};
 use crate::engine::{
     AstTelemetryParser, AsterEventBus, GraphRAGKnowledgeEngine, McpContextResponse,
     McpEnterpriseServer, Web3AuditSmartContract,
 };
+use crate::error::AppError;
 use crate::lineage::OriginCategory;
 use crate::simulation::{RiskLevel, Simulation, EXPERIMENT_ID};
 
 const DEFAULT_MCP_QUERY: &str = "general_fire_safety";
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
+/// Front servido pelo nginx (make up) e pelo Vite (make frontend)
+pub const DEFAULT_CORS_ORIGINS: &str = "http://localhost:3000,http://localhost:5173";
 
 // ---- Estado compartilhado ----
 
@@ -39,6 +50,8 @@ pub struct AppState {
     reading: Mutex<Reading>,
     metrics: Mutex<LiveMetrics>,
     started_at: Instant,
+    /// None quando o servidor sobe sem DATABASE_URL
+    db: Option<PgPool>,
 }
 
 impl Default for AppState {
@@ -50,11 +63,19 @@ impl Default for AppState {
             }),
             metrics: Mutex::new(LiveMetrics::default()),
             started_at: Instant::now(),
+            db: None,
         }
     }
 }
 
 impl AppState {
+    pub fn with_database(db: Option<PgPool>) -> Self {
+        Self {
+            db,
+            ..Self::default()
+        }
+    }
+
     /// Um ciclo do laço de background: avança a simulação, valida a leitura
     /// e registra eventos quando o nível de risco muda.
     pub fn tick(&self) {
@@ -152,6 +173,7 @@ impl TelemetryResponse {
 struct HealthResponse {
     status: &'static str,
     uptime_seconds: u64,
+    database: DatabaseStatus,
 }
 
 #[derive(Debug, Serialize)]
@@ -167,10 +189,13 @@ struct MetricsResponse {
 
 // ---- Handlers ----
 
+/// "ok" diz que o servidor está no ar (o healthcheck do Docker depende disso);
+/// o estado do banco vem à parte, para o backend não reiniciar quando só o banco cai.
 async fn health(State(state): State<Arc<AppState>>) -> Json<HealthResponse> {
     Json(HealthResponse {
         status: "ok",
         uptime_seconds: state.uptime_seconds(),
+        database: db::status(state.db.as_ref()).await,
     })
 }
 
@@ -222,7 +247,26 @@ async fn trigger_suppression(State(state): State<Arc<AppState>>) -> Json<Telemet
     Json(state.update_simulation(Simulation::trigger_suppression))
 }
 
-pub fn router(state: Arc<AppState>) -> Router {
+async fn not_found(uri: Uri) -> AppError {
+    AppError::NotFound(format!("rota não encontrada: {}", uri.path()))
+}
+
+/// Lista separada por vírgula (CORS_ALLOWED_ORIGINS). Origem inválida é ignorada.
+pub fn parse_origins(raw: &str) -> Vec<HeaderValue> {
+    raw.split(',')
+        .map(str::trim)
+        .filter(|origin| !origin.is_empty())
+        .filter_map(|origin| match HeaderValue::from_str(origin) {
+            Ok(value) => Some(value),
+            Err(_) => {
+                tracing::warn!("origem de CORS ignorada: {origin:?}");
+                None
+            }
+        })
+        .collect()
+}
+
+pub fn router(state: Arc<AppState>, allowed_origins: Vec<HeaderValue>) -> Router {
     let api = Router::new()
         .route("/health", get(health))
         .route("/telemetry/latest", get(latest_telemetry))
@@ -231,16 +275,74 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/simulation/reset", post(reset_simulation))
         .route("/simulation/suppress", post(trigger_suppression));
 
-    Router::new().nest("/api/v1", api).with_state(state)
+    let cors = CorsLayer::new()
+        .allow_origin(AllowOrigin::list(allowed_origins))
+        .allow_methods([Method::GET, Method::POST])
+        .allow_headers([header::CONTENT_TYPE]);
+
+    let timeout = TimeoutLayer::with_status_code(StatusCode::REQUEST_TIMEOUT, REQUEST_TIMEOUT);
+
+    Router::new()
+        .nest("/api/v1", api)
+        .fallback(not_found)
+        .layer(timeout)
+        .layer(cors)
+        .with_state(state)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use axum::body::Body;
-    use axum::http::{header, Request, StatusCode};
     use serde_json::{json, Value};
-    use tower::ServiceExt;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::net::{TcpListener, TcpStream};
+
+    struct Reply {
+        status: StatusCode,
+        /// Cabeçalhos em minúsculas, um por linha
+        headers: String,
+        body: Value,
+    }
+
+    /// Sobe o router numa porta livre e faz uma requisição HTTP/1.1 de verdade.
+    /// (O Cargo.lock não tem o tower como dependência direta para usar o oneshot.)
+    async fn request(
+        state: &Arc<AppState>,
+        method: &str,
+        uri: &str,
+        extra_headers: &[(&str, &str)],
+        body: Option<Value>,
+    ) -> Reply {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let app = router(state.clone(), parse_origins(DEFAULT_CORS_ORIGINS));
+        tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+
+        let payload = body.map(|value| value.to_string()).unwrap_or_default();
+        let mut raw = format!(
+            "{method} {uri} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\
+             Content-Type: application/json\r\nContent-Length: {}\r\n",
+            payload.len()
+        );
+        for (name, value) in extra_headers {
+            raw.push_str(&format!("{name}: {value}\r\n"));
+        }
+        raw.push_str("\r\n");
+        raw.push_str(&payload);
+
+        let mut stream = TcpStream::connect(addr).await.unwrap();
+        stream.write_all(raw.as_bytes()).await.unwrap();
+        let mut response = String::new();
+        stream.read_to_string(&mut response).await.unwrap();
+
+        let (head, body) = response.split_once("\r\n\r\n").unwrap();
+        let code: u16 = head.split_whitespace().nth(1).unwrap().parse().unwrap();
+        Reply {
+            status: StatusCode::from_u16(code).unwrap(),
+            headers: head.to_lowercase(),
+            body: serde_json::from_str(body).unwrap_or(Value::Null),
+        }
+    }
 
     async fn call(
         state: &Arc<AppState>,
@@ -248,26 +350,8 @@ mod tests {
         uri: &str,
         body: Option<Value>,
     ) -> (StatusCode, Value) {
-        let mut request = Request::builder().method(method).uri(uri);
-        let body = match body {
-            Some(payload) => {
-                request = request.header(header::CONTENT_TYPE, "application/json");
-                Body::from(payload.to_string())
-            }
-            None => Body::empty(),
-        };
-        let response = router(state.clone())
-            .oneshot(request.body(body).unwrap())
-            .await
-            .unwrap();
-        let status = response.status();
-        let bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
-            .await
-            .unwrap();
-        (
-            status,
-            serde_json::from_slice(&bytes).unwrap_or(Value::Null),
-        )
+        let reply = request(state, method, uri, &[], body).await;
+        (reply.status, reply.body)
     }
 
     fn new_state() -> Arc<AppState> {
@@ -279,6 +363,62 @@ mod tests {
         let (status, body) = call(&new_state(), "GET", "/api/v1/health", None).await;
         assert_eq!(status, StatusCode::OK);
         assert_eq!(body["status"], "ok");
+        assert_eq!(body["database"], "disabled");
+    }
+
+    #[tokio::test]
+    async fn health_continua_ok_com_o_banco_fora_do_ar() {
+        let pool = sqlx::postgres::PgPoolOptions::new()
+            .connect_lazy("postgres://tex:tex@127.0.0.1:1/tex")
+            .unwrap();
+        let state = Arc::new(AppState::with_database(Some(pool)));
+        let (status, body) = call(&state, "GET", "/api/v1/health", None).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(body["status"], "ok");
+        assert_eq!(body["database"], "down");
+    }
+
+    #[tokio::test]
+    async fn rota_desconhecida_devolve_o_erro_do_contrato() {
+        let (status, body) = call(&new_state(), "GET", "/api/v1/nao-existe", None).await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+        assert_eq!(body["code"], "NOT_FOUND");
+        assert!(body["message"]
+            .as_str()
+            .unwrap()
+            .contains("/api/v1/nao-existe"));
+    }
+
+    async fn preflight(origin: &str) -> Reply {
+        let headers = [("Origin", origin), ("Access-Control-Request-Method", "GET")];
+        request(
+            &new_state(),
+            "OPTIONS",
+            "/api/v1/telemetry/latest",
+            &headers,
+            None,
+        )
+        .await
+    }
+
+    #[tokio::test]
+    async fn cors_libera_so_as_origens_do_front() {
+        let allowed = preflight("http://localhost:5173").await;
+        assert!(allowed
+            .headers
+            .contains("access-control-allow-origin: http://localhost:5173"));
+
+        let blocked = preflight("https://exemplo.invalid").await;
+        assert!(!blocked.headers.contains("access-control-allow-origin"));
+    }
+
+    #[test]
+    fn origens_invalidas_ou_vazias_sao_ignoradas() {
+        let origins = parse_origins(" http://localhost:3000 ,,bad\norigin");
+        assert_eq!(
+            origins,
+            vec![HeaderValue::from_static("http://localhost:3000")]
+        );
     }
 
     #[tokio::test]

@@ -4,11 +4,13 @@
 //! pipeline em engine.rs e rotas HTTP em api.rs (contrato em docs/api-spec.yaml).
 
 mod api;
+mod db;
 // DTOs do PSI e ponte GraphRAG ainda sem rota que os use: entram com o
 // /api/v1/investigations do docs/api-spec.yaml (mesmo caso de lineage.rs).
 #[allow(dead_code)]
 mod domain;
 mod engine;
+mod error;
 mod lineage;
 mod simulation;
 
@@ -25,13 +27,19 @@ const DEFAULT_PORT: u16 = 8080;
 
 #[tokio::main]
 async fn main() {
+    // .env opcional para rodar fora do Docker (modelo em .env.example)
+    dotenvy::dotenv().ok();
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .init();
+
     println!("==================================================");
     println!("         TEX LABS - SPACE APPS 2026               ");
     println!("  Microgravity Fire Safety & GraphRAG Engine      ");
     println!("==================================================");
     print_config();
 
-    let state = Arc::new(AppState::default());
+    let state = Arc::new(AppState::with_database(db::pool_from_env()));
 
     // Laço de simulação: um ciclo a cada 5 s
     let ticker = Arc::clone(&state);
@@ -54,7 +62,10 @@ async fn main() {
     let listener = TcpListener::bind(addr)
         .await
         .expect("falha ao abrir a porta do servidor");
-    axum::serve(listener, api::router(state))
+    let cors_origins = std::env::var("CORS_ALLOWED_ORIGINS")
+        .unwrap_or_else(|_| api::DEFAULT_CORS_ORIGINS.to_string());
+    let app = api::router(state, api::parse_origins(&cors_origins));
+    axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await
         .expect("falha no servidor HTTP");
