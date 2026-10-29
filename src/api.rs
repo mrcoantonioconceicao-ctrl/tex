@@ -1,10 +1,3 @@
-#![allow(
-    dead_code,
-    clippy::field_reassign_with_default,
-    unused_variables,
-    unused_imports
-)]
-
 use crate::domain::ai::{Summarizer, SyntheticSummarizer};
 use crate::simulation::{Simulation, EXPERIMENT_ID};
 use axum::{
@@ -19,6 +12,7 @@ pub struct AppState {
     pub simulation: Mutex<Simulation>,
     pub audit_trail: Mutex<Vec<String>>,
     pub summarizer: Arc<dyn Summarizer>,
+    pub start_time: std::time::Instant,
 }
 
 impl AppState {
@@ -27,6 +21,7 @@ impl AppState {
             simulation: Mutex::new(Simulation::default()),
             audit_trail: Mutex::new(Vec::new()),
             summarizer: Arc::new(SyntheticSummarizer::new()),
+            start_time: std::time::Instant::now(),
         }
     }
 
@@ -47,12 +42,15 @@ impl Default for AppState {
 pub fn router(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/api/v1/health", get(health_handler))
+        .route("/api/v1/telemetry/latest", get(telemetry_latest_handler))
+        .route("/api/v1/metrics", get(metrics_handler))
+        .route("/api/v1/mcp/context", get(mcp_context_handler))
+        .route(
+            "/api/v1/simulation/suppress",
+            post(simulation_suppress_handler),
+        )
+        .route("/api/v1/simulation/reset", post(simulation_reset_handler))
         .route("/api/v1/ai/summarize", post(summarize_handler))
-        .route("/api/v1/telemetria", get(telemetria_handler))
-        .route("/api/v1/telemetry/latest", get(telemetria_handler))
-        .route("/api/v1/tick", post(tick_handler))
-        .route("/api/v1/audit", get(audit_handler))
-        .route("/api/v1/experiment", get(experiment_handler))
         .with_state(state)
 }
 
@@ -61,27 +59,74 @@ pub fn create_router() -> Router {
     router(state)
 }
 
-async fn health_handler() -> Json<serde_json::Value> {
-    Json(serde_json::json!({ "status": "ok" }))
+#[derive(serde::Serialize)]
+pub struct HealthResponse {
+    pub status: String,
+    pub uptime_seconds: u64,
 }
 
-async fn telemetria_handler(State(state): State<Arc<AppState>>) -> Json<Simulation> {
+async fn health_handler(State(state): State<Arc<AppState>>) -> Json<HealthResponse> {
+    Json(HealthResponse {
+        status: "ok".to_string(),
+        uptime_seconds: state.start_time.elapsed().as_secs(),
+    })
+}
+
+#[derive(serde::Serialize)]
+pub struct TelemetryResponse {
+    pub experiment_id: String,
+    pub timestamp: String,
+    pub temperature_c: f64,
+    pub chamber_temperature_c: f64,
+    pub oxygen_pct: f64,
+    pub oxygen_concentration_pct: f64,
+    pub flame_spread_mm_s: f64,
+    pub flame_spread_rate_mm_s: f64,
+    pub origin_category: String,
+    pub sequence: u64,
+}
+
+async fn telemetry_latest_handler(State(state): State<Arc<AppState>>) -> Json<TelemetryResponse> {
     let sim = state.simulation.lock().await;
+    let now = chrono::Utc::now().to_rfc3339();
+    Json(TelemetryResponse {
+        experiment_id: EXPERIMENT_ID.to_string(),
+        timestamp: now,
+        temperature_c: sim.temperature_c,
+        chamber_temperature_c: sim.temperature_c,
+        oxygen_pct: sim.oxygen_pct,
+        oxygen_concentration_pct: sim.oxygen_pct,
+        flame_spread_mm_s: sim.flame_spread_mm_s,
+        flame_spread_rate_mm_s: sim.flame_spread_mm_s,
+        origin_category: "Synthetic".to_string(),
+        sequence: sim.sequence,
+    })
+}
+
+async fn metrics_handler() -> Json<serde_json::Value> {
+    Json(serde_json::json!({
+        "metrics_version": "v1",
+        "status": "operational"
+    }))
+}
+
+async fn mcp_context_handler() -> Json<serde_json::Value> {
+    Json(serde_json::json!({
+        "context": "MCP Enterprise Server active",
+        "mode": "synthetic"
+    }))
+}
+
+async fn simulation_suppress_handler(State(state): State<Arc<AppState>>) -> Json<Simulation> {
+    let mut sim = state.simulation.lock().await;
+    sim.suppression_active = true;
     Json(sim.clone())
 }
 
-async fn tick_handler(State(state): State<Arc<AppState>>) -> axum::http::StatusCode {
-    state.tick().await;
-    axum::http::StatusCode::OK
-}
-
-async fn audit_handler(State(state): State<Arc<AppState>>) -> Json<Vec<String>> {
-    let trail = state.audit_trail.lock().await;
-    Json(trail.clone())
-}
-
-async fn experiment_handler() -> Json<serde_json::Value> {
-    Json(serde_json::json!({ "experiment_id": EXPERIMENT_ID }))
+async fn simulation_reset_handler(State(state): State<Arc<AppState>>) -> Json<Simulation> {
+    let mut sim = state.simulation.lock().await;
+    *sim = Simulation::default();
+    Json(sim.clone())
 }
 
 #[derive(serde::Deserialize)]
@@ -130,6 +175,29 @@ mod tests {
             .unwrap();
         let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
         assert!(body_str.contains("ok"));
+        assert!(body_str.contains("uptime_seconds"));
+    }
+
+    #[tokio::test]
+    async fn test_telemetry_latest_endpoint() {
+        let app = create_router();
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/api/v1/telemetry/latest")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
+        assert!(body_str.contains("Synthetic"));
+        assert!(body_str.contains(EXPERIMENT_ID));
     }
 
     #[tokio::test]
@@ -141,118 +209,17 @@ mod tests {
                     .method("POST")
                     .uri("/api/v1/ai/summarize")
                     .header("content-type", "application/json")
-                    .body(Body::from(r#"{"context":"Taxa de queima nominal a 500C"}"#))
+                    .body(Body::from(r#"{"context":"Taxa de queima nominal"}"#))
                     .unwrap(),
             )
             .await
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::OK);
-
         let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
             .await
             .unwrap();
         let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
         assert!(body_str.contains("[SYNTHETIC AI]"));
-    }
-
-    #[tokio::test]
-    async fn telemetria_segue_o_contrato_v1() {
-        let app = create_router();
-        let response = app
-            .oneshot(
-                Request::builder()
-                    .uri("/api/v1/telemetria")
-                    .body(Body::empty())
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-
-        assert_eq!(response.status(), StatusCode::OK);
-    }
-
-    #[tokio::test]
-    async fn tick_endpoint_avanca_estado() {
-        let app = create_router();
-        let response = app
-            .oneshot(
-                Request::builder()
-                    .method("POST")
-                    .uri("/api/v1/tick")
-                    .body(Body::empty())
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-
-        assert_eq!(response.status(), StatusCode::OK);
-    }
-
-    #[tokio::test]
-    async fn audit_trail_registra_ticks() {
-        let state = Arc::new(AppState::new());
-        state.tick().await;
-
-        let app = router(state);
-        let response = app
-            .oneshot(
-                Request::builder()
-                    .uri("/api/v1/audit")
-                    .body(Body::empty())
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-
-        assert_eq!(response.status(), StatusCode::OK);
-        let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
-            .await
-            .unwrap();
-        let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
-        assert!(body_str.contains("Tick executed"));
-    }
-
-    #[tokio::test]
-    async fn experiment_id_retorna_correto() {
-        let app = create_router();
-        let response = app
-            .oneshot(
-                Request::builder()
-                    .uri("/api/v1/experiment")
-                    .body(Body::empty())
-                    .unwrap(),
-            )
-            .await
-            .unwrap();
-
-        assert_eq!(response.status(), StatusCode::OK);
-        let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
-            .await
-            .unwrap();
-        let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
-        assert!(body_str.contains(EXPERIMENT_ID));
-    }
-
-    #[tokio::test]
-    async fn multiplos_ticks_acumulam_sequencia() {
-        let state = Arc::new(AppState::new());
-        state.tick().await;
-        state.tick().await;
-
-        let sim = state.simulation.lock().await;
-        assert_eq!(sim.sequence, 2);
-    }
-}
-
-#[cfg(test)]
-mod extra_tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn test_app_state_default_initialization() {
-        let state = AppState::default();
-        let sim = state.simulation.lock().await;
-        assert_eq!(sim.sequence, 0);
     }
 }
