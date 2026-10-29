@@ -2,7 +2,6 @@ use crate::domain::ai::{Summarizer, SyntheticSummarizer};
 use crate::simulation::{Simulation, EXPERIMENT_ID};
 use axum::{
     extract::State,
-    http::StatusCode,
     routing::{get, post},
     Json, Router,
 };
@@ -54,8 +53,8 @@ pub fn create_router() -> Router {
     router(state)
 }
 
-async fn health_handler() -> StatusCode {
-    StatusCode::OK
+async fn health_handler() -> Json<serde_json::Value> {
+    Json(serde_json::json!({ "status": "ok" }))
 }
 
 async fn telemetria_handler(State(state): State<Arc<AppState>>) -> Json<Simulation> {
@@ -63,9 +62,9 @@ async fn telemetria_handler(State(state): State<Arc<AppState>>) -> Json<Simulati
     Json(sim.clone())
 }
 
-async fn tick_handler(State(state): State<Arc<AppState>>) -> StatusCode {
+async fn tick_handler(State(state): State<Arc<AppState>>) -> axum::http::StatusCode {
     state.tick().await;
-    StatusCode::OK
+    axum::http::StatusCode::OK
 }
 
 async fn audit_handler(State(state): State<Arc<AppState>>) -> Json<Vec<String>> {
@@ -118,6 +117,11 @@ mod tests {
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::OK);
+        let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
+        assert!(body_str.contains("ok"));
     }
 
     #[tokio::test]
