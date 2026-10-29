@@ -49,6 +49,7 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/api/v1/health", get(health_handler))
         .route("/api/v1/ai/summarize", post(summarize_handler))
         .route("/api/v1/telemetria", get(telemetria_handler))
+        .route("/api/v1/telemetry/latest", get(telemetria_handler))
         .route("/api/v1/tick", post(tick_handler))
         .route("/api/v1/audit", get(audit_handler))
         .route("/api/v1/experiment", get(experiment_handler))
