@@ -4,9 +4,6 @@
 //! pipeline em engine.rs e rotas HTTP em api.rs (contrato em docs/api-spec.yaml).
 
 mod api;
-// DTOs do PSI e ponte GraphRAG ainda sem rota que os use: entram com o
-// /api/v1/investigations do docs/api-spec.yaml (mesmo caso de lineage.rs).
-#[allow(dead_code)]
 mod domain;
 mod engine;
 mod lineage;
@@ -17,6 +14,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use api::AppState;
+use tokio::net::TcpListener;
 
 const TICK_INTERVAL: Duration = Duration::from_secs(5);
 const CONFIG_PATH: &str = "config/system.json";
@@ -36,7 +34,7 @@ async fn main() {
     let ticker = Arc::clone(&state);
     tokio::spawn(async move {
         let mut interval = tokio::time::interval(TICK_INTERVAL);
-        interval.tick().await; // o primeiro tick é imediato; a leitura inicial vale um ciclo inteiro
+        interval.tick().await;
         loop {
             interval.tick().await;
             ticker.tick();
@@ -50,15 +48,15 @@ async fn main() {
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     println!("Servidor em http://{addr} (rotas em /api/v1)");
 
-    axum::Server::bind(&addr)
-        .serve(api::router(state).into_make_service())
+    let listener = TcpListener::bind(&addr).await.expect("falha ao ligar listener TCP");
+    
+    axum::serve(listener, api::router(state))
         .with_graceful_shutdown(shutdown_signal())
         .await
         .expect("falha no servidor HTTP");
 }
 
-/// Mostra o projeto e os domínios do config/system.json. Sem o arquivo o
-/// servidor continua: ele não altera o comportamento da API.
+/// Mostra o projeto e os domínios do config/system.json.
 fn print_config() {
     let config = std::fs::read_to_string(CONFIG_PATH)
         .map_err(|error| error.to_string())

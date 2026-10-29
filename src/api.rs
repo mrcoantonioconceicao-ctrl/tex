@@ -261,7 +261,7 @@ mod tests {
             .await
             .unwrap();
         let status = response.status();
-        let bytes = hyper::body::to_bytes(response.into_body()).await.unwrap();
+        let bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
         (
             status,
             serde_json::from_slice(&bytes).unwrap_or(Value::Null),
