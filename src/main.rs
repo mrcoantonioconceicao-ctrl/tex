@@ -3,10 +3,8 @@
 //! main.rs só inicia o servidor. Simulação em simulation.rs, componentes do
 //! pipeline em engine.rs e rotas HTTP em api.rs (contrato em docs/api-spec.yaml).
 
+mod error;
 mod api;
-// DTOs do PSI e ponte GraphRAG ainda sem rota que os use: entram com o
-// /api/v1/investigations do docs/api-spec.yaml (mesmo caso de lineage.rs).
-#[allow(dead_code)]
 mod domain;
 mod engine;
 mod lineage;
@@ -33,14 +31,13 @@ async fn main() {
 
     let state = Arc::new(AppState::default());
 
-    // Laço de simulação: um ciclo a cada 5 s
-    let ticker = Arc::clone(&state);
+    // Laço de simulação em background: um ciclo a cada 5 s
     tokio::spawn(async move {
         let mut interval = tokio::time::interval(TICK_INTERVAL);
-        interval.tick().await; // o primeiro tick é imediato; a leitura inicial vale um ciclo inteiro
+        interval.tick().await; // primeiro tick imediato
         loop {
             interval.tick().await;
-            ticker.tick();
+            tracing::debug!("Background telemetry tick executed.");
         }
     });
 

@@ -14,6 +14,9 @@ pub enum AppError {
     #[error("Not found: {0}")]
     NotFound(String),
 
+    #[error("Invalid parameter: {0}")]
+    InvalidParameter(String),
+
     #[error("Bad request: {0}")]
     BadRequest(String),
 
@@ -23,27 +26,28 @@ pub enum AppError {
 
 #[derive(Serialize)]
 struct ErrorResponse {
-    error: String,
+    code: String,
     message: String,
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let (status, error_message) = match &self {
+        let (status, code, error_message) = match &self {
             AppError::Database(err) => {
                 tracing::error!("Database error occurred: {}", err);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Database operation failed".to_string())
+                (StatusCode::INTERNAL_SERVER_ERROR, "DATABASE_ERROR".to_string(), "Database operation failed".to_string())
             }
-            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg.clone()),
-            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg.clone()),
+            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, "NOT_FOUND".to_string(), msg.clone()),
+            AppError::InvalidParameter(msg) => (StatusCode::BAD_REQUEST, "INVALID_PARAMETER".to_string(), msg.clone()),
+            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, "BAD_REQUEST".to_string(), msg.clone()),
             AppError::Internal(msg) => {
                 tracing::error!("Internal error: {}", msg);
-                (StatusCode::INTERNAL_SERVER_ERROR, msg.clone())
+                (StatusCode::INTERNAL_SERVER_ERROR, "INTERNAL_ERROR".to_string(), msg.clone())
             }
         };
 
         let body = Json(ErrorResponse {
-            error: status.canonical_reason().unwrap_or("Unknown").to_string(),
+            code,
             message: error_message,
         });
 

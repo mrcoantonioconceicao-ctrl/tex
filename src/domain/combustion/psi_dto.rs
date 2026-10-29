@@ -1,71 +1,126 @@
 use serde::{Deserialize, Serialize};
+use crate::lineage::OriginCategory;
 
-/// Representa a Investigação do PSI conforme a migração 0002_psi_investigations.sql
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct PsiInvestigationDto {
-    pub psi_accession: String,
-    pub program: String,
-    pub project_type: String,
-    pub objective: String,
-    pub hardware: String,
-    pub doi: Option<String>,
-    pub license: String,
-    pub cc0_compliant: bool,
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum Program {
+    FLEX,
+    ACME,
+    Saffire,
+    BASS,
+    SAME,
+    DAFT,
+    SPICE,
+    SLICE,
+    CFI,
+    SoFIE,
+    #[serde(other)]
+    Other,
 }
 
-impl PsiInvestigationDto {
-    pub fn new(
-        accession: &str,
-        program: &str,
-        project_type: &str,
-        objective: &str,
-        hardware: &str,
-        license: &str,
-    ) -> Self {
-        Self {
-            psi_accession: accession.to_string(),
-            program: program.to_string(),
-            project_type: project_type.to_string(),
-            objective: objective.to_string(),
-            hardware: hardware.to_string(),
-            doi: None,
-            license: license.to_string(),
-            // Sai da licença declarada no PSI: nem toda investigação precisa ser CC0
-            cc0_compliant: license == "CC0-1.0",
+impl Program {
+    pub fn parse(s: &str) -> Option<Self> {
+        match s {
+            "FLEX" => Some(Self::FLEX),
+            "ACME" => Some(Self::ACME),
+            "Saffire" => Some(Self::Saffire),
+            "BASS" => Some(Self::BASS),
+            "SAME" => Some(Self::SAME),
+            "DAFT" => Some(Self::DAFT),
+            "SPICE" => Some(Self::SPICE),
+            "SLICE" => Some(Self::SLICE),
+            "CFI" => Some(Self::CFI),
+            "SoFIE" => Some(Self::SoFIE),
+            "Other" => Some(Self::Other),
+            _ => None,
         }
     }
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ProjectType {
+    #[serde(rename = "Microgravity Investigation")]
+    MicrogravityInvestigation,
+    #[serde(rename = "Ground Investigation")]
+    GroundInvestigation,
+    #[serde(rename = "Reduced Gravity Investigation")]
+    ReducedGravityInvestigation,
+}
+
+impl ProjectType {
+    pub fn parse(s: &str) -> Option<Self> {
+        match s {
+            "Microgravity Investigation" => Some(Self::MicrogravityInvestigation),
+            "Ground Investigation" => Some(Self::GroundInvestigation),
+            "Reduced Gravity Investigation" => Some(Self::ReducedGravityInvestigation),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvestigationFile {
+    pub category: String,
+    pub file_name: String,
+    pub file_bytes: Option<u64>,
+    pub sha256: Option<String>,
+    pub downloaded_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvestigationSummary {
+    pub accession: String,
+    pub name: String,
+    pub title: Option<String>,
+    pub program: Program,
+    pub project_type: Option<ProjectType>,
+    pub sub_research_area: Option<String>,
+    pub hardware: Vec<String>,
+    pub start_date: Option<String>,
+    pub end_date: Option<String>,
+    pub file_count: u32,
+    pub origin_category: OriginCategory,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Investigation {
+    #[serde(flatten)]
+    pub summary: InvestigationSummary,
+    pub psi_version: Option<i32>,
+    pub objective: Option<String>,
+    pub approach: Option<String>,
+    pub hypothesis: Option<String>,
+    pub doi: Option<String>,
+    pub license: Option<String>,
+    pub total_file_bytes: Option<u64>,
+    pub files: Vec<InvestigationFile>,
+    pub ingested_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InvestigationPage {
+    pub items: Vec<InvestigationSummary>,
+    pub total: u32,
+    pub page: u32,
+    pub page_size: u32,
+}
+
+// Compatibility DTO for GraphRAG context bridge
+pub type PsiInvestigationDto = Investigation;
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // Valores sintéticos dentro dos CHECKs da 0002 (program, project_type)
     #[test]
-    fn test_psi_dto_creation() {
-        let inv = PsiInvestigationDto::new(
-            "PSI-9001",
-            "BASS",
-            "Microgravity Investigation",
-            "Flame extinction limits",
-            "Standard Burner",
-            "CC0-1.0",
-        );
-        assert_eq!(inv.psi_accession, "PSI-9001");
-        assert_eq!(inv.program, "BASS");
-        assert!(inv.cc0_compliant);
+    fn test_program_parse() {
+        assert_eq!(Program::parse("FLEX"), Some(Program::FLEX));
+        assert_eq!(Program::parse("INVALID"), None);
     }
 
     #[test]
-    fn cc0_compliant_follows_license() {
-        let inv = PsiInvestigationDto::new(
-            "PSI-9002",
-            "Other",
-            "Ground Investigation",
-            "Synthetic objective",
-            "Synthetic hardware",
-            "CC-BY-4.0",
-        );
-        assert!(!inv.cc0_compliant);
+    fn test_project_type_serialization() {
+        let pt = ProjectType::MicrogravityInvestigation;
+        let json = serde_json::to_string(&pt).unwrap();
+        assert_eq!(json, "\"Microgravity Investigation\"");
     }
 }
