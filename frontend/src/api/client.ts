@@ -49,6 +49,14 @@ export class NetworkError extends Error {
   }
 }
 
+// Título curto do erro para a tela (o detalhe técnico fica em error.message)
+export function describeError(error: Error): string {
+  if (error instanceof NetworkError) return 'Sem conexão com o backend'
+  if (error instanceof ContractError) return 'Resposta fora do contrato'
+  if (error instanceof ApiError) return `Backend respondeu com erro ${error.status}`
+  return 'Erro inesperado'
+}
+
 async function request<T>(path: string, schema: z.ZodType<T>, init?: RequestInit): Promise<T> {
   const label = `${init?.method ?? 'GET'} ${path}`
   let response: Response

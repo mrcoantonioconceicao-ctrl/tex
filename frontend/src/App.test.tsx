@@ -8,7 +8,9 @@ import { TrendChart } from './dashboard/TrendChart'
 import { server } from './mocks/node'
 import { setMockScenario } from './mocks/scenario'
 
-function renderApp() {
+// Os testes do painel abrem direto na aba de simulação; '/' abre o catálogo (padrão)
+function renderApp(path = '/?tela=simulacao') {
+  window.history.replaceState(null, '', path)
   // retry desligado para os testes de erro não esperarem as novas tentativas
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
@@ -19,6 +21,35 @@ function renderApp() {
     </QueryClientProvider>,
   )
 }
+
+describe('Navegação', () => {
+  it('abre no catálogo do PSI por padrão', async () => {
+    renderApp('/')
+
+    expect(await screen.findByRole('heading', { name: 'Investigações de combustão do PSI' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Investigações do PSI' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.queryByText('SIM-TEX-001')).not.toBeInTheDocument()
+  })
+
+  it('troca para a simulação e grava a aba na URL', async () => {
+    const user = userEvent.setup()
+    renderApp('/')
+
+    await user.click(screen.getByRole('link', { name: 'Simulação de monitoramento' }))
+
+    expect(await screen.findByText('SIM-TEX-001')).toBeInTheDocument()
+    expect(window.location.search).toBe('?tela=simulacao')
+  })
+
+  it('volta ao catálogo preservando outros parâmetros da URL', async () => {
+    const user = userEvent.setup()
+    renderApp('/?cenario=critico&tela=simulacao')
+
+    await user.click(screen.getByRole('link', { name: 'Investigações do PSI' }))
+
+    expect(window.location.search).toBe('?cenario=critico')
+  })
+})
 
 describe('App', () => {
   it('mostra a telemetria recebida da API', async () => {
@@ -155,7 +186,8 @@ describe('Painel', () => {
     await user.selectOptions(screen.getByLabelText('Cenário do mock'), 'critico')
 
     expect(await screen.findByText('Crítico: supressão ativa')).toBeInTheDocument()
-    expect(window.location.search).toBe('?cenario=critico')
+    // O seletor preserva a aba já escolhida na URL
+    expect(window.location.search).toBe('?tela=simulacao&cenario=critico')
   })
 
   it('aciona a supressão pelo botão e mostra o selo', async () => {

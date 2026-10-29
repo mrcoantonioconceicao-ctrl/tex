@@ -1,5 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  getInvestigation,
+  getInvestigations,
   getLatestTelemetry,
   getPredictionReport,
   getSystemMetrics,
@@ -7,6 +9,7 @@ import {
   resetSimulation,
   triggerSuppression,
 } from './client'
+import type { InvestigationQuery } from './types'
 
 export const TELEMETRY_POLL_MS = Number(import.meta.env.VITE_TELEMETRY_POLL_MS ?? 2000)
 // Métricas mudam pouco: polling mais espaçado
@@ -51,5 +54,23 @@ export function useSimulationControl() {
   return useMutation({
     mutationFn: (action: SimulationAction) => (action === 'suppress' ? triggerSuppression() : resetSimulation()),
     onSuccess: (telemetry) => queryClient.setQueryData(TELEMETRY_KEY, telemetry),
+  })
+}
+
+// Catálogo muda só quando a ingestão roda: sem polling. Ao trocar de filtro ou página,
+// a lista anterior continua na tela até a nova chegar (sem piscar vazio).
+export function useInvestigations(query: InvestigationQuery) {
+  return useQuery({
+    queryKey: ['investigations', query],
+    queryFn: () => getInvestigations(query),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useInvestigation(accession: string | null) {
+  return useQuery({
+    queryKey: ['investigations', accession],
+    queryFn: () => getInvestigation(accession ?? ''),
+    enabled: accession !== null,
   })
 }

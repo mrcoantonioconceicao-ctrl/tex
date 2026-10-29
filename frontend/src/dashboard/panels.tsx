@@ -2,7 +2,7 @@
 // trazem texto e forma (ícone) junto.
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { ApiError, ContractError, NetworkError } from '../api/client'
+import { describeError } from '../api/client'
 import { useMcpContext, useSimulationControl } from '../api/hooks'
 import type { CombustionTelemetry, SystemPerformanceMetrics } from '../api/types'
 import { getMockScenario, isMockScenario, MOCK_SCENARIOS, setMockScenario } from '../mocks/scenario'
@@ -140,13 +140,6 @@ export function SyntheticDataNotice() {
       representam telemetria real da ISS.
     </p>
   )
-}
-
-function describeError(error: Error): string {
-  if (error instanceof NetworkError) return 'Sem conexão com o backend'
-  if (error instanceof ContractError) return 'Resposta fora do contrato'
-  if (error instanceof ApiError) return `Backend respondeu com erro ${error.status}`
-  return 'Erro inesperado'
 }
 
 interface StatusBannerProps {

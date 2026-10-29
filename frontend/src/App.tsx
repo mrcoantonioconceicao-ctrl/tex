@@ -1,43 +1,44 @@
-// Painel de monitoramento (base estrutural). As telas específicas do desafio
-// serão desenhadas a partir de 14/11, com o enunciado oficial.
-import { TELEMETRY_POLL_MS, useLatestTelemetry, useSystemMetrics } from './api/hooks'
+// Casca do painel: cabeçalho e duas abas. O catálogo do PSI é o centro do desafio
+// (docs/conhecimento/enunciado.md); a simulação de monitoramento é contexto.
+// A aba fica na URL (?tela=simulacao) para dar para compartilhar o link.
+import { useState, type MouseEvent } from 'react'
 import texLogo from './assets/texlabs.jpeg'
-import { useNow, useTelemetryHistory } from './dashboard/hooks'
-import { connectionStatus, secondsSince, TEMPERATURE_THRESHOLDS } from './dashboard/model'
-import {
-  ConnectionBadge,
-  McpPanel,
-  MetricsPanel,
-  ReadingTile,
-  RiskPanel,
-  ScenarioPicker,
-  SimulationControls,
-  StatusBanner,
-  SyntheticDataNotice,
-} from './dashboard/panels'
-import { PredictionsPanel } from './dashboard/PredictionsPanel'
-import { TrendChart } from './dashboard/TrendChart'
+import { InvestigationsCatalog } from './catalog/InvestigationsCatalog'
+import { MonitoringView } from './dashboard/MonitoringView'
+import { ScenarioPicker } from './dashboard/panels'
 
 const usingMocks = import.meta.env.VITE_USE_MOCKS === 'true'
 const dataSource = usingMocks ? 'mock (MSW)' : 'backend Axum'
 
-function App() {
-  const telemetry = useLatestTelemetry()
-  const metrics = useSystemMetrics()
-  const now = useNow()
-  const history = useTelemetryHistory(telemetry.data, telemetry.dataUpdatedAt)
+type View = 'catalogo' | 'simulacao'
 
-  const status = connectionStatus({
-    hasData: telemetry.data !== undefined,
-    isError: telemetry.isError,
-    updatedAt: telemetry.dataUpdatedAt,
-    now,
-    pollMs: TELEMETRY_POLL_MS,
-  })
-  const ageSeconds = telemetry.data ? secondsSince(telemetry.dataUpdatedAt, now) : null
-  const outdated = status === 'stale' || status === 'error'
-  // Mock é sempre sintético; com o backend, quem diz é o origin_category da leitura
-  const synthetic = usingMocks || telemetry.data?.origin_category === 'Synthetic'
+const VIEWS: { id: View; label: string }[] = [
+  { id: 'catalogo', label: 'Investigações do PSI' },
+  { id: 'simulacao', label: 'Simulação de monitoramento' },
+]
+
+function viewFromUrl(): View {
+  return new URLSearchParams(window.location.search).get('tela') === 'simulacao' ? 'simulacao' : 'catalogo'
+}
+
+function hrefFor(view: View): string {
+  const params = new URLSearchParams(window.location.search)
+  if (view === 'catalogo') params.delete('tela')
+  else params.set('tela', view)
+  const search = params.toString()
+  return search ? `?${search}` : window.location.pathname
+}
+
+function App() {
+  const [view, setView] = useState<View>(viewFromUrl)
+
+  // Link de verdade (abre em nova aba com o botão do meio); clique normal troca sem recarregar
+  function handleNavigate(event: MouseEvent<HTMLAnchorElement>, next: View) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return
+    event.preventDefault()
+    window.history.replaceState(null, '', hrefFor(next))
+    setView(next)
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -50,70 +51,35 @@ function App() {
               <img src={texLogo} alt="" className="-mt-[11px] -ml-[30px] h-[72px] w-[132px] max-w-none" />
             </span>
             <div>
-              <h1 className="text-2xl font-semibold">Tex Labs: monitoramento de combustão</h1>
+              <h1 className="text-2xl font-semibold">Tex Labs: segurança contra incêndio em microgravidade</h1>
               <p className="text-sm text-slate-400">Fonte de dados: {dataSource}</p>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            {usingMocks && <ScenarioPicker />}
-            <ConnectionBadge status={status} ageSeconds={ageSeconds} synthetic={synthetic} />
-          </div>
+          {usingMocks && <ScenarioPicker />}
         </header>
 
-        {synthetic && <SyntheticDataNotice />}
+        <nav aria-label="Seções do painel" className="flex flex-wrap gap-2 border-b border-slate-800">
+          {VIEWS.map(({ id, label }) => {
+            const active = id === view
+            return (
+              <a
+                key={id}
+                href={hrefFor(id)}
+                onClick={(event) => handleNavigate(event, id)}
+                aria-current={active ? 'page' : undefined}
+                className={`-mb-px border-b-2 px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-sky-400 ${
+                  active
+                    ? 'border-sky-400 font-semibold text-slate-100'
+                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {label}
+              </a>
+            )
+          })}
+        </nav>
 
-        <StatusBanner status={status} error={telemetry.error} hasData={telemetry.data !== undefined} />
-
-        {telemetry.data && (
-          <>
-            <div className="grid gap-4 lg:grid-cols-3">
-              <div className="space-y-4">
-                <RiskPanel telemetry={telemetry.data} outdated={outdated} />
-                <SimulationControls suppressionActive={telemetry.data.suppression_active} />
-              </div>
-              <div className="grid content-start gap-4 sm:grid-cols-3 lg:col-span-2">
-                <ReadingTile
-                  label="Temperatura da câmara"
-                  value={telemetry.data.chamber_temperature_c}
-                  unit="°C"
-                  outdated={outdated}
-                />
-                <ReadingTile
-                  label="Oxigênio"
-                  value={telemetry.data.oxygen_concentration_pct}
-                  unit="%"
-                  outdated={outdated}
-                />
-                <ReadingTile
-                  label="Propagação da chama"
-                  value={telemetry.data.flame_spread_rate_mm_s}
-                  unit="mm/s"
-                  digits={2}
-                  outdated={outdated}
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-4 lg:grid-cols-2">
-              <TrendChart
-                title="Temperatura da câmara"
-                unit="°C"
-                readings={history}
-                select={(r) => r.temperature}
-                thresholds={TEMPERATURE_THRESHOLDS}
-              />
-              <TrendChart title="Oxigênio" unit="%" readings={history} select={(r) => r.oxygen} />
-            </div>
-          </>
-        )}
-
-        {/* Não depende da telemetria: o relatório é estático e aparece mesmo com o backend fora */}
-        <PredictionsPanel />
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          <MetricsPanel data={metrics.data} error={metrics.error} />
-          <McpPanel />
-        </div>
+        {view === 'catalogo' ? <InvestigationsCatalog /> : <MonitoringView usingMocks={usingMocks} />}
       </main>
     </div>
   )
