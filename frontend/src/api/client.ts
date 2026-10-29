@@ -4,12 +4,17 @@ import { z } from 'zod'
 import predictionReportJson from '../data/predicoes.json'
 import {
   combustionTelemetrySchema,
+  investigationPageSchema,
+  investigationSchema,
   mcpContextResponseSchema,
   predictionReportSchema,
   systemPerformanceMetricsSchema,
 } from './schemas'
 import type {
   CombustionTelemetry,
+  Investigation,
+  InvestigationPage,
+  InvestigationQuery,
   McpContextRequest,
   McpContextResponse,
   PredictionReport,
@@ -90,6 +95,20 @@ export async function getPredictionReport(raw: unknown = predictionReportJson): 
     throw new ContractError(`data/predicoes.json fora do contrato:\n${z.prettifyError(result.error)}`)
   }
   return result.data
+}
+
+// Catálogo do PSI: só os filtros informados vão para a query string
+export function getInvestigations(query: InvestigationQuery = {}): Promise<InvestigationPage> {
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined && value !== '') params.set(key, String(value))
+  }
+  const search = params.size > 0 ? `?${params}` : ''
+  return request(`/investigations${search}`, investigationPageSchema)
+}
+
+export function getInvestigation(accession: string): Promise<Investigation> {
+  return request(`/investigations/${encodeURIComponent(accession)}`, investigationSchema)
 }
 
 export function postMcpContext(body: McpContextRequest): Promise<McpContextResponse> {

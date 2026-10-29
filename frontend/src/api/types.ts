@@ -57,6 +57,90 @@ export interface McpContextResponse {
   origin_category: OriginCategory
 }
 
+// ---- Investigações do PSI (tabelas experiments e experiment_files, migração 0002) ----
+
+// Mesmo CHECK de experiments.program (FLEX-2 entra como FLEX, BASS-II como BASS)
+export type Program =
+  | 'FLEX'
+  | 'ACME'
+  | 'Saffire'
+  | 'BASS'
+  | 'SAME'
+  | 'DAFT'
+  | 'SPICE'
+  | 'SLICE'
+  | 'CFI'
+  | 'SoFIE'
+  | 'Other'
+
+export type ProjectType =
+  | 'Microgravity Investigation'
+  | 'Ground Investigation'
+  | 'Reduced Gravity Investigation'
+
+export interface InvestigationFile {
+  category: string
+  file_name: string
+  file_bytes: number | null
+  // null enquanto o arquivo não foi baixado e conferido
+  sha256: string | null
+  downloaded_at: string | null
+}
+
+// GET /api/v1/investigations (cada item). Campo opcional da fonte chega como null.
+export interface InvestigationSummary {
+  // PSI-<número>, ex.: PSI-25
+  accession: string
+  // Sigla; o próprio código quando o PSI não informa
+  name: string
+  title: string | null
+  program: Program
+  project_type: ProjectType | null
+  sub_research_area: string | null
+  hardware: string[]
+  // AAAA-MM-DD
+  start_date: string | null
+  end_date: string | null
+  file_count: number
+  origin_category: OriginCategory
+}
+
+// GET /api/v1/investigations/{accession}
+export interface Investigation extends InvestigationSummary {
+  psi_version: number | null
+  objective: string | null
+  approach: string | null
+  hypothesis: string | null
+  doi: string | null
+  license: string | null
+  total_file_bytes: number | null
+  files: InvestigationFile[]
+  ingested_at: string | null
+}
+
+export interface InvestigationPage {
+  items: InvestigationSummary[]
+  // Total que casa com os filtros (todas as páginas)
+  total: number
+  page: number
+  page_size: number
+}
+
+// Filtros de GET /api/v1/investigations (todos opcionais)
+export interface InvestigationQuery {
+  program?: Program
+  project_type?: ProjectType
+  q?: string
+  page?: number
+  page_size?: number
+}
+
+// Corpo dos erros 400/404 das rotas de investigações
+export interface ApiErrorBody {
+  code: 'INVALID_PARAMETER' | 'NOT_FOUND'
+  message: string
+}
+
 // ---- Relatório de predições (não é endpoint) ----
 // Arquivo gerado por simulation/predicoes.py em ../data/predicoes.json.
 // Mudou lá, muda aqui e em schemas.ts.

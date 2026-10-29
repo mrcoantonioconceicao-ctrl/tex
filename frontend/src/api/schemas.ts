@@ -4,6 +4,9 @@
 import { z } from 'zod'
 import type {
   CombustionTelemetry,
+  Investigation,
+  InvestigationPage,
+  InvestigationSummary,
   McpContextResponse,
   PredictionReport,
   SystemPerformanceMetrics,
@@ -45,6 +48,73 @@ export const mcpContextResponseSchema = z.object({
   }),
   origin_category: originCategorySchema,
 }) satisfies z.ZodType<McpContextResponse>
+
+// ---- Investigações do PSI (migração 0002) ----
+
+export const programSchema = z.enum([
+  'FLEX',
+  'ACME',
+  'Saffire',
+  'BASS',
+  'SAME',
+  'DAFT',
+  'SPICE',
+  'SLICE',
+  'CFI',
+  'SoFIE',
+  'Other',
+])
+
+export const projectTypeSchema = z.enum([
+  'Microgravity Investigation',
+  'Ground Investigation',
+  'Reduced Gravity Investigation',
+])
+
+export const ACCESSION_PATTERN = /^PSI-\d+$/
+
+const byteCountSchema = z.number().int().nonnegative()
+
+export const investigationSummarySchema = z.object({
+  accession: z.string().regex(ACCESSION_PATTERN),
+  name: z.string(),
+  title: z.string().nullable(),
+  program: programSchema,
+  project_type: projectTypeSchema.nullable(),
+  sub_research_area: z.string().nullable(),
+  hardware: z.array(z.string()),
+  start_date: z.iso.date().nullable(),
+  end_date: z.iso.date().nullable(),
+  file_count: z.number().int().nonnegative(),
+  origin_category: originCategorySchema,
+}) satisfies z.ZodType<InvestigationSummary>
+
+export const investigationSchema = investigationSummarySchema.extend({
+  psi_version: z.number().int().positive().nullable(),
+  objective: z.string().nullable(),
+  approach: z.string().nullable(),
+  hypothesis: z.string().nullable(),
+  doi: z.string().nullable(),
+  license: z.string().nullable(),
+  total_file_bytes: byteCountSchema.nullable(),
+  files: z.array(
+    z.object({
+      category: z.string(),
+      file_name: z.string(),
+      file_bytes: byteCountSchema.nullable(),
+      sha256: z.string().regex(/^[0-9a-f]{64}$/).nullable(),
+      downloaded_at: z.iso.datetime().nullable(),
+    }),
+  ),
+  ingested_at: z.iso.datetime().nullable(),
+}) satisfies z.ZodType<Investigation>
+
+export const investigationPageSchema = z.object({
+  items: z.array(investigationSummarySchema),
+  total: z.number().int().nonnegative(),
+  page: z.number().int().positive(),
+  page_size: z.number().int().positive().max(100),
+}) satisfies z.ZodType<InvestigationPage>
 
 // ---- Relatório de predições (simulation/predicoes.py) ----
 

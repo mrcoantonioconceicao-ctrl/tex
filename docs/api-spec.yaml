@@ -94,6 +94,94 @@ paths:
               schema:
                 $ref: '#/components/schemas/Telemetry'
 
+  /investigations:
+    get:
+      summary: Catálogo das investigações do PSI (só metadados, sem medições)
+      description: >
+        Lê experiments e experiment_files (ingestion/db/migrations/0002). Só
+        investigações com psi_accession entram. Ordem: número do código PSI,
+        crescente. Ranqueamento por ambiente e resumo por IA ficam para depois
+        de 14/11 e entram como campos novos, sem quebrar este formato.
+      parameters:
+        - name: program
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Program'
+        - name: project_type
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/ProjectType'
+        - name: q
+          in: query
+          required: false
+          description: Busca sem diferenciar maiúsculas no código, nome, título e objetivo
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+            example: flame
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Uma página do catálogo (items vazio quando nada casa)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvestigationPage'
+        '400':
+          description: Parâmetro inválido (programa desconhecido, página fora do limite)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorBody'
+
+  /investigations/{accession}:
+    get:
+      summary: Detalhe de uma investigação do PSI, com a lista de arquivos
+      parameters:
+        - name: accession
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^PSI-\d+$'
+            example: PSI-25
+      responses:
+        '200':
+          description: Investigação encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Investigation'
+        '400':
+          description: Código fora do formato PSI-<número>
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorBody'
+        '404':
+          description: Nenhuma investigação com esse código
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorBody'
+
 components:
   schemas:
     Health:
@@ -223,3 +311,179 @@ components:
               type: integer
             compression_efficiency_pct:
               type: number
+
+    # ---- Investigações do PSI (tabelas experiments e experiment_files, migração 0002) ----
+
+    Program:
+      type: string
+      enum: [FLEX, ACME, Saffire, BASS, SAME, DAFT, SPICE, SLICE, CFI, SoFIE, Other]
+      description: >
+        Mesmo CHECK de experiments.program. Variantes entram no programa-base
+        (FLEX-2 → FLEX, BASS-II → BASS); sigla sem programa conhecido vira Other.
+
+    ProjectType:
+      type: string
+      enum: [Microgravity Investigation, Ground Investigation, Reduced Gravity Investigation]
+
+    InvestigationFile:
+      type: object
+      required: [category, file_name, file_bytes, sha256, downloaded_at]
+      properties:
+        category:
+          type: string
+          example: Experimental table
+        file_name:
+          type: string
+        file_bytes:
+          type: integer
+          minimum: 0
+          nullable: true
+        sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+          nullable: true
+          description: null enquanto o arquivo não foi baixado e conferido
+        downloaded_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    InvestigationSummary:
+      type: object
+      description: Linha do catálogo. Campos opcionais da fonte chegam como null.
+      required:
+        - accession
+        - name
+        - title
+        - program
+        - project_type
+        - sub_research_area
+        - hardware
+        - start_date
+        - end_date
+        - file_count
+        - origin_category
+      properties:
+        accession:
+          type: string
+          pattern: '^PSI-\d+$'
+          example: PSI-25
+        name:
+          type: string
+          description: Sigla da investigação; o próprio código quando o PSI não informa
+          example: BASS-II
+        title:
+          type: string
+          nullable: true
+        program:
+          $ref: '#/components/schemas/Program'
+        project_type:
+          allOf:
+            - $ref: '#/components/schemas/ProjectType'
+          nullable: true
+        sub_research_area:
+          type: string
+          nullable: true
+        hardware:
+          type: array
+          items:
+            type: string
+          description: Lista vazia quando o PSI não informa
+          example: [Combustion Integrated Rack (CIR)]
+        start_date:
+          type: string
+          format: date
+          nullable: true
+          example: '2020-01-15'
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        file_count:
+          type: integer
+          minimum: 0
+        origin_category:
+          $ref: '#/components/schemas/OriginCategory'
+
+    Investigation:
+      description: >
+        Detalhe: o resumo mais os textos da fonte e os arquivos. Os textos são
+        os do PSI, sem edição (base do resumo por IA depois de 14/11).
+      allOf:
+        - $ref: '#/components/schemas/InvestigationSummary'
+        - type: object
+          required:
+            - psi_version
+            - objective
+            - approach
+            - hypothesis
+            - doi
+            - license
+            - total_file_bytes
+            - files
+            - ingested_at
+          properties:
+            psi_version:
+              type: integer
+              minimum: 1
+              nullable: true
+            objective:
+              type: string
+              nullable: true
+            approach:
+              type: string
+              nullable: true
+            hypothesis:
+              type: string
+              nullable: true
+            doi:
+              type: string
+              nullable: true
+              description: Citação exigida pelo PSI
+            license:
+              type: string
+              nullable: true
+              example: CC0-1.0
+            total_file_bytes:
+              type: integer
+              minimum: 0
+              nullable: true
+            files:
+              type: array
+              items:
+                $ref: '#/components/schemas/InvestigationFile'
+            ingested_at:
+              type: string
+              format: date-time
+              nullable: true
+
+    InvestigationPage:
+      type: object
+      required: [items, total, page, page_size]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvestigationSummary'
+        total:
+          type: integer
+          minimum: 0
+          description: Total que casa com os filtros (todas as páginas)
+        page:
+          type: integer
+          minimum: 1
+        page_size:
+          type: integer
+          minimum: 1
+          maximum: 100
+
+    ApiErrorBody:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [INVALID_PARAMETER, NOT_FOUND]
+        message:
+          type: string
+          description: Texto para quem lê o log; a tela não deve depender dele
