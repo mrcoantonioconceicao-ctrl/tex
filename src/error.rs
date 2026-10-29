@@ -1,3 +1,8 @@
+//! Erros da API no formato ApiErrorBody do docs/api-spec.yaml ({code, message}).
+//!
+//! Só existe o que alguma rota já usa: INVALID_PARAMETER entra com o
+//! /api/v1/investigations, junto com o mapeamento dos erros do sqlx.
+
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -6,47 +11,27 @@ use axum::{
 use serde::Serialize;
 use thiserror::Error;
 
-#[derive(Error, Debug)]
+#[derive(Debug, Error)]
 pub enum AppError {
-    #[error("Database error: {0}")]
-    Database(#[from] sqlx::Error),
-
-    #[error("Not found: {0}")]
+    #[error("{0}")]
     NotFound(String),
-
-    #[error("Bad request: {0}")]
-    BadRequest(String),
-
-    #[error("Internal server error: {0}")]
-    Internal(String),
 }
 
-#[derive(Serialize)]
-struct ErrorResponse {
-    error: String,
+#[derive(Debug, Serialize)]
+struct ApiErrorBody {
+    code: &'static str,
     message: String,
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        let (status, error_message) = match &self {
-            AppError::Database(err) => {
-                tracing::error!("Database error occurred: {}", err);
-                (StatusCode::INTERNAL_SERVER_ERROR, "Database operation failed".to_string())
-            }
-            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, msg.clone()),
-            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg.clone()),
-            AppError::Internal(msg) => {
-                tracing::error!("Internal error: {}", msg);
-                (StatusCode::INTERNAL_SERVER_ERROR, msg.clone())
-            }
+        let (status, code) = match &self {
+            AppError::NotFound(_) => (StatusCode::NOT_FOUND, "NOT_FOUND"),
         };
-
-        let body = Json(ErrorResponse {
-            error: status.canonical_reason().unwrap_or("Unknown").to_string(),
-            message: error_message,
-        });
-
-        (status, body).into_response()
+        let body = ApiErrorBody {
+            code,
+            message: self.to_string(),
+        };
+        (status, Json(body)).into_response()
     }
 }
