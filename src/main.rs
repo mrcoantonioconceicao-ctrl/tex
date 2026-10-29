@@ -4,6 +4,9 @@
 //! pipeline em engine.rs e rotas HTTP em api.rs (contrato em docs/api-spec.yaml).
 
 mod api;
+// DTOs do PSI e ponte GraphRAG ainda sem rota que os use: entram com o
+// /api/v1/investigations do docs/api-spec.yaml (mesmo caso de lineage.rs).
+#[allow(dead_code)]
 mod domain;
 mod engine;
 mod lineage;
