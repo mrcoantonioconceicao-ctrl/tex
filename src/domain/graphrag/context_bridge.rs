@@ -15,12 +15,12 @@ impl GraphRagBridge {
 
     pub fn enrich_with_psi(investigation: &PsiInvestigationDto) -> String {
         format!(
-            "Investigação PSI [{}] - Experimento: {} | Combustível: {} | O2: {}% | Pressão: {} kPa",
-            investigation.investigation_id,
-            investigation.experiment_type,
-            investigation.fuel_type,
-            investigation.oxygen_concentration_pct,
-            investigation.ambient_pressure_kpa
+            "Investigação PSI [{}] - Programa: {} | Projeto: {} | Hardware: {} | Licença: {}",
+            investigation.psi_accession,
+            investigation.program,
+            investigation.project_type,
+            investigation.hardware,
+            investigation.license
         )
     }
 }

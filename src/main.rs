@@ -4,6 +4,7 @@
 //! pipeline em engine.rs e rotas HTTP em api.rs (contrato em docs/api-spec.yaml).
 
 mod api;
+mod domain;
 mod engine;
 mod lineage;
 mod simulation;
