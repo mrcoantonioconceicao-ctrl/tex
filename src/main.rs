@@ -64,7 +64,8 @@ async fn main() {
         .expect("falha ao abrir a porta do servidor");
     let cors_origins = std::env::var("CORS_ALLOWED_ORIGINS")
         .unwrap_or_else(|_| api::DEFAULT_CORS_ORIGINS.to_string());
-    axum::serve(listener, api::router(state, api::parse_origins(&cors_origins)))
+    let app = api::router(state, api::parse_origins(&cors_origins));
+    axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await
         .expect("falha no servidor HTTP");

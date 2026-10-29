@@ -390,10 +390,7 @@ mod tests {
     }
 
     async fn preflight(origin: &str) -> Reply {
-        let headers = [
-            ("Origin", origin),
-            ("Access-Control-Request-Method", "GET"),
-        ];
+        let headers = [("Origin", origin), ("Access-Control-Request-Method", "GET")];
         request(
             &new_state(),
             "OPTIONS",
