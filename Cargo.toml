@@ -14,6 +14,7 @@ chrono = { version = "0.4", features = ["serde"] }
 sha2 = "0.10"
 
 [dev-dependencies]
-# Testes das rotas HTTP (mesmas versões que o axum 0.6 já usa)
+# Testes das rotas HTTP (oneshot do tower). O hyper 0.14 sobrou do axum 0.6 e
+# não é mais usado: sai junto com a próxima atualização do Cargo.lock
 tower = { version = "0.4", features = ["util"] }
 hyper = "0.14"

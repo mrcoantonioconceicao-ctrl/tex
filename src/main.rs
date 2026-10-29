@@ -1,63 +1,101 @@
-#![allow(warnings)]
-
-use axum::{routing::get, Router};
-use std::net::SocketAddr;
-use std::sync::Arc;
-use tokio::net::TcpListener;
+//! Tex Labs: backend Axum do NASA Space Apps Challenge 2026 (Free-Fall Flame).
+//!
+//! main.rs só inicia o servidor. Simulação em simulation.rs, componentes do
+//! pipeline em engine.rs e rotas HTTP em api.rs (contrato em docs/api-spec.yaml).
 
 mod api;
+// DTOs do PSI e ponte GraphRAG ainda sem rota que os use: entram com o
+// /api/v1/investigations do docs/api-spec.yaml (mesmo caso de lineage.rs).
+#[allow(dead_code)]
 mod domain;
 mod engine;
 mod lineage;
 mod simulation;
 
+use std::net::SocketAddr;
+use std::sync::Arc;
+use std::time::Duration;
+
+use api::AppState;
+use tokio::net::TcpListener;
+
+const TICK_INTERVAL: Duration = Duration::from_secs(5);
+const CONFIG_PATH: &str = "config/system.json";
+const DEFAULT_PORT: u16 = 8080;
+
 #[tokio::main]
 async fn main() {
-    let state = Arc::new(api::AppState::new());
+    println!("==================================================");
+    println!("         TEX LABS - SPACE APPS 2026               ");
+    println!("  Microgravity Fire Safety & GraphRAG Engine      ");
+    println!("==================================================");
+    print_config();
 
-    // Background ticker loop to advance simulation state periodically
-    let ticker_state = Arc::clone(&state);
+    let state = Arc::new(AppState::default());
+
+    // Laço de simulação: um ciclo a cada 5 s
+    let ticker = Arc::clone(&state);
     tokio::spawn(async move {
-        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(1));
+        let mut interval = tokio::time::interval(TICK_INTERVAL);
+        interval.tick().await; // o primeiro tick é imediato; a leitura inicial vale um ciclo inteiro
         loop {
             interval.tick().await;
-            ticker_state.tick().await;
+            ticker.tick();
         }
     });
 
     let port = std::env::var("PORT")
-        .unwrap_or_else(|_| "8080".to_string())
-        .parse::<u16>()
-        .unwrap_or(8080);
-
+        .ok()
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(DEFAULT_PORT);
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     println!("Servidor em http://{addr} (rotas em /api/v1)");
 
-    let listener = TcpListener::bind(&addr)
+    let listener = TcpListener::bind(addr)
         .await
-        .expect("falha ao ligar listener TCP");
-
+        .expect("falha ao abrir a porta do servidor");
     axum::serve(listener, api::router(state))
         .with_graceful_shutdown(shutdown_signal())
         .await
-        .unwrap();
+        .expect("falha no servidor HTTP");
 }
 
+/// Mostra o projeto e os domínios do config/system.json. Sem o arquivo o
+/// servidor continua: ele não altera o comportamento da API.
+fn print_config() {
+    let config = std::fs::read_to_string(CONFIG_PATH)
+        .map_err(|error| error.to_string())
+        .and_then(|raw| {
+            serde_json::from_str::<serde_json::Value>(&raw).map_err(|error| error.to_string())
+        });
+
+    match config {
+        Ok(config) => {
+            println!(
+                "[✔] Projeto: {}",
+                config["project"].as_str().unwrap_or("(sem nome)")
+            );
+            println!("[i] Domínios DDD: {}", config["architecture"]["domains"]);
+        }
+        Err(error) => eprintln!("[!] {CONFIG_PATH} não carregado ({error}); seguindo sem ele"),
+    }
+}
+
+/// Ctrl+C ou SIGTERM (docker stop): encerra respondendo as requisições em andamento
 async fn shutdown_signal() {
     let ctrl_c = async {
         tokio::signal::ctrl_c()
             .await
-            .expect("falha ao instalar handler de Ctrl+C");
+            .expect("falha ao escutar Ctrl+C");
     };
 
     #[cfg(unix)]
     let terminate = async {
         tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
-            .expect("falha ao instalar handler de sinal SIGTERM")
+            .expect("falha ao escutar SIGTERM")
             .recv()
             .await;
     };
-
     #[cfg(not(unix))]
     let terminate = std::future::pending::<()>();
 
@@ -65,6 +103,5 @@ async fn shutdown_signal() {
         _ = ctrl_c => {},
         _ = terminate => {},
     }
-
-    println!("Sinal de encerramento recebido, desligando graciosamente...");
+    println!("Encerrando o servidor...");
 }

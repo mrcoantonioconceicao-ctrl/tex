@@ -39,7 +39,7 @@ Em respostas, código e documentação, separar sempre:
 
 ## Arquitetura e stack
 - **Contrato da API:** OpenAPI 3.0 em `docs/api-spec.yaml` (v1). É a fonte de verdade: mudou lá, muda no Rust (`src/api.rs`) e no front (`frontend/src/api/types.ts` e `schemas.ts`). Não listar endpoints em outro lugar.
-- **Backend** (`src/`): Rust 2021, Axum 0.6, Tokio, porta 8080. `main.rs` (servidor), `simulation.rs` (física da simulação), `engine.rs` (AST, Aster Event Bus, GraphRAG, MCP, Token Crusher, auditoria SHA-256), `api.rs` (rotas `/api/v1`). Domínios DDD planejados: CombustionAnalysis, GraphRAGKnowledge, Web3AuditTrail, Compliance.
+- **Backend** (`src/`): Rust 2021, Axum 0.7, Tokio, porta 8080. `main.rs` (servidor), `simulation.rs` (física da simulação), `engine.rs` (AST, Aster Event Bus, GraphRAG, MCP, Token Crusher, auditoria SHA-256), `api.rs` (rotas `/api/v1`). Domínios DDD planejados: CombustionAnalysis, GraphRAGKnowledge, Web3AuditTrail, Compliance.
 - **Frontend** (`frontend/`): SPA Vite + React + TypeScript, TanStack Query, Zod, MSW, Tailwind. Acesso à API isolado em `src/api/` (trocar mock por API real sem refatorar telas).
 - **Ingestão** (`ingestion/`): TypeScript no Node 22, separada do front.
 - **Simulação preditiva** (`simulation/`): Python, só biblioteca padrão. `predicoes.py` calibra um modelo de ΔCO nos testes publicados do Saffire IV a VI (NTRS 20240002981) e grava `frontend/src/data/predicoes.json`, que o painel lê sem passar pelo backend. Testes publicados saem como `Published`; projeções, como `Synthetic`. Mudou o modelo: `make simulate` (a CI barra JSON desatualizado).
