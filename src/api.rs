@@ -1,12 +1,13 @@
+use crate::domain::ai::{Summarizer, SyntheticSummarizer};
+use crate::simulation::{Simulation, EXPERIMENT_ID};
 use axum::{
-    routing::{get, post},
     extract::State,
-    Json, Router, http::StatusCode,
+    http::StatusCode,
+    routing::{get, post},
+    Json, Router,
 };
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use crate::domain::ai::{Summarizer, SyntheticSummarizer};
-use crate::simulation::{Simulation, EXPERIMENT_ID};
 
 pub struct AppState {
     pub simulation: Mutex<Simulation>,
@@ -135,8 +136,10 @@ mod tests {
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::OK);
-        
-        let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+
+        let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
         let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
         assert!(body_str.contains("[SYNTHETIC AI]"));
     }
@@ -178,7 +181,7 @@ mod tests {
     async fn audit_trail_registra_ticks() {
         let state = Arc::new(AppState::new());
         state.tick().await;
-        
+
         let app = router(state);
         let response = app
             .oneshot(
@@ -191,7 +194,9 @@ mod tests {
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::OK);
-        let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
         let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
         assert!(body_str.contains("Tick executed"));
     }
@@ -210,7 +215,9 @@ mod tests {
             .unwrap();
 
         assert_eq!(response.status(), StatusCode::OK);
-        let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
         let body_str = String::from_utf8(body_bytes.to_vec()).unwrap();
         assert!(body_str.contains(EXPERIMENT_ID));
     }
@@ -220,7 +227,7 @@ mod tests {
         let state = Arc::new(AppState::new());
         state.tick().await;
         state.tick().await;
-        
+
         let sim = state.simulation.lock().await;
         assert_eq!(sim.sequence, 2);
     }

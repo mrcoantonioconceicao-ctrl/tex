@@ -48,8 +48,10 @@ async fn main() {
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     println!("Servidor em http://{addr} (rotas em /api/v1)");
 
-    let listener = TcpListener::bind(&addr).await.expect("falha ao ligar listener TCP");
-    
+    let listener = TcpListener::bind(&addr)
+        .await
+        .expect("falha ao ligar listener TCP");
+
     axum::serve(listener, api::router(state))
         .with_graceful_shutdown(shutdown_signal())
         .await
