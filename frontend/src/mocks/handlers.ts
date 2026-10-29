@@ -9,6 +9,7 @@ import type {
   RiskLevel,
   SystemPerformanceMetrics,
 } from '../api/types'
+import { findInvestigation, listInvestigations } from './investigations'
 import { getMockScenario, type MockScenario } from './scenario'
 
 // '*' casa com qualquer origem: URL relativa no navegador, absoluta nos testes
@@ -187,5 +188,19 @@ export const handlers = [
       },
       origin_category: 'Synthetic',
     })
+  }),
+
+  http.get(`${BASE}/investigations`, async ({ request }) => {
+    const failure = await applyTransport()
+    if (failure) return failure
+    const { status, body } = listInvestigations(new URL(request.url).searchParams)
+    return HttpResponse.json(body, { status })
+  }),
+
+  http.get(`${BASE}/investigations/:accession`, async ({ params }) => {
+    const failure = await applyTransport()
+    if (failure) return failure
+    const { status, body } = findInvestigation(String(params.accession))
+    return HttpResponse.json(body, { status })
   }),
 ]
