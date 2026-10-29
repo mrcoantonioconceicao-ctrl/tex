@@ -1,3 +1,9 @@
+#![allow(
+    dead_code,
+    clippy::field_reassign_with_default,
+    unused_variables,
+    unused_imports
+)]
 //! Simulação da câmara de combustão. Dados SINTÉTICOS (não são dados da NASA).
 //!
 //! A física é a mesma do laço do commit ba6e1ba, só extraída para uma função

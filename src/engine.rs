@@ -1,3 +1,9 @@
+#![allow(
+    dead_code,
+    clippy::field_reassign_with_default,
+    unused_variables,
+    unused_imports
+)]
 //! Componentes do pipeline (AST, Aster EventBus, GraphRAG, MCP, Token Crusher e
 //! trilha de auditoria SHA-256), restaurados do main.rs até o commit 4b760cd.
 //! Ainda são stubs: o GraphRAG não consulta uma base real e o MCP devolve um

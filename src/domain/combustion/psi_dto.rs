@@ -1,3 +1,9 @@
+#![allow(
+    dead_code,
+    clippy::field_reassign_with_default,
+    unused_variables,
+    unused_imports
+)]
 use serde::{Deserialize, Serialize};
 
 /// Representa a Investigação do PSI conforme a migração 0002_psi_investigations.sql
