@@ -5,13 +5,22 @@ on:
     branches: [main]
     paths: ['frontend/**', '.github/workflows/frontend.yml']
   pull_request:
-    paths: ['frontend/**', '.github/workflows/frontend.yml']
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
-  check:
+  # Em PR sempre roda; o job abaixo só trabalha se o PR mexer nestes caminhos
+  changes:
+    uses: ./.github/workflows/changed.yml
+    with:
+      pattern: '^(frontend/|\.github/workflows/(frontend|changed)\.yml$)'
+
+  frontend:
+    needs: changes
+    # Se a detecção falhar, roda a CI inteira em vez de pular
+    if: ${{ !cancelled() && needs.changes.outputs.changed != 'false' }}
     runs-on: ubuntu-latest
     defaults:
       run:

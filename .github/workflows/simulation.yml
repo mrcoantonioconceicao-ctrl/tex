@@ -7,13 +7,22 @@ on:
     branches: [main]
     paths: ['simulation/**', 'frontend/src/data/**', '.github/workflows/simulation.yml']
   pull_request:
-    paths: ['simulation/**', 'frontend/src/data/**', '.github/workflows/simulation.yml']
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
-  check:
+  # Em PR sempre roda; o job abaixo só trabalha se o PR mexer nestes caminhos
+  changes:
+    uses: ./.github/workflows/changed.yml
+    with:
+      pattern: '^(simulation/|frontend/src/data/|\.github/workflows/(simulation|changed)\.yml$)'
+
+  simulation:
+    needs: changes
+    # Se a detecção falhar, roda a CI inteira em vez de pular
+    if: ${{ !cancelled() && needs.changes.outputs.changed != 'false' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

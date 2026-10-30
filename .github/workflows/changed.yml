@@ -1,0 +1,45 @@
+name: Changed paths
+
+# Reaproveitado pelos workflows de CI. Em PR eles sempre rodam, para a
+# checagem obrigatória da main nunca ficar pendente; este job diz se o PR mexe
+# nos caminhos de cada um. Sem mudança relevante o job principal sai como
+# skipped, que o GitHub conta como aprovado. Fora de PR (push na main, já
+# filtrado por paths) responde sempre true.
+on:
+  workflow_call:
+    inputs:
+      pattern:
+        description: Regex estendida (grep -E) dos caminhos que disparam a CI
+        required: true
+        type: string
+    outputs:
+      changed:
+        description: '"true" quando o PR mexe em algum caminho do pattern'
+        value: ${{ jobs.detect.outputs.changed }}
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
+    steps:
+      - id: diff
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PATTERN: ${{ inputs.pattern }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -z "$PR" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --paginate --jq '.[].filename')
+          if printf '%s\n' "$files" | grep -Eq "$PATTERN"; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
