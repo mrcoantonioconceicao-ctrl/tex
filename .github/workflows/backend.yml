@@ -5,13 +5,22 @@ on:
     branches: [main]
     paths: ['src/**', 'Cargo.toml', 'Cargo.lock', 'config/**', '.github/workflows/backend.yml']
   pull_request:
-    paths: ['src/**', 'Cargo.toml', 'Cargo.lock', 'config/**', '.github/workflows/backend.yml']
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
-  check:
+  # Em PR sempre roda; o job abaixo só trabalha se o PR mexer nestes caminhos
+  changes:
+    uses: ./.github/workflows/changed.yml
+    with:
+      pattern: '^(src/|config/|Cargo\.(toml|lock)$|\.github/workflows/(backend|changed)\.yml$)'
+
+  backend:
+    needs: changes
+    # Se a detecção falhar, roda a CI inteira em vez de pular
+    if: ${{ !cancelled() && needs.changes.outputs.changed != 'false' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

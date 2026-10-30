@@ -18,24 +18,22 @@ on:
       - 'ingestion/**'
       - '.github/workflows/docker.yml'
   pull_request:
-    paths:
-      - 'Dockerfile'
-      - '.dockerignore'
-      - 'docker-compose.yml'
-      - 'Makefile'
-      - 'src/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - 'config/**'
-      - 'frontend/**'
-      - 'ingestion/**'
-      - '.github/workflows/docker.yml'
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
+  # Em PR sempre roda; o job abaixo só trabalha se o PR mexer nestes caminhos
+  changes:
+    uses: ./.github/workflows/changed.yml
+    with:
+      pattern: '^(Dockerfile|\.dockerignore|docker-compose\.yml|Makefile|Cargo\.(toml|lock))$|^(src|config|frontend|ingestion)/|^\.github/workflows/(docker|changed)\.yml$'
+
   stack:
+    needs: changes
+    # Se a detecção falhar, roda a CI inteira em vez de pular
+    if: ${{ !cancelled() && needs.changes.outputs.changed != 'false' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
