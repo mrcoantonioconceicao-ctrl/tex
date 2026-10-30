@@ -79,8 +79,8 @@ pub fn find(items: &[Investigation], accession: &str) -> Option<Investigation> {
 
 /// Catálogo sintético em ordem crescente de código, como o contrato pede
 pub fn synthetic() -> Vec<Investigation> {
-    let micro = Some(ProjectType::MicrogravityInvestigation);
-    let ground = Some(ProjectType::GroundInvestigation);
+    let micro = Some(ProjectType::Microgravity);
+    let ground = Some(ProjectType::Ground);
     vec![
         synthetic_item("PSI-9001", "FLEX-2", Program::Flex, micro, 1),
         synthetic_item("PSI-9002", "BASS-II", Program::Bass, micro, 1),
@@ -107,7 +107,7 @@ fn synthetic_item(
             downloaded_at: None,
         })
         .collect();
-    let is_microgravity = project_type == Some(ProjectType::MicrogravityInvestigation);
+    let is_microgravity = project_type == Some(ProjectType::Microgravity);
     Investigation {
         summary: InvestigationSummary {
             accession: accession.to_string(),
@@ -169,7 +169,7 @@ mod tests {
         assert_eq!(accessions(&page), ["PSI-9002"]);
 
         let by_type = Filter {
-            project_type: Some(ProjectType::GroundInvestigation),
+            project_type: Some(ProjectType::Ground),
             ..Filter::default()
         };
         let page = search(&items, &by_type, 1, 20);

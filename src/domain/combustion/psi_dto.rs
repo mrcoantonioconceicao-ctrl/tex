@@ -54,19 +54,19 @@ impl Program {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum ProjectType {
     #[serde(rename = "Microgravity Investigation")]
-    MicrogravityInvestigation,
+    Microgravity,
     #[serde(rename = "Ground Investigation")]
-    GroundInvestigation,
+    Ground,
     #[serde(rename = "Reduced Gravity Investigation")]
-    ReducedGravityInvestigation,
+    ReducedGravity,
 }
 
 impl ProjectType {
     pub fn parse(raw: &str) -> Option<Self> {
         match raw {
-            "Microgravity Investigation" => Some(Self::MicrogravityInvestigation),
-            "Ground Investigation" => Some(Self::GroundInvestigation),
-            "Reduced Gravity Investigation" => Some(Self::ReducedGravityInvestigation),
+            "Microgravity Investigation" => Some(Self::Microgravity),
+            "Ground Investigation" => Some(Self::Ground),
+            "Reduced Gravity Investigation" => Some(Self::ReducedGravity),
             _ => None,
         }
     }
@@ -139,7 +139,7 @@ mod tests {
     fn enums_serializam_com_o_nome_do_contrato() {
         assert_eq!(serde_json::to_string(&Program::Flex).unwrap(), "\"FLEX\"");
         assert_eq!(
-            serde_json::to_string(&ProjectType::MicrogravityInvestigation).unwrap(),
+            serde_json::to_string(&ProjectType::Microgravity).unwrap(),
             "\"Microgravity Investigation\""
         );
     }
