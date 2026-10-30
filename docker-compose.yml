@@ -12,6 +12,8 @@ services:
       - "${TEX_BACKEND_PORT:-8080}:8080"
     environment:
       - RUST_LOG=info
+      # O pool conecta sob demanda: o backend sobe mesmo antes do banco (o /health mostra o estado)
+      - DATABASE_URL=postgres://${TEX_DB_USER:-tex}:${TEX_DB_PASSWORD:-tex}@db:5432/${TEX_DB_NAME:-tex}
     restart: unless-stopped
     healthcheck:
       # A imagem não tem curl/wget: faz o GET /api/v1/health pelo /dev/tcp do bash

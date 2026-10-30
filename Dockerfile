@@ -3,6 +3,9 @@
 # usam o mesmo Debian (bookworm) para o binário encontrar a mesma glibc.
 FROM rust:1.99-slim-bookworm AS rust-builder
 WORKDIR /app
+# O sqlx usa TLS nativo (openssl-sys): precisa dos cabeçalhos do OpenSSL para compilar
+RUN apt-get update && apt-get install -y --no-install-recommends pkg-config libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 COPY Cargo.toml Cargo.lock ./
 # Compila só as dependências primeiro: mudanças em src/ não recompilam tudo
 RUN mkdir src && echo 'fn main() {}' > src/main.rs && cargo build --release --locked && rm -rf src
@@ -15,7 +18,7 @@ RUN touch src/main.rs && cargo build --release --locked
 FROM debian:bookworm-slim
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libssl3 \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --system --no-create-home --shell /usr/sbin/nologin tex
 

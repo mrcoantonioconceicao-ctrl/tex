@@ -186,14 +186,20 @@ components:
   schemas:
     Health:
       type: object
-      required: [status, uptime_seconds]
+      required: [status, uptime_seconds, database]
       properties:
         status:
           type: string
+          description: '"ok" enquanto o servidor responde, mesmo com o banco fora do ar'
           example: ok
         uptime_seconds:
           type: integer
           minimum: 0
+        database:
+          type: string
+          enum: [up, down, disabled]
+          description: >-
+            Resultado de um SELECT 1 no PostgreSQL. disabled = servidor sem DATABASE_URL.
 
     OriginCategory:
       type: string
