@@ -5,8 +5,8 @@
 
 mod api;
 mod db;
-// DTOs do PSI e ponte GraphRAG ainda sem rota que os use: entram com o
-// /api/v1/investigations do docs/api-spec.yaml (mesmo caso de lineage.rs).
+// O catálogo do PSI já serve o /api/v1/investigations; o Summarizer e a ponte
+// GraphRAG ainda não têm rota no docs/api-spec.yaml (mesmo caso de lineage.rs).
 #[allow(dead_code)]
 mod domain;
 mod engine;

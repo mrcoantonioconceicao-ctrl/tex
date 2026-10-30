@@ -4,13 +4,13 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use axum::{
-    extract::State,
+    extract::{Path, Query, State},
     http::{header, HeaderValue, Method, StatusCode, Uri},
     routing::{get, post},
     Json, Router,
 };
 use chrono::{DateTime, SecondsFormat, Utc};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use tower_http::{
     cors::{AllowOrigin, CorsLayer},
@@ -18,6 +18,8 @@ use tower_http::{
 };
 
 use crate::db::{self, DatabaseStatus};
+use crate::domain::combustion::catalog::{self, Filter};
+use crate::domain::combustion::psi_dto::{Investigation, InvestigationPage, Program, ProjectType};
 use crate::engine::{
     AstTelemetryParser, AsterEventBus, GraphRAGKnowledgeEngine, McpContextResponse,
     McpEnterpriseServer, Web3AuditSmartContract,
@@ -30,6 +32,9 @@ const DEFAULT_MCP_QUERY: &str = "general_fire_safety";
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(10);
 /// Front servido pelo nginx (make up) e pelo Vite (make frontend)
 pub const DEFAULT_CORS_ORIGINS: &str = "http://localhost:3000,http://localhost:5173";
+const DEFAULT_PAGE_SIZE: usize = 20;
+const MAX_PAGE_SIZE: usize = 100;
+const MAX_QUERY_LENGTH: usize = 200;
 
 // ---- Estado compartilhado ----
 
@@ -247,6 +252,109 @@ async fn trigger_suppression(State(state): State<Arc<AppState>>) -> Json<Telemet
     Json(state.update_simulation(Simulation::trigger_suppression))
 }
 
+/// Parâmetros crus: a validação fica aqui para o 400 sair no formato do
+/// contrato (a rejeição padrão do extrator Query devolve texto puro).
+#[derive(Debug, Deserialize)]
+struct InvestigationQuery {
+    program: Option<String>,
+    project_type: Option<String>,
+    q: Option<String>,
+    page: Option<String>,
+    page_size: Option<String>,
+}
+
+/// Enum opcional: ausente é None, valor fora do contrato é 400
+fn parse_choice<T>(
+    raw: Option<&str>,
+    name: &str,
+    parse: fn(&str) -> Option<T>,
+) -> Result<Option<T>, AppError> {
+    match raw {
+        None => Ok(None),
+        Some(raw) => match parse(raw) {
+            Some(value) => Ok(Some(value)),
+            None => {
+                let message = format!("{name} desconhecido: {raw}");
+                Err(AppError::InvalidParameter(message))
+            }
+        },
+    }
+}
+
+/// Inteiro opcional entre 1 e `max`; ausente usa o padrão
+fn parse_bounded(
+    raw: Option<&str>,
+    name: &str,
+    default: usize,
+    max: usize,
+) -> Result<usize, AppError> {
+    match raw.map(str::parse::<usize>) {
+        None => Ok(default),
+        Some(Ok(value)) if (1..=max).contains(&value) => Ok(value),
+        Some(_) => {
+            let message = format!("{name} precisa ser inteiro entre 1 e {max}");
+            Err(AppError::InvalidParameter(message))
+        }
+    }
+}
+
+fn parse_text(raw: Option<&str>) -> Result<Option<String>, AppError> {
+    match raw {
+        None => Ok(None),
+        Some(text) if (1..=MAX_QUERY_LENGTH).contains(&text.chars().count()) => {
+            Ok(Some(text.to_string()))
+        }
+        Some(_) => {
+            let message = format!("q precisa ter de 1 a {MAX_QUERY_LENGTH} caracteres");
+            Err(AppError::InvalidParameter(message))
+        }
+    }
+}
+
+fn is_valid_accession(raw: &str) -> bool {
+    match raw.strip_prefix("PSI-") {
+        Some(digits) => !digits.is_empty() && digits.bytes().all(|b| b.is_ascii_digit()),
+        None => false,
+    }
+}
+
+async fn list_investigations(
+    Query(query): Query<InvestigationQuery>,
+) -> Result<Json<InvestigationPage>, AppError> {
+    let filter = Filter {
+        program: parse_choice(query.program.as_deref(), "program", Program::parse)?,
+        project_type: parse_choice(
+            query.project_type.as_deref(),
+            "project_type",
+            ProjectType::parse,
+        )?,
+        text: parse_text(query.q.as_deref())?,
+    };
+    let page = parse_bounded(query.page.as_deref(), "page", 1, usize::MAX)?;
+    let page_size = parse_bounded(
+        query.page_size.as_deref(),
+        "page_size",
+        DEFAULT_PAGE_SIZE,
+        MAX_PAGE_SIZE,
+    )?;
+    let items = catalog::synthetic();
+    Ok(Json(catalog::search(&items, &filter, page, page_size)))
+}
+
+async fn get_investigation(Path(raw): Path<String>) -> Result<Json<Investigation>, AppError> {
+    if !is_valid_accession(&raw) {
+        let message = format!("código fora do formato PSI-<número>: {raw}");
+        return Err(AppError::InvalidParameter(message));
+    }
+    match catalog::find(&catalog::synthetic(), &raw) {
+        Some(investigation) => Ok(Json(investigation)),
+        None => {
+            let message = format!("investigação {raw} não encontrada");
+            Err(AppError::NotFound(message))
+        }
+    }
+}
+
 async fn not_found(uri: Uri) -> AppError {
     AppError::NotFound(format!("rota não encontrada: {}", uri.path()))
 }
@@ -273,7 +381,9 @@ pub fn router(state: Arc<AppState>, allowed_origins: Vec<HeaderValue>) -> Router
         .route("/metrics", get(metrics))
         .route("/mcp/context", post(mcp_context))
         .route("/simulation/reset", post(reset_simulation))
-        .route("/simulation/suppress", post(trigger_suppression));
+        .route("/simulation/suppress", post(trigger_suppression))
+        .route("/investigations", get(list_investigations))
+        .route("/investigations/:accession", get(get_investigation));
 
     let cors = CorsLayer::new()
         .allow_origin(AllowOrigin::list(allowed_origins))
@@ -517,5 +627,76 @@ mod tests {
         assert_eq!(body["sequence"], 0);
         assert_eq!(body["risk_level"], "NOMINAL");
         assert_eq!(body["suppression_active"], false);
+    }
+
+    #[tokio::test]
+    async fn investigations_lista_o_catalogo_sintetico() {
+        let (status, body) = call(&new_state(), "GET", "/api/v1/investigations", None).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(body["total"], 6);
+        assert_eq!(body["page"], 1);
+        assert_eq!(body["page_size"], 20);
+        let items = body["items"].as_array().unwrap();
+        assert_eq!(items.len(), 6);
+        assert_eq!(items[0]["accession"], "PSI-9001");
+        assert_eq!(items[0]["origin_category"], "Synthetic");
+        // O resumo não leva os campos do detalhe
+        assert!(items[0].get("files").is_none());
+    }
+
+    #[tokio::test]
+    async fn investigations_filtra_e_pagina() {
+        let state = new_state();
+        let uri = "/api/v1/investigations?project_type=Ground%20Investigation&q=psi";
+        let (status, body) = call(&state, "GET", uri, None).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(body["total"], 1);
+        assert_eq!(body["items"][0]["accession"], "PSI-9005");
+
+        let uri = "/api/v1/investigations?page=2&page_size=4";
+        let (_, body) = call(&state, "GET", uri, None).await;
+        assert_eq!(body["total"], 6);
+        assert_eq!(body["items"].as_array().unwrap().len(), 2);
+    }
+
+    #[tokio::test]
+    async fn investigations_rejeita_parametros_fora_do_contrato() {
+        let long_query = format!("q={}", "a".repeat(MAX_QUERY_LENGTH + 1));
+        let cases = [
+            "program=flex",
+            "project_type=Lunar",
+            "q=",
+            "page=0",
+            "page=abc",
+            "page_size=0",
+            "page_size=101",
+            long_query.as_str(),
+        ];
+        let state = new_state();
+        for case in cases {
+            let uri = format!("/api/v1/investigations?{case}");
+            let (status, body) = call(&state, "GET", &uri, None).await;
+            assert_eq!(status, StatusCode::BAD_REQUEST, "{case}");
+            assert_eq!(body["code"], "INVALID_PARAMETER", "{case}");
+        }
+    }
+
+    #[tokio::test]
+    async fn investigation_detalhe_e_erros_do_contrato() {
+        let state = new_state();
+        let (status, body) = call(&state, "GET", "/api/v1/investigations/PSI-9003", None).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(body["accession"], "PSI-9003");
+        assert_eq!(body["files"].as_array().unwrap().len(), 2);
+        assert_eq!(body["total_file_bytes"], 3072);
+        assert_eq!(body["origin_category"], "Synthetic");
+
+        let (status, body) = call(&state, "GET", "/api/v1/investigations/9003", None).await;
+        assert_eq!(status, StatusCode::BAD_REQUEST);
+        assert_eq!(body["code"], "INVALID_PARAMETER");
+
+        let (status, body) = call(&state, "GET", "/api/v1/investigations/PSI-1", None).await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+        assert_eq!(body["code"], "NOT_FOUND");
     }
 }

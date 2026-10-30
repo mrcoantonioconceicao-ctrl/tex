@@ -1,5 +1,7 @@
 use crate::domain::combustion::psi_dto::Investigation;
 
+/// Ponte conceitual para o GraphRAG e o MCP. Depois de 14/11 cruza os dados
+/// reais do PSI com o motor de inferência; hoje só monta o texto de contexto.
 pub struct GraphRagBridge;
 
 impl GraphRagBridge {
