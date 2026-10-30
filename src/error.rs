@@ -1,7 +1,7 @@
 //! Erros da API no formato ApiErrorBody do docs/api-spec.yaml ({code, message}).
 //!
-//! Só existe o que alguma rota já usa: INVALID_PARAMETER entra com o
-//! /api/v1/investigations, junto com o mapeamento dos erros do sqlx.
+//! Só existe o que alguma rota já usa: os erros do sqlx entram quando o
+//! /api/v1/investigations passar a ler o PostgreSQL.
 
 use axum::{
     http::StatusCode,
@@ -13,6 +13,8 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum AppError {
+    #[error("{0}")]
+    InvalidParameter(String),
     #[error("{0}")]
     NotFound(String),
 }
@@ -26,6 +28,7 @@ struct ApiErrorBody {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, code) = match &self {
+            AppError::InvalidParameter(_) => (StatusCode::BAD_REQUEST, "INVALID_PARAMETER"),
             AppError::NotFound(_) => (StatusCode::NOT_FOUND, "NOT_FOUND"),
         };
         let body = ApiErrorBody {

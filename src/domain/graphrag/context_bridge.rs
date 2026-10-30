@@ -1,26 +1,18 @@
-use crate::domain::combustion::psi_dto::PsiInvestigationDto;
+use crate::domain::combustion::psi_dto::Investigation;
 
-/// Ponte conceitual para o GraphRAG e MCP.
-/// No dia 14/11, este módulo receberá as consultas e fará o cruzamento
-/// semântico entre os dados reais do PSI e o motor de inferência.
+/// Ponte conceitual para o GraphRAG e o MCP. Depois de 14/11 cruza os dados
+/// reais do PSI com o motor de inferência; hoje só monta o texto de contexto.
 pub struct GraphRagBridge;
 
 impl GraphRagBridge {
-    pub fn mock_context_query(query: &str) -> String {
+    pub fn build_context_from_investigation(investigation: &Investigation) -> String {
         format!(
-            "[GraphRAG Stubs] Contexto simulado para a consulta: '{}'. Aguardando dados oficiais em 14/11.",
-            query
-        )
-    }
-
-    pub fn enrich_with_psi(investigation: &PsiInvestigationDto) -> String {
-        format!(
-            "Investigação PSI [{}] - Programa: {} | Projeto: {} | Hardware: {} | Licença: {}",
-            investigation.psi_accession,
-            investigation.program,
-            investigation.project_type,
-            investigation.hardware,
-            investigation.license
+            "Investigation Accession: {}, Name: {}, Program: {:?}, ProjectType: {:?}, Hardware: {:?}",
+            investigation.summary.accession,
+            investigation.summary.name,
+            investigation.summary.program,
+            investigation.summary.project_type,
+            investigation.summary.hardware
         )
     }
 }

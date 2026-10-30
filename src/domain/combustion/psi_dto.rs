@@ -1,71 +1,146 @@
+//! DTOs das investigações do PSI no formato de /api/v1/investigations
+//! (docs/api-spec.yaml). Espelham as tabelas experiments e experiment_files
+//! da migração 0002.
+
 use serde::{Deserialize, Serialize};
 
-/// Representa a Investigação do PSI conforme a migração 0002_psi_investigations.sql
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct PsiInvestigationDto {
-    pub psi_accession: String,
-    pub program: String,
-    pub project_type: String,
-    pub objective: String,
-    pub hardware: String,
-    pub doi: Option<String>,
-    pub license: String,
-    pub cc0_compliant: bool,
+use crate::lineage::OriginCategory;
+
+/// Mesmo CHECK de experiments.program. Variantes entram no programa-base
+/// (FLEX-2 → FLEX); sigla sem programa conhecido vira Other.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum Program {
+    #[serde(rename = "FLEX")]
+    Flex,
+    #[serde(rename = "ACME")]
+    Acme,
+    Saffire,
+    #[serde(rename = "BASS")]
+    Bass,
+    #[serde(rename = "SAME")]
+    Same,
+    #[serde(rename = "DAFT")]
+    Daft,
+    #[serde(rename = "SPICE")]
+    Spice,
+    #[serde(rename = "SLICE")]
+    Slice,
+    #[serde(rename = "CFI")]
+    Cfi,
+    SoFIE,
+    Other,
 }
 
-impl PsiInvestigationDto {
-    pub fn new(
-        accession: &str,
-        program: &str,
-        project_type: &str,
-        objective: &str,
-        hardware: &str,
-        license: &str,
-    ) -> Self {
-        Self {
-            psi_accession: accession.to_string(),
-            program: program.to_string(),
-            project_type: project_type.to_string(),
-            objective: objective.to_string(),
-            hardware: hardware.to_string(),
-            doi: None,
-            license: license.to_string(),
-            // Sai da licença declarada no PSI: nem toda investigação precisa ser CC0
-            cc0_compliant: license == "CC0-1.0",
+impl Program {
+    /// Valor exato do contrato (diferencia maiúsculas, como o enum do OpenAPI)
+    pub fn parse(raw: &str) -> Option<Self> {
+        match raw {
+            "FLEX" => Some(Self::Flex),
+            "ACME" => Some(Self::Acme),
+            "Saffire" => Some(Self::Saffire),
+            "BASS" => Some(Self::Bass),
+            "SAME" => Some(Self::Same),
+            "DAFT" => Some(Self::Daft),
+            "SPICE" => Some(Self::Spice),
+            "SLICE" => Some(Self::Slice),
+            "CFI" => Some(Self::Cfi),
+            "SoFIE" => Some(Self::SoFIE),
+            "Other" => Some(Self::Other),
+            _ => None,
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+pub enum ProjectType {
+    #[serde(rename = "Microgravity Investigation")]
+    Microgravity,
+    #[serde(rename = "Ground Investigation")]
+    Ground,
+    #[serde(rename = "Reduced Gravity Investigation")]
+    ReducedGravity,
+}
+
+impl ProjectType {
+    pub fn parse(raw: &str) -> Option<Self> {
+        match raw {
+            "Microgravity Investigation" => Some(Self::Microgravity),
+            "Ground Investigation" => Some(Self::Ground),
+            "Reduced Gravity Investigation" => Some(Self::ReducedGravity),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq)]
+pub struct InvestigationFile {
+    pub category: String,
+    pub file_name: String,
+    pub file_bytes: Option<u64>,
+    /// null enquanto o arquivo não foi baixado e conferido
+    pub sha256: Option<String>,
+    pub downloaded_at: Option<String>,
+}
+
+/// Linha do catálogo. Campos opcionais da fonte saem como null.
+#[derive(Debug, Clone, Serialize, PartialEq)]
+pub struct InvestigationSummary {
+    pub accession: String,
+    pub name: String,
+    pub title: Option<String>,
+    pub program: Program,
+    pub project_type: Option<ProjectType>,
+    pub sub_research_area: Option<String>,
+    pub hardware: Vec<String>,
+    pub start_date: Option<String>,
+    pub end_date: Option<String>,
+    pub file_count: usize,
+    pub origin_category: OriginCategory,
+}
+
+/// Detalhe: o resumo mais os textos da fonte e os arquivos
+#[derive(Debug, Clone, Serialize, PartialEq)]
+pub struct Investigation {
+    #[serde(flatten)]
+    pub summary: InvestigationSummary,
+    pub psi_version: Option<u32>,
+    pub objective: Option<String>,
+    pub approach: Option<String>,
+    pub hypothesis: Option<String>,
+    pub doi: Option<String>,
+    pub license: Option<String>,
+    pub total_file_bytes: Option<u64>,
+    pub files: Vec<InvestigationFile>,
+    pub ingested_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq)]
+pub struct InvestigationPage {
+    pub items: Vec<InvestigationSummary>,
+    /// Total que casa com os filtros (todas as páginas)
+    pub total: usize,
+    pub page: usize,
+    pub page_size: usize,
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // Valores sintéticos dentro dos CHECKs da 0002 (program, project_type)
     #[test]
-    fn test_psi_dto_creation() {
-        let inv = PsiInvestigationDto::new(
-            "PSI-9001",
-            "BASS",
-            "Microgravity Investigation",
-            "Flame extinction limits",
-            "Standard Burner",
-            "CC0-1.0",
-        );
-        assert_eq!(inv.psi_accession, "PSI-9001");
-        assert_eq!(inv.program, "BASS");
-        assert!(inv.cc0_compliant);
+    fn program_aceita_so_os_valores_do_contrato() {
+        assert_eq!(Program::parse("FLEX"), Some(Program::Flex));
+        assert_eq!(Program::parse("SoFIE"), Some(Program::SoFIE));
+        assert_eq!(Program::parse("flex"), None);
+        assert_eq!(Program::parse("INVALID"), None);
     }
 
     #[test]
-    fn cc0_compliant_follows_license() {
-        let inv = PsiInvestigationDto::new(
-            "PSI-9002",
-            "Other",
-            "Ground Investigation",
-            "Synthetic objective",
-            "Synthetic hardware",
-            "CC-BY-4.0",
+    fn enums_serializam_com_o_nome_do_contrato() {
+        assert_eq!(serde_json::to_string(&Program::Flex).unwrap(), "\"FLEX\"");
+        assert_eq!(
+            serde_json::to_string(&ProjectType::Microgravity).unwrap(),
+            "\"Microgravity Investigation\""
         );
-        assert!(!inv.cc0_compliant);
     }
 }

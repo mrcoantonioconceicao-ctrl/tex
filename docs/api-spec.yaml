@@ -101,7 +101,9 @@ paths:
         Lê experiments e experiment_files (ingestion/db/migrations/0002). Só
         investigações com psi_accession entram. Ordem: número do código PSI,
         crescente. Ranqueamento por ambiente e resumo por IA ficam para depois
-        de 14/11 e entram como campos novos, sem quebrar este formato.
+        de 14/11 e entram como campos novos, sem quebrar este formato. Até
+        14/11 o backend responde com o catálogo sintético PSI-9001 a PSI-9006
+        (origin_category Synthetic), o mesmo dos mocks do frontend.
       parameters:
         - name: program
           in: query
