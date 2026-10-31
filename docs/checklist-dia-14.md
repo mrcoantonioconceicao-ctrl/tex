@@ -4,15 +4,19 @@ Roteiro para o primeiro dia do hackathon. Até 14/11 o repositório só tem estr
 
 Legenda: **W** = Willian, **M** = Marco, **W+M** = juntos.
 
+> **Submissão do projeto: até 15/11.** O hackathon começa em 14/11; tudo abaixo cabe em dois dias.
+
 ## 0. Até 13/11 (pré-requisitos)
 
-- [ ] **W+M** PRs do preparo mergeados, com CI verde na `main`:
-  - [ ] #45: catálogo lendo o PostgreSQL (`TEX_CATALOG_SOURCE=database`) e migração 0003.
-  - [ ] #46: contrato do `POST /ai/summarize` (planejado) e mock.
-- [ ] **M** Ensaio da stack na máquina do Marco: `make up`, `make smoke`, painel em http://localhost:3000. A máquina do Willian não roda Docker.
-- [ ] **W** Ensaio sem Docker: `make install` e depois `make frontend` com `VITE_USE_MOCKS=true` (http://localhost:5173).
-- [ ] **W+M** Escolher o provedor de IA do resumo (modelo, conta, limite de custo). A chave vai **só** em variável de ambiente, nunca no repositório.
-- [ ] **W+M** Confirmar a inscrição no Local Event com o time completo.
+- [x] **W+M** PRs do preparo mergeados, com CI verde na `main`:
+  - [x] #45: catálogo lendo o PostgreSQL (`TEX_CATALOG_SOURCE=database`) e migração 0003.
+  - [x] #46/#48: contrato do `POST /ai/summarize` (planejado) e mock.
+  - [x] #49: download das tabelas do PSI, travado até 14/11.
+- [ ] **W** Ensaio da stack na máquina Linux do Willian, a que vai para o evento: `make up`, `make smoke`, painel em http://localhost:3000.
+- [ ] **W** Ensaio sem Docker, de reserva: `make install` e depois `make frontend` com `VITE_USE_MOCKS=true` (http://localhost:5173).
+- [x] **W+M** Provedor de IA do resumo: API do Google Gemini (#50), com a troca isolada pela trait `Summarizer`.
+- [ ] **W+M** Chave do Gemini (`GEMINI_API_KEY`) criada, com limite de gasto, e guardada **só** no `.env` local, nunca no repositório. Perguntar à organização se haverá crédito de IA para os times.
+- [x] **W+M** Inscrição no Local Event: time de duas pessoas (Willian e Marco), sem pendências.
 
 ## 1. Abertura (manhã do dia 14)
 
