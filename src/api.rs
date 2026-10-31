@@ -563,7 +563,10 @@ mod tests {
         assert_eq!(body["ast_parsing_latency_us"], 0);
         assert_eq!(body["graphrag_query_latency_us"], 0);
         assert_eq!(body["token_crusher_efficiency_pct"], 0.0);
-        assert!(body["memory_safety_guarantee"].as_str().unwrap().contains("Rust"));
+        assert!(body["memory_safety_guarantee"]
+            .as_str()
+            .unwrap()
+            .contains("Rust"));
         assert_eq!(body["uptime_status"], "NOMINAL_ACTIVE");
         assert!(body["uptime_seconds"].as_u64().is_some());
     }
@@ -587,8 +590,10 @@ mod tests {
         assert_eq!(body["origin_category"], "Synthetic");
 
         let (_, metrics) = call(&state, "GET", "/api/v1/metrics", None).await;
-        assert!(metrics["graphrag_query_latency_us"].as_u64().unwrap() > 0
-            || metrics["graphrag_query_latency_us"] == 0);
+        assert!(
+            metrics["graphrag_query_latency_us"].as_u64().unwrap() > 0
+                || metrics["graphrag_query_latency_us"] == 0
+        );
     }
 
     #[tokio::test]
@@ -693,4 +698,3 @@ mod tests {
         assert_eq!(body["code"], "NOT_FOUND");
     }
 }
-
