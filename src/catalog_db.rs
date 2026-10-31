@@ -61,7 +61,9 @@ pub async fn load_from_pool(pool: &PgPool) -> Result<Vec<Investigation>, Catalog
 pub async fn load_investigations(
     conn: &mut PgConnection,
 ) -> Result<Vec<Investigation>, CatalogDbError> {
-    let rows = sqlx::query(INVESTIGATIONS_SQL).fetch_all(&mut *conn).await?;
+    let rows = sqlx::query(INVESTIGATIONS_SQL)
+        .fetch_all(&mut *conn)
+        .await?;
     let file_rows = sqlx::query(FILES_SQL).fetch_all(&mut *conn).await?;
     let mut files = group_files(&file_rows)?;
     rows.iter()
@@ -96,8 +98,8 @@ fn to_investigation(
 ) -> Result<Investigation, CatalogDbError> {
     let accession: String = row.try_get("psi_accession")?;
     let program: String = row.try_get("program")?;
-    let program = Program::parse(&program)
-        .ok_or_else(|| invalid(&accession, "program", &program))?;
+    let program =
+        Program::parse(&program).ok_or_else(|| invalid(&accession, "program", &program))?;
     let project_type = row
         .try_get::<Option<String>, _>("project_type")?
         .map(|raw| {
@@ -111,8 +113,11 @@ fn to_investigation(
         .try_get::<Option<i32>, _>("psi_version")?
         .map(|v| u32::try_from(v).map_err(|_| invalid(&accession, "psi_version", v)))
         .transpose()?;
-    let total_file_bytes =
-        non_negative(row.try_get("total_file_bytes")?, &accession, "total_file_bytes")?;
+    let total_file_bytes = non_negative(
+        row.try_get("total_file_bytes")?,
+        &accession,
+        "total_file_bytes",
+    )?;
 
     let summary = InvestigationSummary {
         name: row.try_get("name")?,
