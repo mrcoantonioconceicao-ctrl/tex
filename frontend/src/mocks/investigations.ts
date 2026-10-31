@@ -3,6 +3,7 @@
 // desafio entra no repositório antes de 14/11. A lógica de filtro e paginação
 // replica o que o backend deve fazer, para a tela se comportar igual nos dois modos.
 import type {
+  AiSummary,
   ApiErrorBody,
   Investigation,
   InvestigationPage,
@@ -79,7 +80,7 @@ function toSummary(item: Investigation): InvestigationSummary {
   }
 }
 
-export type MockResult<T> = { status: 200; body: T } | { status: 400 | 404; body: ApiErrorBody }
+export type MockResult<T> = { status: 200; body: T } | { status: 400 | 404 | 422; body: ApiErrorBody }
 
 const invalid = (message: string): MockResult<never> => ({
   status: 400,
@@ -144,4 +145,43 @@ export function findInvestigation(accession: string): MockResult<Investigation> 
   return item
     ? { status: 200, body: item }
     : { status: 404, body: { code: 'NOT_FOUND', message: `investigação ${accession} não encontrada` } }
+}
+
+// ---- POST /ai/summarize (planejado no contrato; aqui sem modelo de IA) ----
+
+const SUMMARY_SOURCE_FIELDS = ['objective', 'approach', 'hypothesis'] as const
+const SYNTHETIC_GENERATED_AT = '2026-10-28T12:00:00.000Z'
+
+// Mesmo comportamento do SyntheticSummarizer do backend: não interpreta o texto,
+// só o devolve marcado como Synthetic. Não acrescenta nenhuma conclusão física.
+export function summarizeInvestigation(
+  accession: unknown,
+  items: readonly Investigation[] = MOCK_INVESTIGATIONS,
+): MockResult<AiSummary> {
+  if (typeof accession !== 'string' || !ACCESSION_PATTERN.test(accession)) {
+    return invalid('corpo precisa ter accession no formato PSI-<número>')
+  }
+  const item = items.find((i) => i.accession === accession)
+  if (!item) {
+    return { status: 404, body: { code: 'NOT_FOUND', message: `investigação ${accession} não encontrada` } }
+  }
+  const sourceFields = SUMMARY_SOURCE_FIELDS.filter((field) => item[field])
+  if (sourceFields.length === 0) {
+    return {
+      status: 422,
+      body: { code: 'NO_SOURCE_TEXT', message: `${accession} não tem objective, approach nem hypothesis` },
+    }
+  }
+  const sourceText = sourceFields.map((field) => item[field]).join(' ')
+  return {
+    status: 200,
+    body: {
+      accession,
+      summary: `Resumo sintético (sem modelo de IA) de ${item.name}: ${sourceText}`,
+      source_fields: sourceFields,
+      model: null,
+      generated_at: SYNTHETIC_GENERATED_AT,
+      origin_category: 'Synthetic',
+    },
+  }
 }
