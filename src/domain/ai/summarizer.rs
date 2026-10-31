@@ -51,16 +51,19 @@ impl GeminiSummarizer {
     pub fn new() -> Result<Self, String> {
         let api_key = env::var("GEMINI_API_KEY")
             .map_err(|_| "Variável de ambiente GEMINI_API_KEY não configurada".to_string())?;
-        
-        let model = env::var("GEMINI_MODEL")
-            .unwrap_or_else(|_| "gemini-1.5-flash".to_string());
+
+        let model = env::var("GEMINI_MODEL").unwrap_or_else(|_| "gemini-1.5-flash".to_string());
 
         let client = Client::builder()
             .timeout(std::time::Duration::from_secs(15))
             .build()
             .map_err(|e| format!("Erro ao criar cliente HTTP: {e}"))?;
 
-        Ok(Self { client, api_key, model })
+        Ok(Self {
+            client,
+            api_key,
+            model,
+        })
     }
 }
 
@@ -84,7 +87,8 @@ impl Summarizer for GeminiSummarizer {
             }]
         });
 
-        let response = self.client
+        let response = self
+            .client
             .post(&url)
             .json(&payload)
             .send()
@@ -94,7 +98,9 @@ impl Summarizer for GeminiSummarizer {
         if !response.status().is_success() {
             let status = response.status();
             let err_body = response.text().await.unwrap_or_default();
-            return Err(format!("Erro da API do Gemini (status {status}): {err_body}"));
+            return Err(format!(
+                "Erro da API do Gemini (status {status}): {err_body}"
+            ));
         }
 
         let body: serde_json::Value = response
@@ -121,14 +127,20 @@ mod tests {
 
     #[tokio::test]
     async fn resumo_fake_sai_marcado_como_sintetico() {
-        let summary = SyntheticSummarizer::new().summarize("O2: 18%, Temp: 450C").await.unwrap();
+        let summary = SyntheticSummarizer::new()
+            .summarize("O2: 18%, Temp: 450C")
+            .await
+            .unwrap();
         assert_eq!(summary.origin_category, OriginCategory::Synthetic);
         assert!(summary.text.contains("O2: 18%"));
     }
 
     #[tokio::test]
     async fn resumo_fake_nao_afirma_nada_sobre_a_chama() {
-        let summary = SyntheticSummarizer::new().summarize("qualquer contexto").await.unwrap();
+        let summary = SyntheticSummarizer::new()
+            .summarize("qualquer contexto")
+            .await
+            .unwrap();
         assert!(!summary.text.to_lowercase().contains("esféric"));
     }
 }
