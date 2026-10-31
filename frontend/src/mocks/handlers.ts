@@ -9,7 +9,7 @@ import type {
   RiskLevel,
   SystemPerformanceMetrics,
 } from '../api/types'
-import { findInvestigation, listInvestigations } from './investigations'
+import { findInvestigation, listInvestigations, summarizeInvestigation } from './investigations'
 import { getMockScenario, type MockScenario } from './scenario'
 
 // '*' casa com qualquer origem: URL relativa no navegador, absoluta nos testes
@@ -201,6 +201,16 @@ export const handlers = [
     const failure = await applyTransport()
     if (failure) return failure
     const { status, body } = findInvestigation(String(params.accession))
+    return HttpResponse.json(body, { status })
+  }),
+
+  // Planejado no contrato: o backend ainda não serve esta rota
+  http.post(`${BASE}/ai/summarize`, async ({ request }) => {
+    const failure = await applyTransport()
+    if (failure) return failure
+    const payload: unknown = await request.json().catch(() => null)
+    const accession = typeof payload === 'object' && payload !== null ? Reflect.get(payload, 'accession') : undefined
+    const { status, body } = summarizeInvestigation(accession)
     return HttpResponse.json(body, { status })
   }),
 ]

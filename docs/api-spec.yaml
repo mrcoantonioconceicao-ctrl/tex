@@ -190,12 +190,68 @@ paths:
         '503':
           $ref: '#/components/responses/CatalogUnavailable'
 
+  /ai/summarize:
+    post:
+      summary: Resumo por IA dos textos de uma investigação do PSI (PLANEJADO)
+      description: >
+        Contrato definido antes da implementação: o backend ainda NÃO serve esta
+        rota (responde 404 de rota desconhecida) e o frontend usa o mock MSW.
+        Provedor de IA, chave e limite de custo entram depois de 14/11, atrás da
+        trait Summarizer (src/domain/ai/summarizer.rs). O resumo só reformula
+        objective, approach e hypothesis da investigação: não acrescenta
+        conclusões físicas e não substitui o texto da fonte. Resumo de modelo
+        sai como Inferred; resumo de mock ou de teste, como Synthetic.
+      x-status: planned
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SummarizeRequest'
+      responses:
+        '200':
+          description: Resumo gerado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiSummary'
+        '400':
+          description: Corpo inválido ou código fora do formato PSI-<número>
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorBody'
+        '404':
+          description: Nenhuma investigação com esse código
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorBody'
+        '422':
+          description: >
+            Investigação sem objective, approach nem hypothesis
+            (code NO_SOURCE_TEXT): não há o que resumir sem inventar.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorBody'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+
 components:
   responses:
     CatalogUnavailable:
       description: >
         Fonte database sem resposta do PostgreSQL. A mensagem é genérica; o
         detalhe fica no log do backend.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorBody'
+    ServiceUnavailable:
+      description: >
+        Provedor de IA ou banco sem resposta. A mensagem é genérica; o detalhe
+        fica no log do backend.
       content:
         application/json:
           schema:
@@ -500,13 +556,56 @@ components:
           minimum: 1
           maximum: 100
 
+    # ---- Resumo por IA (planejado; ver /ai/summarize) ----
+
+    SummarizeRequest:
+      type: object
+      required: [accession]
+      properties:
+        accession:
+          type: string
+          pattern: '^PSI-\d+$'
+          example: PSI-25
+
+    AiSummary:
+      type: object
+      required: [accession, summary, source_fields, model, generated_at, origin_category]
+      properties:
+        accession:
+          type: string
+          pattern: '^PSI-\d+$'
+        summary:
+          type: string
+          minLength: 1
+        source_fields:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            enum: [objective, approach, hypothesis]
+          description: Textos da investigação que entraram no resumo (rastreabilidade)
+        model:
+          type: string
+          nullable: true
+          description: Identificador do modelo de IA; null quando o resumo é sintético
+        generated_at:
+          type: string
+          format: date-time
+        origin_category:
+          type: string
+          enum: [Inferred, Synthetic]
+          description: >
+            Subconjunto de OriginCategory: resumo nunca é Published nem Measured.
+            Inferred = gerado por modelo; Synthetic = mock ou teste.
+
     ApiErrorBody:
       type: object
       required: [code, message]
       properties:
         code:
           type: string
-          enum: [INVALID_PARAMETER, NOT_FOUND, SERVICE_UNAVAILABLE]
+          enum: [INVALID_PARAMETER, NOT_FOUND, NO_SOURCE_TEXT, SERVICE_UNAVAILABLE]
         message:
           type: string
           description: Texto para quem lê o log; a tela não deve depender dele

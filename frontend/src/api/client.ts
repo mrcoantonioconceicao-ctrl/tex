@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import predictionReportJson from '../data/predicoes.json'
 import {
+  aiSummarySchema,
   combustionTelemetrySchema,
   investigationPageSchema,
   investigationSchema,
@@ -11,6 +12,7 @@ import {
   systemPerformanceMetricsSchema,
 } from './schemas'
 import type {
+  AiSummary,
   CombustionTelemetry,
   Investigation,
   InvestigationPage,
@@ -18,6 +20,7 @@ import type {
   McpContextRequest,
   McpContextResponse,
   PredictionReport,
+  SummarizeRequest,
   SystemPerformanceMetrics,
 } from './types'
 
@@ -117,6 +120,12 @@ export function getInvestigations(query: InvestigationQuery = {}): Promise<Inves
 
 export function getInvestigation(accession: string): Promise<Investigation> {
   return request(`/investigations/${encodeURIComponent(accession)}`, investigationSchema)
+}
+
+// PLANEJADO no contrato: hoje só o mock MSW responde (o backend devolve 404)
+export function summarizeInvestigation(accession: string): Promise<AiSummary> {
+  const body: SummarizeRequest = { accession }
+  return request('/ai/summarize', aiSummarySchema, { method: 'POST', body: JSON.stringify(body) })
 }
 
 export function postMcpContext(body: McpContextRequest): Promise<McpContextResponse> {

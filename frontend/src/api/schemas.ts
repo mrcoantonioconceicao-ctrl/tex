@@ -3,6 +3,7 @@
 // se um dos dois mudar sem o outro, o build quebra.
 import { z } from 'zod'
 import type {
+  AiSummary,
   CombustionTelemetry,
   Investigation,
   InvestigationPage,
@@ -115,6 +116,20 @@ export const investigationPageSchema = z.object({
   page: z.number().int().positive(),
   page_size: z.number().int().positive().max(100),
 }) satisfies z.ZodType<InvestigationPage>
+
+// ---- Resumo por IA (POST /ai/summarize, planejado) ----
+
+export const aiSummarySchema = z.object({
+  accession: z.string().regex(ACCESSION_PATTERN),
+  summary: z.string().min(1),
+  source_fields: z
+    .array(z.enum(['objective', 'approach', 'hypothesis']))
+    .min(1)
+    .refine((fields) => new Set(fields).size === fields.length, 'source_fields repetido'),
+  model: z.string().nullable(),
+  generated_at: z.iso.datetime(),
+  origin_category: z.enum(['Inferred', 'Synthetic']),
+}) satisfies z.ZodType<AiSummary>
 
 // ---- Relatório de predições (simulation/predicoes.py) ----
 
