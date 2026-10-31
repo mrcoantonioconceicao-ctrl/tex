@@ -155,7 +155,10 @@ pub fn build_payload(context: &str) -> Value {
 /// Junta os trechos de texto do primeiro candidato; None se não houver texto
 pub fn extract_text(body: &Value) -> Option<String> {
     let parts = body["candidates"][0]["content"]["parts"].as_array()?;
-    let text: String = parts.iter().filter_map(|part| part["text"].as_str()).collect();
+    let text: String = parts
+        .iter()
+        .filter_map(|part| part["text"].as_str())
+        .collect();
     let text = text.trim();
     (!text.is_empty()).then(|| text.to_string())
 }
