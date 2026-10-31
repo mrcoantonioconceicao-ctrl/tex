@@ -64,4 +64,4 @@ Microgravidade (M) ou solo (S). O tamanho é o total de arquivos da investigaç�
   Tudo cabe em menos de 1 MB e é idempotente pelo `Accession` mais a versão.
 - **_Decisão_ proposta, base do resumo por IA:** os campos `objective`, `approach` e `hypothesis` de cada investigação, mais as publicações com DOI.
 - **_Hipótese_:** as colunas dos CSVs variam por investigação (o BASS-II mede O₂/CO₂/CO; o FLEX deve trazer diâmetro de gota e diluente). Isso precisa ser conferido CSV a CSV antes de fechar a migração 0002.
-- **Pendência com o Marco:** decidir se baixamos os 25 CSVs (cerca de 230 KB) antes de 14/11. Pela regra do CLAUDE.md, coletar dados do desafio é decisão conjunta.
+- **_Decisão_ (Willian e Marco, 31/10):** os 25 CSVs só são baixados a partir de 14/11, mas o código do download (`npm run download:psi`, em `ingestion/src/psi-download.ts`) fica pronto antes, testado só com dado sintético. A CLI recusa baixar antes de 14/11.

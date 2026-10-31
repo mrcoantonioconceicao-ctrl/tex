@@ -4,7 +4,7 @@
 // original inteiro vai para experiments.raw.
 //
 // Esqueleto: busca e metadados das investigações (etapas 1, 2, 10 e 11 do pipeline).
-// Baixar e normalizar as tabelas experimentais (CSV) fica para depois de 14/11.
+// O download das tabelas (CSV) fica em psi-download.ts; normalizá-las, depois de 14/11.
 import { z } from 'zod'
 import { fetchWithRetry, type RetryOptions } from './ntrs.ts'
 

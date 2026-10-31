@@ -135,9 +135,28 @@ export interface InvestigationQuery {
   page_size?: number
 }
 
-// Corpo dos erros 400/404/503 das rotas de investigações
+// POST /api/v1/ai/summarize (PLANEJADO: o backend ainda não serve, só o mock MSW)
+export interface SummarizeRequest {
+  accession: string
+}
+
+export type SummarySourceField = 'objective' | 'approach' | 'hypothesis'
+
+export interface AiSummary {
+  accession: string
+  summary: string
+  // Textos da investigação que entraram no resumo
+  source_fields: SummarySourceField[]
+  // null quando o resumo é sintético (mock ou teste)
+  model: string | null
+  generated_at: string
+  // Resumo nunca é Published nem Measured
+  origin_category: Extract<OriginCategory, 'Inferred' | 'Synthetic'>
+}
+
+// Corpo dos erros 400/404/422/503 das rotas de investigações e do resumo
 export interface ApiErrorBody {
-  code: 'INVALID_PARAMETER' | 'NOT_FOUND' | 'SERVICE_UNAVAILABLE'
+  code: 'INVALID_PARAMETER' | 'NOT_FOUND' | 'NO_SOURCE_TEXT' | 'SERVICE_UNAVAILABLE'
   message: string
 }
 

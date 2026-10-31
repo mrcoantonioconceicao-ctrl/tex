@@ -2,6 +2,7 @@
 import type { ClientBase } from 'pg'
 import type { CitationRow } from './ntrs.ts'
 import type { InvestigationRow } from './psi.ts'
+import { EXPERIMENTAL_TABLE, type PendingFile } from './psi-download.ts'
 
 // Postgres do docker-compose.yml da raiz (credenciais só de desenvolvimento local)
 export const DEFAULT_DATABASE_URL = 'postgres://tex:tex@127.0.0.1:5433/tex'
@@ -176,6 +177,51 @@ export async function upsertInvestigations(client: ClientBase, rows: Investigati
     await client.query('ROLLBACK')
     throw error
   }
+}
+
+// ---- Download das tabelas do PSI (psi-download.ts) ----
+
+const LIST_PENDING_FILES = `
+  SELECT f.file_id::int AS file_id, e.psi_accession, e.psi_version, f.file_name, f.file_bytes::int AS file_bytes
+    FROM experiment_files f
+    JOIN experiments e USING (experiment_id)
+   WHERE e.psi_accession IS NOT NULL
+     AND f.category = $1
+     AND ($2::text IS NULL OR e.psi_accession = $2)
+     AND ($3 OR f.sha256 IS NULL)
+   ORDER BY substring(e.psi_accession FROM 5)::numeric, f.file_name`
+
+export interface PendingQuery {
+  // só uma investigação (ex.: PSI-25); ausente = todas
+  accession?: string
+  // baixa de novo o que já tem sha256
+  force?: boolean
+}
+
+// Só as tabelas experimentais: o resto da investigação é dado bruto (vídeo, imagem)
+export async function listPendingFiles(client: ClientBase, query: PendingQuery = {}): Promise<PendingFile[]> {
+  const { rows } = await client.query<{
+    file_id: number
+    psi_accession: string
+    psi_version: number | null
+    file_name: string
+    file_bytes: number | null
+  }>(LIST_PENDING_FILES, [EXPERIMENTAL_TABLE, query.accession ?? null, query.force ?? false])
+  return rows.map((row) => ({
+    fileId: row.file_id,
+    accession: row.psi_accession,
+    version: row.psi_version,
+    fileName: row.file_name,
+    fileBytes: row.file_bytes,
+  }))
+}
+
+export async function markDownloaded(client: ClientBase, fileId: number, sha256: string): Promise<void> {
+  const { rowCount } = await client.query(
+    'UPDATE experiment_files SET sha256 = $2, downloaded_at = now() WHERE file_id = $1',
+    [fileId, sha256],
+  )
+  if (rowCount !== 1) throw new Error(`experiment_files ${fileId} não existe`)
 }
 
 export async function startRun(client: ClientBase, source: string, query: string): Promise<number> {
