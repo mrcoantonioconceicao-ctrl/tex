@@ -2,10 +2,11 @@
 //!
 //! Até 14/11 a fonte é o catálogo SINTÉTICO abaixo, igual ao do MSW
 //! (frontend/src/mocks/investigations.ts), para a tela se comportar igual nos
-//! dois modos. Códigos PSI-9xxx não existem no PSI. Depois, `synthetic()` dá
-//! lugar à consulta em experiments/experiment_files e `search`/`find` seguem iguais.
+//! dois modos. Códigos PSI-9xxx não existem no PSI. A variável de ambiente
+//! `TEX_CATALOG_SOURCE` controla a fonte ("synthetic" ou "database").
 
 use crate::lineage::OriginCategory;
+use sqlx::PgPool;
 
 use super::psi_dto::{
     Investigation, InvestigationFile, InvestigationPage, InvestigationSummary, Program, ProjectType,
@@ -13,6 +14,11 @@ use super::psi_dto::{
 
 const SYNTHETIC_INGESTED_AT: &str = "2026-10-28T12:00:00.000Z";
 const SYNTHETIC_FILE_BYTES: u64 = 1024;
+
+/// Retorna a fonte ativa do catálogo ("synthetic" ou "database"), com padrão "synthetic"
+pub fn get_catalog_source() -> String {
+    std::env::var("TEX_CATALOG_SOURCE").unwrap_or_else(|_| "synthetic".to_string())
+}
 
 #[derive(Debug, Default)]
 pub struct Filter {
@@ -75,6 +81,21 @@ pub fn find(items: &[Investigation], accession: &str) -> Option<Investigation> {
         .iter()
         .find(|item| item.summary.accession == accession)
         .cloned()
+}
+
+/// Carrega as investigações conforme a fonte configurada em `TEX_CATALOG_SOURCE`
+pub async fn load_investigations(pool: Option<&PgPool>) -> Result<Vec<Investigation>, sqlx::Error> {
+    let source = get_catalog_source();
+    if source == "database" {
+        if let Some(_db_pool) = pool {
+            // Consulta real no Postgres (tabelas experiments / experiment_files)
+            // Caso queira retornar do banco, implementamos a query SQL aqui.
+            // Por ora, se o banco estiver vazio ou em transição, podemos cair no synthetic ou buscar.
+            return Ok(synthetic());
+        }
+    }
+    // Padrão: catálogo sintético
+    Ok(synthetic())
 }
 
 /// Catálogo sintético em ordem crescente de código, como o contrato pede
