@@ -57,6 +57,8 @@ pub struct AppState {
     started_at: Instant,
     /// None quando o servidor sobe sem DATABASE_URL
     db: Option<PgPool>,
+    /// Catálogo carregado na subida conforme TEX_CATALOG_SOURCE
+    investigations: Vec<Investigation>,
 }
 
 impl Default for AppState {
@@ -69,14 +71,16 @@ impl Default for AppState {
             metrics: Mutex::new(LiveMetrics::default()),
             started_at: Instant::now(),
             db: None,
+            investigations: catalog::synthetic(),
         }
     }
 }
 
 impl AppState {
-    pub fn with_database(db: Option<PgPool>) -> Self {
+    pub fn new(db: Option<PgPool>, investigations: Vec<Investigation>) -> Self {
         Self {
             db,
+            investigations,
             ..Self::default()
         }
     }
@@ -319,6 +323,7 @@ fn is_valid_accession(raw: &str) -> bool {
 }
 
 async fn list_investigations(
+    State(state): State<Arc<AppState>>,
     Query(query): Query<InvestigationQuery>,
 ) -> Result<Json<InvestigationPage>, AppError> {
     let filter = Filter {
@@ -337,16 +342,19 @@ async fn list_investigations(
         DEFAULT_PAGE_SIZE,
         MAX_PAGE_SIZE,
     )?;
-    let items = catalog::synthetic();
-    Ok(Json(catalog::search(&items, &filter, page, page_size)))
+    let result = catalog::search(&state.investigations, &filter, page, page_size);
+    Ok(Json(result))
 }
 
-async fn get_investigation(Path(raw): Path<String>) -> Result<Json<Investigation>, AppError> {
+async fn get_investigation(
+    State(state): State<Arc<AppState>>,
+    Path(raw): Path<String>,
+) -> Result<Json<Investigation>, AppError> {
     if !is_valid_accession(&raw) {
         let message = format!("código fora do formato PSI-<número>: {raw}");
         return Err(AppError::InvalidParameter(message));
     }
-    match catalog::find(&catalog::synthetic(), &raw) {
+    match catalog::find(&state.investigations, &raw) {
         Some(investigation) => Ok(Json(investigation)),
         None => {
             let message = format!("investigação {raw} não encontrada");
@@ -481,7 +489,7 @@ mod tests {
         let pool = sqlx::postgres::PgPoolOptions::new()
             .connect_lazy("postgres://tex:tex@127.0.0.1:1/tex")
             .unwrap();
-        let state = Arc::new(AppState::with_database(Some(pool)));
+        let state = Arc::new(AppState::new(Some(pool), catalog::synthetic()));
         let (status, body) = call(&state, "GET", "/api/v1/health", None).await;
         assert_eq!(status, StatusCode::OK);
         assert_eq!(body["status"], "ok");
@@ -698,5 +706,17 @@ mod tests {
         let (status, body) = call(&state, "GET", "/api/v1/investigations/PSI-1", None).await;
         assert_eq!(status, StatusCode::NOT_FOUND);
         assert_eq!(body["code"], "NOT_FOUND");
+    }
+
+    #[tokio::test]
+    async fn investigations_usa_o_catalogo_do_estado() {
+        let state = Arc::new(AppState::new(None, Vec::new()));
+        let (status, body) = call(&state, "GET", "/api/v1/investigations", None).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(body["total"], 0);
+
+        let uri = "/api/v1/investigations/PSI-9001";
+        let (status, _) = call(&state, "GET", uri, None).await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
     }
 }

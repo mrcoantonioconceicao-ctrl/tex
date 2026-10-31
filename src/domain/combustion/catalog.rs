@@ -1,9 +1,15 @@
 //! Catálogo de investigações do PSI: filtro, busca e paginação.
 //!
-//! Até 14/11 a fonte é o catálogo SINTÉTICO abaixo, igual ao do MSW
-//! (frontend/src/mocks/investigations.ts), para a tela se comportar igual nos
-//! dois modos. Códigos PSI-9xxx não existem no PSI. Depois, `synthetic()` dá
-//! lugar à consulta em experiments/experiment_files e `search`/`find` seguem iguais.
+//! Até 14/11 a fonte padrão é o catálogo SINTÉTICO abaixo, igual ao do MSW
+//! (frontend/src/mocks/investigations.ts). Códigos PSI-9xxx não existem no PSI.
+//!
+//! A variável TEX_CATALOG_SOURCE escolhe a fonte, lida uma vez na subida do
+//! servidor (main.rs): valor inválido ou fonte ainda não implementada impedem
+//! a subida, então as rotas nunca falham por configuração.
+//! - synthetic (padrão): lista fixa marcada como Synthetic
+//! - database: ainda não implementado (não finge ler o Postgres)
+
+use thiserror::Error;
 
 use crate::lineage::OriginCategory;
 
@@ -13,6 +19,37 @@ use super::psi_dto::{
 
 const SYNTHETIC_INGESTED_AT: &str = "2026-10-28T12:00:00.000Z";
 const SYNTHETIC_FILE_BYTES: u64 = 1024;
+const SOURCE_VAR: &str = "TEX_CATALOG_SOURCE";
+
+/// Fonte do catálogo (TEX_CATALOG_SOURCE)
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CatalogSource {
+    Synthetic,
+    Database,
+}
+
+impl CatalogSource {
+    /// Ausente ou vazio → Synthetic; valor desconhecido → erro
+    pub fn parse(raw: Option<&str>) -> Result<Self, CatalogError> {
+        match raw.map(str::trim) {
+            None | Some("") | Some("synthetic") => Ok(Self::Synthetic),
+            Some("database") => Ok(Self::Database),
+            Some(other) => Err(CatalogError::InvalidSource(other.to_string())),
+        }
+    }
+
+    pub fn from_env() -> Result<Self, CatalogError> {
+        Self::parse(std::env::var(SOURCE_VAR).ok().as_deref())
+    }
+}
+
+#[derive(Debug, Error, PartialEq)]
+pub enum CatalogError {
+    #[error("TEX_CATALOG_SOURCE inválido: '{0}'; use 'synthetic' ou 'database'")]
+    InvalidSource(String),
+    #[error("fonte database ainda não implementada; use TEX_CATALOG_SOURCE=synthetic")]
+    DatabaseNotImplemented,
+}
 
 #[derive(Debug, Default)]
 pub struct Filter {
@@ -75,6 +112,15 @@ pub fn find(items: &[Investigation], accession: &str) -> Option<Investigation> {
         .iter()
         .find(|item| item.summary.accession == accession)
         .cloned()
+}
+
+/// Carrega o catálogo da fonte escolhida; database dá erro até a consulta
+/// em experiments/experiment_files existir (não devolve o sintético em silêncio)
+pub fn load_investigations(source: CatalogSource) -> Result<Vec<Investigation>, CatalogError> {
+    match source {
+        CatalogSource::Synthetic => Ok(synthetic()),
+        CatalogSource::Database => Err(CatalogError::DatabaseNotImplemented),
+    }
 }
 
 /// Catálogo sintético em ordem crescente de código, como o contrato pede
@@ -205,5 +251,38 @@ mod tests {
         assert!(find(&items, "PSI-9003").is_some());
         assert!(find(&items, "psi-9003").is_none());
         assert!(find(&items, "PSI-1").is_none());
+    }
+
+    #[test]
+    fn fonte_ausente_ou_vazia_e_synthetic() {
+        for raw in [None, Some(""), Some("  "), Some("synthetic")] {
+            assert_eq!(
+                CatalogSource::parse(raw),
+                Ok(CatalogSource::Synthetic),
+                "{raw:?}"
+            );
+        }
+        assert_eq!(
+            CatalogSource::parse(Some("database")),
+            Ok(CatalogSource::Database)
+        );
+    }
+
+    #[test]
+    fn fonte_desconhecida_e_recusada() {
+        for raw in ["databse", "Synthetic", "postgres"] {
+            let expected = CatalogError::InvalidSource(raw.to_string());
+            assert_eq!(CatalogSource::parse(Some(raw)), Err(expected));
+        }
+    }
+
+    #[test]
+    fn load_so_aceita_a_fonte_implementada() {
+        let items = load_investigations(CatalogSource::Synthetic).unwrap();
+        assert_eq!(items, synthetic());
+        assert_eq!(
+            load_investigations(CatalogSource::Database),
+            Err(CatalogError::DatabaseNotImplemented)
+        );
     }
 }
