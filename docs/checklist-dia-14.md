@@ -43,7 +43,10 @@ Metadados do PSI (a ingestão já existe e só lê a API pública):
 
 Tabelas experimentais em CSV (cerca de 25 arquivos, uns 230 KB, segundo o [`psi.md`](conhecimento/psi.md)):
 
-- [ ] Implementar o download (passo 3 do `psi.md`): link assinado de `studies/<PSI>/download`, gravar `sha256` e `downloaded_at` em `experiment_files`.
+- [ ] Baixar as tabelas (código pronto desde 31/10 e testado só com dado sintético; a CLI recusa rodar antes de 14/11):
+  - [ ] `npm run download:psi -- --dry-run` lista o que falta, sem rede.
+  - [ ] `npm run download:psi -- --accession PSI-25` primeiro, para conferir o formato da resposta do link assinado (hoje é **hipótese** em `psi-download.ts`); depois `npm run download:psi` para todas.
+  - [ ] Conferir: `SELECT count(*) FILTER (WHERE sha256 IS NULL) FROM experiment_files WHERE category = 'Experimental table';` deve dar 0. Os CSVs ficam em `ingestion/data/psi/`, fora do git.
 - [ ] Conferir as colunas CSV a CSV antes de gravar medições. Hoje a variação de colunas entre investigações é **hipótese**.
 - [ ] Medição de sensor entra como `Measured` com `source_file_id`; a regra do banco já recusa o que vier sem a origem.
 

@@ -23,6 +23,9 @@ rustc-ice-*.txt
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# Tabelas baixadas do PSI (npm run download:psi): dado do desafio não entra no git
+ingestion/data/
+
 # Dependências e caches (em qualquer pasta)
 node_modules/
 __pycache__/
