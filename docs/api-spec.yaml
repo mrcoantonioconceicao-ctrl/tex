@@ -98,12 +98,14 @@ paths:
     get:
       summary: Catálogo das investigações do PSI (só metadados, sem medições)
       description: >
-        Lê experiments e experiment_files (ingestion/db/migrations/0002). Só
-        investigações com psi_accession entram. Ordem: número do código PSI,
-        crescente. Ranqueamento por ambiente e resumo por IA ficam para depois
-        de 14/11 e entram como campos novos, sem quebrar este formato. Até
-        14/11 o backend responde com o catálogo sintético PSI-9001 a PSI-9006
-        (origin_category Synthetic), o mesmo dos mocks do frontend.
+        Lê experiments e experiment_files (ingestion/db/migrations/0002), com
+        origin_category vindo de experiments (0003). Só investigações com
+        psi_accession entram. Ordem: número do código PSI, crescente.
+        Ranqueamento por ambiente e resumo por IA ficam para depois de 14/11 e
+        entram como campos novos, sem quebrar este formato. A fonte é escolhida
+        por TEX_CATALOG_SOURCE no backend: synthetic (padrão até 14/11) responde
+        com o catálogo sintético PSI-9001 a PSI-9006 (origin_category Synthetic),
+        o mesmo dos mocks do frontend; database lê o PostgreSQL a cada requisição.
       parameters:
         - name: program
           in: query
@@ -152,6 +154,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorBody'
+        '503':
+          $ref: '#/components/responses/CatalogUnavailable'
 
   /investigations/{accession}:
     get:
@@ -183,8 +187,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiErrorBody'
+        '503':
+          $ref: '#/components/responses/CatalogUnavailable'
 
 components:
+  responses:
+    CatalogUnavailable:
+      description: >
+        Fonte database sem resposta do PostgreSQL. A mensagem é genérica; o
+        detalhe fica no log do backend.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorBody'
   schemas:
     Health:
       type: object
@@ -491,7 +506,7 @@ components:
       properties:
         code:
           type: string
-          enum: [INVALID_PARAMETER, NOT_FOUND]
+          enum: [INVALID_PARAMETER, NOT_FOUND, SERVICE_UNAVAILABLE]
         message:
           type: string
           description: Texto para quem lê o log; a tela não deve depender dele

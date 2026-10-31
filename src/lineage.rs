@@ -20,6 +20,20 @@ pub enum OriginCategory {
     Synthetic,
 }
 
+impl OriginCategory {
+    /// Mesmo texto do CHECK origin_category no banco (migrações 0001 e 0003)
+    pub fn parse(raw: &str) -> Option<Self> {
+        match raw {
+            "Measured" => Some(Self::Measured),
+            "Published" => Some(Self::Published),
+            "Derived" => Some(Self::Derived),
+            "Inferred" => Some(Self::Inferred),
+            "Synthetic" => Some(Self::Synthetic),
+            _ => None,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -34,5 +48,18 @@ mod tests {
             serde_json::to_string(&OriginCategory::Measured).unwrap(),
             "\"Measured\""
         );
+    }
+
+    #[test]
+    fn parse_aceita_so_o_texto_do_banco() {
+        assert_eq!(
+            OriginCategory::parse("Published"),
+            Some(OriginCategory::Published)
+        );
+        assert_eq!(
+            OriginCategory::parse("Synthetic"),
+            Some(OriginCategory::Synthetic)
+        );
+        assert_eq!(OriginCategory::parse("synthetic"), None);
     }
 }
