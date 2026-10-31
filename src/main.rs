@@ -19,6 +19,8 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use api::AppState;
+use domain::combustion::catalog::{self, CatalogSource};
+use domain::combustion::psi_dto::Investigation;
 use tokio::net::TcpListener;
 
 const TICK_INTERVAL: Duration = Duration::from_secs(5);
@@ -39,7 +41,8 @@ async fn main() {
     println!("==================================================");
     print_config();
 
-    let state = Arc::new(AppState::with_database(db::pool_from_env()));
+    let investigations = load_catalog();
+    let state = Arc::new(AppState::new(db::pool_from_env(), investigations));
 
     // Laço de simulação: um ciclo a cada 5 s
     let ticker = Arc::clone(&state);
@@ -89,6 +92,19 @@ fn print_config() {
             println!("[i] Domínios DDD: {}", config["architecture"]["domains"]);
         }
         Err(error) => eprintln!("[!] {CONFIG_PATH} não carregado ({error}); seguindo sem ele"),
+    }
+}
+
+/// Catálogo do /api/v1/investigations (TEX_CATALOG_SOURCE). Configuração
+/// inválida encerra aqui, antes de abrir a porta, em vez de virar erro por requisição.
+fn load_catalog() -> Vec<Investigation> {
+    let loaded = CatalogSource::from_env().and_then(catalog::load_investigations);
+    match loaded {
+        Ok(investigations) => investigations,
+        Err(error) => {
+            eprintln!("[x] {error}");
+            std::process::exit(1);
+        }
     }
 }
 

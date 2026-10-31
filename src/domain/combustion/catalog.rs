@@ -3,9 +3,13 @@
 //! Até 14/11 a fonte padrão é o catálogo SINTÉTICO abaixo, igual ao do MSW
 //! (frontend/src/mocks/investigations.ts). Códigos PSI-9xxx não existem no PSI.
 //!
-//! A variável TEX_CATALOG_SOURCE escolhe a fonte:
+//! A variável TEX_CATALOG_SOURCE escolhe a fonte, lida uma vez na subida do
+//! servidor (main.rs): valor inválido ou fonte ainda não implementada impedem
+//! a subida, então as rotas nunca falham por configuração.
 //! - synthetic (padrão): lista fixa marcada como Synthetic
-//! - database: ainda não implementado — devolve erro claro (não finge ler o Postgres)
+//! - database: ainda não implementado (não finge ler o Postgres)
+
+use thiserror::Error;
 
 use crate::lineage::OriginCategory;
 
@@ -15,8 +19,9 @@ use super::psi_dto::{
 
 const SYNTHETIC_INGESTED_AT: &str = "2026-10-28T12:00:00.000Z";
 const SYNTHETIC_FILE_BYTES: u64 = 1024;
+const SOURCE_VAR: &str = "TEX_CATALOG_SOURCE";
 
-/// Fonte do catálogo (TEX_CATALOG_SOURCE).
+/// Fonte do catálogo (TEX_CATALOG_SOURCE)
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CatalogSource {
     Synthetic,
@@ -24,41 +29,27 @@ pub enum CatalogSource {
 }
 
 impl CatalogSource {
-    /// Lê TEX_CATALOG_SOURCE. Ausente → Synthetic. Valor inválido → erro.
-    pub fn from_env() -> Result<Self, String> {
-        match std::env::var("TEX_CATALOG_SOURCE") {
-            Err(_) => Ok(Self::Synthetic),
-            Ok(raw) => match raw.trim() {
-                "" | "synthetic" => Ok(Self::Synthetic),
-                "database" => Ok(Self::Database),
-                other => Err(format!(
-                    "TEX_CATALOG_SOURCE inválido: '{other}'. Use 'synthetic' ou 'database'."
-                )),
-            },
+    /// Ausente ou vazio → Synthetic; valor desconhecido → erro
+    pub fn parse(raw: Option<&str>) -> Result<Self, CatalogError> {
+        match raw.map(str::trim) {
+            None | Some("") | Some("synthetic") => Ok(Self::Synthetic),
+            Some("database") => Ok(Self::Database),
+            Some(other) => Err(CatalogError::InvalidSource(other.to_string())),
         }
+    }
+
+    pub fn from_env() -> Result<Self, CatalogError> {
+        Self::parse(std::env::var(SOURCE_VAR).ok().as_deref())
     }
 }
 
-/// Erros ao carregar o catálogo (antes de existir consulta SQL real).
-#[derive(Debug)]
+#[derive(Debug, Error, PartialEq)]
 pub enum CatalogError {
+    #[error("TEX_CATALOG_SOURCE inválido: '{0}'; use 'synthetic' ou 'database'")]
     InvalidSource(String),
+    #[error("fonte database ainda não implementada; use TEX_CATALOG_SOURCE=synthetic")]
     DatabaseNotImplemented,
 }
-
-impl std::fmt::Display for CatalogError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::InvalidSource(msg) => write!(f, "{msg}"),
-            Self::DatabaseNotImplemented => write!(
-                f,
-                "fonte database ainda não implementada; use TEX_CATALOG_SOURCE=synthetic"
-            ),
-        }
-    }
-}
-
-impl std::error::Error for CatalogError {}
 
 #[derive(Debug, Default)]
 pub struct Filter {
@@ -123,14 +114,12 @@ pub fn find(items: &[Investigation], accession: &str) -> Option<Investigation> {
         .cloned()
 }
 
-/// Carrega as investigações conforme TEX_CATALOG_SOURCE.
-/// - synthetic: catálogo fixo PSI-9xxx
-/// - database: erro claro até a query SQL existir (não devolve synthetic em silêncio)
-pub fn load_investigations() -> Result<Vec<Investigation>, CatalogError> {
-    match CatalogSource::from_env() {
-        Ok(CatalogSource::Synthetic) => Ok(synthetic()),
-        Ok(CatalogSource::Database) => Err(CatalogError::DatabaseNotImplemented),
-        Err(msg) => Err(CatalogError::InvalidSource(msg)),
+/// Carrega o catálogo da fonte escolhida; database dá erro até a consulta
+/// em experiments/experiment_files existir (não devolve o sintético em silêncio)
+pub fn load_investigations(source: CatalogSource) -> Result<Vec<Investigation>, CatalogError> {
+    match source {
+        CatalogSource::Synthetic => Ok(synthetic()),
+        CatalogSource::Database => Err(CatalogError::DatabaseNotImplemented),
     }
 }
 
@@ -265,21 +254,35 @@ mod tests {
     }
 
     #[test]
-    fn source_padrao_e_synthetic() {
-        // Garante que sem a env a fonte é Synthetic (teste não altera o ambiente do processo)
-        let source = CatalogSource::from_env().unwrap_or(CatalogSource::Synthetic);
-        assert!(matches!(
-            source,
-            CatalogSource::Synthetic | CatalogSource::Database
-        ));
+    fn fonte_ausente_ou_vazia_e_synthetic() {
+        for raw in [None, Some(""), Some("  "), Some("synthetic")] {
+            assert_eq!(
+                CatalogSource::parse(raw),
+                Ok(CatalogSource::Synthetic),
+                "{raw:?}"
+            );
+        }
+        assert_eq!(
+            CatalogSource::parse(Some("database")),
+            Ok(CatalogSource::Database)
+        );
     }
 
     #[test]
-    fn load_synthetic_por_padrao() {
-        // Se a env não estiver como database, deve carregar o catálogo
-        if std::env::var("TEX_CATALOG_SOURCE").ok().as_deref() != Some("database") {
-            let items = load_investigations().expect("synthetic deve carregar");
-            assert_eq!(items.len(), 6);
+    fn fonte_desconhecida_e_recusada() {
+        for raw in ["databse", "Synthetic", "postgres"] {
+            let expected = CatalogError::InvalidSource(raw.to_string());
+            assert_eq!(CatalogSource::parse(Some(raw)), Err(expected));
         }
+    }
+
+    #[test]
+    fn load_so_aceita_a_fonte_implementada() {
+        let items = load_investigations(CatalogSource::Synthetic).unwrap();
+        assert_eq!(items, synthetic());
+        assert_eq!(
+            load_investigations(CatalogSource::Database),
+            Err(CatalogError::DatabaseNotImplemented)
+        );
     }
 }
