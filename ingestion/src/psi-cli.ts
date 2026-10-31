@@ -2,7 +2,7 @@
 //   npm run ingest:psi -- --dry-run                  (só busca e mostra, sem banco)
 //   npm run ingest:psi -- --term combustion --max 50
 // DATABASE_URL sobrescreve o banco padrão (Postgres do docker-compose.yml).
-// Nenhum CSV é baixado aqui: isso fica para depois de 14/11 (regra do CLAUDE.md).
+// Nenhum CSV é baixado aqui: isso é o download:psi (psi-download-cli.ts), a partir de 14/11.
 import { parseArgs } from 'node:util'
 import pg from 'pg'
 import { DEFAULT_DATABASE_URL, finishRun, startRun, upsertInvestigations } from './db.ts'
