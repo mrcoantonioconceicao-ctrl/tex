@@ -3,7 +3,13 @@ name: Backend CI
 on:
   push:
     branches: [main]
-    paths: ['src/**', 'Cargo.toml', 'Cargo.lock', 'config/**', '.github/workflows/backend.yml']
+    paths:
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'config/**'
+      - 'ingestion/db/migrations/**'
+      - '.github/workflows/backend.yml'
   pull_request:
 
 permissions:
@@ -11,19 +17,47 @@ permissions:
   pull-requests: read
 
 jobs:
-  # Em PR sempre roda; o job abaixo só trabalha se o PR mexer nestes caminhos
+  # Em PR sempre roda; o job abaixo só trabalha se o PR mexer nestes caminhos.
+  # Migração nova também conta: o catálogo (src/catalog_db.rs) lê o schema.
   changes:
     uses: ./.github/workflows/changed.yml
     with:
-      pattern: '^(src/|config/|Cargo\.(toml|lock)$|\.github/workflows/(backend|changed)\.yml$)'
+      pattern: '^(src/|config/|Cargo\.(toml|lock)$|ingestion/db/migrations/|\.github/workflows/(backend|changed)\.yml$)'
 
   backend:
     needs: changes
     # Se a detecção falhar, roda a CI inteira em vez de pular
     if: ${{ !cancelled() && needs.changes.outputs.changed != 'false' }}
     runs-on: ubuntu-latest
+    # Mesmo banco do docker-compose.yml (credenciais descartáveis, só do CI)
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: tex
+          POSTGRES_PASSWORD: tex
+          POSTGRES_DB: tex
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U tex -d tex"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://tex:tex@localhost:5432/tex
+      TEX_TEST_DATABASE_URL: postgres://tex:tex@localhost:5432/tex
     steps:
       - uses: actions/checkout@v7
+      # Migrações com o mesmo executor da ingestão (confere o hash de cada arquivo)
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ingestion/package-lock.json
+      - run: npm ci
+        working-directory: ingestion
+      - run: npm run db:migrate
+        working-directory: ingestion
       # Mesma versão do Dockerfile (rust:1.99-slim-bookworm): atualizar os dois juntos
       - run: rustup toolchain install 1.99 --profile minimal --component rustfmt,clippy && rustup default 1.99
       - uses: Swatinem/rust-cache@v2

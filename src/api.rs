@@ -1,5 +1,6 @@
 //! API HTTP v1 (Axum). Contrato documentado em docs/api-spec.yaml.
 
+use std::borrow::Cow;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
@@ -17,6 +18,7 @@ use tower_http::{
     timeout::TimeoutLayer,
 };
 
+use crate::catalog_db;
 use crate::db::{self, DatabaseStatus};
 use crate::domain::combustion::catalog::{self, Filter};
 use crate::domain::combustion::psi_dto::{Investigation, InvestigationPage, Program, ProjectType};
@@ -57,8 +59,32 @@ pub struct AppState {
     started_at: Instant,
     /// None quando o servidor sobe sem DATABASE_URL
     db: Option<PgPool>,
-    /// Catálogo carregado na subida conforme TEX_CATALOG_SOURCE
-    investigations: Vec<Investigation>,
+    catalog: Catalog,
+}
+
+/// Fonte do /investigations, escolhida na subida por TEX_CATALOG_SOURCE
+pub enum Catalog {
+    /// Lista fixa (PSI-9001 a PSI-9006, Synthetic)
+    Synthetic(Vec<Investigation>),
+    /// experiments/experiment_files, lidos a cada requisição: o que a ingestão
+    /// gravar aparece sem reiniciar o backend
+    Database(PgPool),
+}
+
+impl Catalog {
+    async fn load(&self) -> Result<Cow<'_, [Investigation]>, AppError> {
+        match self {
+            Self::Synthetic(items) => Ok(Cow::Borrowed(items.as_slice())),
+            Self::Database(pool) => match catalog_db::load_from_pool(pool).await {
+                Ok(items) => Ok(Cow::Owned(items)),
+                Err(error) => {
+                    tracing::error!(%error, "catálogo indisponível");
+                    let message = "catálogo indisponível no momento".to_string();
+                    Err(AppError::Unavailable(message))
+                }
+            },
+        }
+    }
 }
 
 impl Default for AppState {
@@ -71,16 +97,16 @@ impl Default for AppState {
             metrics: Mutex::new(LiveMetrics::default()),
             started_at: Instant::now(),
             db: None,
-            investigations: catalog::synthetic(),
+            catalog: Catalog::Synthetic(catalog::synthetic()),
         }
     }
 }
 
 impl AppState {
-    pub fn new(db: Option<PgPool>, investigations: Vec<Investigation>) -> Self {
+    pub fn new(db: Option<PgPool>, catalog: Catalog) -> Self {
         Self {
             db,
-            investigations,
+            catalog,
             ..Self::default()
         }
     }
@@ -342,8 +368,8 @@ async fn list_investigations(
         DEFAULT_PAGE_SIZE,
         MAX_PAGE_SIZE,
     )?;
-    let result = catalog::search(&state.investigations, &filter, page, page_size);
-    Ok(Json(result))
+    let items = state.catalog.load().await?;
+    Ok(Json(catalog::search(&items, &filter, page, page_size)))
 }
 
 async fn get_investigation(
@@ -354,7 +380,8 @@ async fn get_investigation(
         let message = format!("código fora do formato PSI-<número>: {raw}");
         return Err(AppError::InvalidParameter(message));
     }
-    match catalog::find(&state.investigations, &raw) {
+    let items = state.catalog.load().await?;
+    match catalog::find(&items, &raw) {
         Some(investigation) => Ok(Json(investigation)),
         None => {
             let message = format!("investigação {raw} não encontrada");
@@ -489,7 +516,8 @@ mod tests {
         let pool = sqlx::postgres::PgPoolOptions::new()
             .connect_lazy("postgres://tex:tex@127.0.0.1:1/tex")
             .unwrap();
-        let state = Arc::new(AppState::new(Some(pool), catalog::synthetic()));
+        let synthetic = Catalog::Synthetic(catalog::synthetic());
+        let state = Arc::new(AppState::new(Some(pool), synthetic));
         let (status, body) = call(&state, "GET", "/api/v1/health", None).await;
         assert_eq!(status, StatusCode::OK);
         assert_eq!(body["status"], "ok");
@@ -709,8 +737,24 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn investigations_com_o_banco_fora_do_ar_devolve_503() {
+        // Porta 1: ninguém escuta; o detalhe do sqlx fica no log, não na resposta
+        let pool = sqlx::postgres::PgPoolOptions::new()
+            .acquire_timeout(Duration::from_millis(500))
+            .connect_lazy("postgres://tex:tex@127.0.0.1:1/tex")
+            .unwrap();
+        let state = Arc::new(AppState::new(None, Catalog::Database(pool)));
+        for uri in ["/api/v1/investigations", "/api/v1/investigations/PSI-1"] {
+            let (status, body) = call(&state, "GET", uri, None).await;
+            assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE, "{uri}");
+            assert_eq!(body["code"], "SERVICE_UNAVAILABLE", "{uri}");
+            assert_eq!(body["message"], "catálogo indisponível no momento");
+        }
+    }
+
+    #[tokio::test]
     async fn investigations_usa_o_catalogo_do_estado() {
-        let state = Arc::new(AppState::new(None, Vec::new()));
+        let state = Arc::new(AppState::new(None, Catalog::Synthetic(Vec::new())));
         let (status, body) = call(&state, "GET", "/api/v1/investigations", None).await;
         assert_eq!(status, StatusCode::OK);
         assert_eq!(body["total"], 0);

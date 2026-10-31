@@ -1,7 +1,7 @@
 //! Erros da API no formato ApiErrorBody do docs/api-spec.yaml ({code, message}).
 //!
-//! Só existe o que alguma rota já usa: os erros do sqlx entram quando o
-//! /api/v1/investigations passar a ler o PostgreSQL.
+//! Só existe o que alguma rota já usa. Falha do banco vira Unavailable com uma
+//! mensagem genérica: o detalhe do sqlx fica no log, nunca na resposta.
 
 use axum::{
     http::StatusCode,
@@ -17,6 +17,8 @@ pub enum AppError {
     InvalidParameter(String),
     #[error("{0}")]
     NotFound(String),
+    #[error("{0}")]
+    Unavailable(String),
 }
 
 #[derive(Debug, Serialize)]
@@ -30,6 +32,7 @@ impl IntoResponse for AppError {
         let (status, code) = match &self {
             AppError::InvalidParameter(_) => (StatusCode::BAD_REQUEST, "INVALID_PARAMETER"),
             AppError::NotFound(_) => (StatusCode::NOT_FOUND, "NOT_FOUND"),
+            AppError::Unavailable(_) => (StatusCode::SERVICE_UNAVAILABLE, "SERVICE_UNAVAILABLE"),
         };
         let body = ApiErrorBody {
             code,

@@ -4,6 +4,7 @@
 //! pipeline em engine.rs e rotas HTTP em api.rs (contrato em docs/api-spec.yaml).
 
 mod api;
+mod catalog_db;
 mod db;
 // O catálogo do PSI já serve o /api/v1/investigations; o Summarizer e a ponte
 // GraphRAG ainda não têm rota no docs/api-spec.yaml (mesmo caso de lineage.rs).
@@ -18,9 +19,9 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 
-use api::AppState;
+use api::{AppState, Catalog};
 use domain::combustion::catalog::{self, CatalogSource};
-use domain::combustion::psi_dto::Investigation;
+use sqlx::PgPool;
 use tokio::net::TcpListener;
 
 const TICK_INTERVAL: Duration = Duration::from_secs(5);
@@ -41,8 +42,9 @@ async fn main() {
     println!("==================================================");
     print_config();
 
-    let investigations = load_catalog();
-    let state = Arc::new(AppState::new(db::pool_from_env(), investigations));
+    let pool = db::pool_from_env();
+    let catalog = select_catalog(pool.clone());
+    let state = Arc::new(AppState::new(pool, catalog));
 
     // Laço de simulação: um ciclo a cada 5 s
     let ticker = Arc::clone(&state);
@@ -95,14 +97,20 @@ fn print_config() {
     }
 }
 
-/// Catálogo do /api/v1/investigations (TEX_CATALOG_SOURCE). Configuração
+/// Fonte do /api/v1/investigations (TEX_CATALOG_SOURCE). Configuração
 /// inválida encerra aqui, antes de abrir a porta, em vez de virar erro por requisição.
-fn load_catalog() -> Vec<Investigation> {
-    let loaded = CatalogSource::from_env().and_then(catalog::load_investigations);
-    match loaded {
-        Ok(investigations) => investigations,
-        Err(error) => {
-            eprintln!("[x] {error}");
+fn select_catalog(pool: Option<PgPool>) -> Catalog {
+    let selected = match CatalogSource::from_env() {
+        Ok(CatalogSource::Synthetic) => Ok(Catalog::Synthetic(catalog::synthetic())),
+        Ok(CatalogSource::Database) => pool
+            .map(Catalog::Database)
+            .ok_or_else(|| "TEX_CATALOG_SOURCE=database exige DATABASE_URL".to_string()),
+        Err(error) => Err(error.to_string()),
+    };
+    match selected {
+        Ok(source) => source,
+        Err(message) => {
+            eprintln!("[x] {message}");
             std::process::exit(1);
         }
     }

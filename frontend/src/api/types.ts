@@ -135,9 +135,9 @@ export interface InvestigationQuery {
   page_size?: number
 }
 
-// Corpo dos erros 400/404 das rotas de investigações
+// Corpo dos erros 400/404/503 das rotas de investigações
 export interface ApiErrorBody {
-  code: 'INVALID_PARAMETER' | 'NOT_FOUND'
+  code: 'INVALID_PARAMETER' | 'NOT_FOUND' | 'SERVICE_UNAVAILABLE'
   message: string
 }
 

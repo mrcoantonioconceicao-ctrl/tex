@@ -227,12 +227,14 @@ describe.skipIf(!databaseUrl)('upsertInvestigations (PostgreSQL)', () => {
            JOIN experiments e USING (experiment_id) WHERE e.psi_accession = ANY($1)`,
         [accessions],
       )
-      const flex = await client.query('SELECT program, start_date::text FROM experiments WHERE psi_accession = $1', [
-        'PSI-9001',
-      ])
+      const flex = await client.query(
+        'SELECT program, start_date::text, origin_category FROM experiments WHERE psi_accession = $1',
+        ['PSI-9001'],
+      )
       expect(experiments.rows[0]).toEqual({ n: 2, has_raw: true })
       expect(files.rows[0].n).toBe(1)
-      expect(flex.rows[0]).toEqual({ program: 'FLEX', start_date: '2020-01-15' })
+      // Migração 0003: o que vem da ingestão do PSI é Published
+      expect(flex.rows[0]).toEqual({ program: 'FLEX', start_date: '2020-01-15', origin_category: 'Published' })
     } finally {
       await client.query('DELETE FROM experiments WHERE psi_accession IN ($1, $2)', ['PSI-9001', 'PSI-9002'])
       await client.end()
