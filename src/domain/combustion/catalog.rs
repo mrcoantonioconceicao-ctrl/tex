@@ -4,10 +4,11 @@
 //! (frontend/src/mocks/investigations.ts). Códigos PSI-9xxx não existem no PSI.
 //!
 //! A variável TEX_CATALOG_SOURCE escolhe a fonte, lida uma vez na subida do
-//! servidor (main.rs): valor inválido ou fonte ainda não implementada impedem
-//! a subida, então as rotas nunca falham por configuração.
-//! - synthetic (padrão): lista fixa marcada como Synthetic
-//! - database: ainda não implementado (não finge ler o Postgres)
+//! servidor (main.rs): valor inválido impede a subida.
+//! - synthetic (padrão até 14/11): lista fixa marcada como Synthetic
+//! - database: experiments/experiment_files (catalog_db.rs, fora do domínio)
+//!
+//! Nos dois casos `search`/`find` abaixo fazem o filtro e a paginação.
 
 use thiserror::Error;
 
@@ -47,8 +48,6 @@ impl CatalogSource {
 pub enum CatalogError {
     #[error("TEX_CATALOG_SOURCE inválido: '{0}'; use 'synthetic' ou 'database'")]
     InvalidSource(String),
-    #[error("fonte database ainda não implementada; use TEX_CATALOG_SOURCE=synthetic")]
-    DatabaseNotImplemented,
 }
 
 #[derive(Debug, Default)]
@@ -112,15 +111,6 @@ pub fn find(items: &[Investigation], accession: &str) -> Option<Investigation> {
         .iter()
         .find(|item| item.summary.accession == accession)
         .cloned()
-}
-
-/// Carrega o catálogo da fonte escolhida; database dá erro até a consulta
-/// em experiments/experiment_files existir (não devolve o sintético em silêncio)
-pub fn load_investigations(source: CatalogSource) -> Result<Vec<Investigation>, CatalogError> {
-    match source {
-        CatalogSource::Synthetic => Ok(synthetic()),
-        CatalogSource::Database => Err(CatalogError::DatabaseNotImplemented),
-    }
 }
 
 /// Catálogo sintético em ordem crescente de código, como o contrato pede
@@ -274,15 +264,5 @@ mod tests {
             let expected = CatalogError::InvalidSource(raw.to_string());
             assert_eq!(CatalogSource::parse(Some(raw)), Err(expected));
         }
-    }
-
-    #[test]
-    fn load_so_aceita_a_fonte_implementada() {
-        let items = load_investigations(CatalogSource::Synthetic).unwrap();
-        assert_eq!(items, synthetic());
-        assert_eq!(
-            load_investigations(CatalogSource::Database),
-            Err(CatalogError::DatabaseNotImplemented)
-        );
     }
 }
