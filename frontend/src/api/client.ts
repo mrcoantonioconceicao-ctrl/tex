@@ -4,6 +4,7 @@ import { z } from 'zod'
 import predictionReportJson from '../data/predicoes.json'
 import {
   aiSummarySchema,
+  apiErrorBodySchema,
   combustionTelemetrySchema,
   investigationPageSchema,
   investigationSchema,
@@ -13,6 +14,7 @@ import {
 } from './schemas'
 import type {
   AiSummary,
+  ApiErrorBody,
   CombustionTelemetry,
   Investigation,
   InvestigationPage,
@@ -26,13 +28,18 @@ import type {
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
 
+type ApiErrorCode = ApiErrorBody['code']
+
 export class ApiError extends Error {
   readonly status: number
+  // `code` do corpo de erro do contrato; null quando o corpo não veio no formato
+  readonly code: ApiErrorCode | null
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, code: ApiErrorCode | null = null) {
     super(message)
     this.name = 'ApiError'
     this.status = status
+    this.code = code
   }
 }
 
@@ -52,12 +59,38 @@ export class NetworkError extends Error {
   }
 }
 
+const API_ERROR_TITLES: Record<ApiErrorCode, string> = {
+  INVALID_PARAMETER: 'Parâmetro inválido na consulta',
+  NOT_FOUND: 'Não encontrado',
+  NO_SOURCE_TEXT: 'Investigação sem texto para resumir',
+  SERVICE_UNAVAILABLE: 'Serviço indisponível no momento',
+}
+
+// Sem corpo no contrato (proxy, backend antigo), o status HTTP decide
+const STATUS_CODES: Partial<Record<number, ApiErrorCode>> = {
+  400: 'INVALID_PARAMETER',
+  404: 'NOT_FOUND',
+  503: 'SERVICE_UNAVAILABLE',
+}
+
 // Título curto do erro para a tela (o detalhe técnico fica em error.message)
 export function describeError(error: Error): string {
   if (error instanceof NetworkError) return 'Sem conexão com o backend'
   if (error instanceof ContractError) return 'Resposta fora do contrato'
-  if (error instanceof ApiError) return `Backend respondeu com erro ${error.status}`
+  if (error instanceof ApiError) {
+    const code = error.code ?? STATUS_CODES[error.status]
+    return code ? API_ERROR_TITLES[code] : `Backend respondeu com erro ${error.status}`
+  }
   return 'Erro inesperado'
+}
+
+async function readErrorCode(response: Response): Promise<ApiErrorCode | null> {
+  try {
+    const result = apiErrorBodySchema.safeParse(await response.json())
+    return result.success ? result.data.code : null
+  } catch {
+    return null
+  }
 }
 
 async function request<T>(path: string, schema: z.ZodType<T>, init?: RequestInit): Promise<T> {
@@ -72,7 +105,8 @@ async function request<T>(path: string, schema: z.ZodType<T>, init?: RequestInit
     throw new NetworkError(`${label} sem conexão com o backend`)
   }
   if (!response.ok) {
-    throw new ApiError(response.status, `${label} falhou (${response.status})`)
+    const code = await readErrorCode(response)
+    throw new ApiError(response.status, `${label} falhou (${response.status})`, code)
   }
   const result = schema.safeParse(await response.json())
   if (!result.success) {

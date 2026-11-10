@@ -4,6 +4,7 @@
 import { z } from 'zod'
 import type {
   AiSummary,
+  ApiErrorBody,
   CombustionTelemetry,
   Investigation,
   InvestigationPage,
@@ -130,6 +131,13 @@ export const aiSummarySchema = z.object({
   generated_at: z.iso.datetime(),
   origin_category: z.enum(['Inferred', 'Synthetic']),
 }) satisfies z.ZodType<AiSummary>
+
+// ---- Corpo de erro (4xx/5xx) ----
+
+export const apiErrorBodySchema = z.object({
+  code: z.enum(['INVALID_PARAMETER', 'NOT_FOUND', 'NO_SOURCE_TEXT', 'SERVICE_UNAVAILABLE']),
+  message: z.string(),
+}) satisfies z.ZodType<ApiErrorBody>
 
 // ---- Relatório de predições (simulation/predicoes.py) ----
 
