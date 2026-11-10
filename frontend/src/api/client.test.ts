@@ -5,6 +5,8 @@ import { setMockScenario } from '../mocks/scenario'
 import {
   ApiError,
   ContractError,
+  describeError,
+  getInvestigation,
   getLatestTelemetry,
   getSystemMetrics,
   NetworkError,
@@ -258,5 +260,41 @@ describe('controles da simulação', () => {
     await expect(triggerSuppression()).rejects.toThrow('POST /simulation/suppress falhou (500)')
     await expect(resetSimulation()).rejects.toThrow('POST /simulation/reset falhou (500)')
     expect(methods).toEqual(['POST', 'POST'])
+  })
+})
+
+describe('describeError', () => {
+  it('usa o code do corpo de erro do contrato', async () => {
+    server.use(
+      http.get('*/api/v1/investigations/:accession', () =>
+        HttpResponse.json({ code: 'SERVICE_UNAVAILABLE', message: 'catálogo indisponível' }, { status: 503 }),
+      ),
+    )
+
+    const error = await getInvestigation('PSI-25').catch((e: unknown) => e)
+
+    expect((error as ApiError).code).toBe('SERVICE_UNAVAILABLE')
+    expect(describeError(error as Error)).toBe('Serviço indisponível no momento')
+  })
+
+  it('cai no status HTTP quando o corpo não segue o contrato', async () => {
+    server.use(
+      http.get('*/api/v1/investigations/:accession', () => new HttpResponse('Not Found', { status: 404 })),
+    )
+
+    const error = await getInvestigation('PSI-25').catch((e: unknown) => e)
+
+    expect((error as ApiError).code).toBeNull()
+    expect(describeError(error as Error)).toBe('Não encontrado')
+  })
+
+  it('mostra o status quando não há título para ele', () => {
+    expect(describeError(new ApiError(500, 'GET /x falhou (500)'))).toBe('Backend respondeu com erro 500')
+  })
+
+  it('dá títulos próprios para rede, contrato e erro desconhecido', () => {
+    expect(describeError(new NetworkError('x'))).toBe('Sem conexão com o backend')
+    expect(describeError(new ContractError('x'))).toBe('Resposta fora do contrato')
+    expect(describeError(new Error('x'))).toBe('Erro inesperado')
   })
 })
