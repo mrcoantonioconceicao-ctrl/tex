@@ -14,6 +14,11 @@ services:
       - RUST_LOG=info
       # O pool conecta sob demanda: o backend sobe mesmo antes do banco (o /health mostra o estado)
       - DATABASE_URL=postgres://${TEX_DB_USER:-tex}:${TEX_DB_PASSWORD:-tex}@db:5432/${TEX_DB_NAME:-tex}
+      # Vêm do .env (modelo em .env.example). Vazio = catálogo sintético e resumo por IA desligado
+      - TEX_CATALOG_SOURCE=${TEX_CATALOG_SOURCE:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      # Mesmo padrão do summarizer.rs: vazio quebraria a URL do modelo
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
     restart: unless-stopped
     healthcheck:
       # A imagem não tem curl/wget: faz o GET /api/v1/health pelo /dev/tcp do bash
