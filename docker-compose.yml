@@ -18,7 +18,7 @@ services:
       - TEX_CATALOG_SOURCE=${TEX_CATALOG_SOURCE:-}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       # Mesmo padrão do summarizer.rs: vazio quebraria a URL do modelo
-      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.5-flash-lite}
     restart: unless-stopped
     healthcheck:
       # A imagem não tem curl/wget: faz o GET /api/v1/health pelo /dev/tcp do bash
