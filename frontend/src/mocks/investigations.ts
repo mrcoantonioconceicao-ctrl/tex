@@ -147,7 +147,7 @@ export function findInvestigation(accession: string): MockResult<Investigation> 
     : { status: 404, body: { code: 'NOT_FOUND', message: `investigação ${accession} não encontrada` } }
 }
 
-// ---- POST /ai/summarize (planejado no contrato; aqui sem modelo de IA) ----
+// ---- POST /ai/summarize (mock: sem modelo de IA) ----
 
 const SUMMARY_SOURCE_FIELDS = ['objective', 'approach', 'hypothesis'] as const
 const SYNTHETIC_GENERATED_AT = '2026-10-28T12:00:00.000Z'

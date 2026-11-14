@@ -118,7 +118,7 @@ export const investigationPageSchema = z.object({
   page_size: z.number().int().positive().max(100),
 }) satisfies z.ZodType<InvestigationPage>
 
-// ---- Resumo por IA (POST /ai/summarize, planejado) ----
+// ---- Resumo por IA (POST /ai/summarize) ----
 
 export const aiSummarySchema = z.object({
   accession: z.string().regex(ACCESSION_PATTERN),

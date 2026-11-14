@@ -1,5 +1,5 @@
 //! Resumo por IA: a trait, o provedor real (Google Gemini via reqwest) e a versão fake.
-//! A rota POST /api/v1/ai/summarize ainda não existe (contrato marcado como planejado).
+//! Servido por POST /api/v1/ai/summarize (api.rs).
 //!
 //! Regras do contrato: o resumo só reformula o texto recebido, sem conclusões físicas
 //! novas; resumo de modelo sai Inferred e o fake sai Synthetic. A chave vai no cabeçalho,
@@ -50,6 +50,11 @@ pub enum SummarizeError {
 #[async_trait::async_trait]
 pub trait Summarizer: Send + Sync {
     async fn summarize(&self, context: &str) -> Result<Summary, SummarizeError>;
+
+    /// Identificador do modelo (campo model do contrato); None quando não há modelo
+    fn model(&self) -> Option<String> {
+        None
+    }
 }
 
 /// Versão fake para testes e demo: não interpreta o contexto, só o devolve
@@ -141,6 +146,10 @@ impl Summarizer for GeminiSummarizer {
             text,
             origin_category: OriginCategory::Inferred,
         })
+    }
+
+    fn model(&self) -> Option<String> {
+        Some(self.model.clone())
     }
 }
 

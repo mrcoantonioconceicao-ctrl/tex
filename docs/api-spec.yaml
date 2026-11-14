@@ -334,16 +334,17 @@ paths:
 
   /ai/summarize:
     post:
-      summary: Resumo por IA dos textos de uma investigação do PSI (PLANEJADO)
+      summary: Resumo por IA dos textos de uma investigação do PSI
       description: >
-        Contrato definido antes da implementação: o backend ainda NÃO serve esta
-        rota (responde 404 de rota desconhecida) e o frontend usa o mock MSW.
-        Provedor de IA, chave e limite de custo entram depois de 14/11, atrás da
-        trait Summarizer (src/domain/ai/summarizer.rs). O resumo só reformula
-        objective, approach e hypothesis da investigação: não acrescenta
-        conclusões físicas e não substitui o texto da fonte. Resumo de modelo
-        sai como Inferred; resumo de mock ou de teste, como Synthetic.
-      x-status: planned
+        Atrás da trait Summarizer (src/domain/ai/summarizer.rs). Provedor
+        escolhido na subida do backend: com GEMINI_API_KEY, Google Gemini
+        (modelo em GEMINI_MODEL), resumo Inferred; sem chave, o catálogo
+        sintético usa o resumo sintético (Synthetic) e o catálogo do banco
+        responde 503, para dado real nunca ganhar resumo de mentira. O resumo
+        só reformula objective, approach e hypothesis da investigação: não
+        acrescenta conclusões físicas e não substitui o texto da fonte. Resumo
+        Inferred fica em cache por código PSI enquanto o backend estiver no ar
+        (mesmo generated_at), para não gastar cota do provedor a cada pedido.
       requestBody:
         required: true
         content:
