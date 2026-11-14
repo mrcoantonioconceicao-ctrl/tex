@@ -4,9 +4,21 @@ Lido em 28/10/2026, no dia em que saiu, na página oficial: https://www.spaceapp
 
 Este arquivo é um resumo em português, não uma tradução. Em caso de dúvida, vale o texto da página.
 
+## Releitura em 14/11
+
+Página relida no primeiro dia do hackathon. Última publicação registrada pela página: 13/11/2026, 03:46 UTC.
+
+**O que mudou:**
+- O nome trocou "AI-Powered" por **"SI-Powered"**, e o texto pede um dashboard "interactive, super intelligence (SI) powered".
+- O resumo passou a pedir explicitamente um dashboard **interativo**.
+
+**O que não mudou:** os objetivos, as considerações, o hardware, a seção de gravidade parcial, os números da base lunar (30% de O₂ ou mais, 10,2 psi ou menos) e os 10 recursos da aba Resources. Nenhum recurso novo entrou.
+
+_Decisão a confirmar com o Marco:_ no pitch, usar "SI" como no nome oficial, mas sem prometer nada além do que o sistema faz (resumo, ranqueamento e interpretação com fonte).
+
 ## Identificação
 
-- **Nome oficial:** "Flame in Freefall: AI-Powered Fire Safety Insights from Microgravity Combustion Data". O nome que usávamos antes ("Free-Fall Flame… AI-Driven") estava errado.
+- **Nome oficial:** "Flame in Freefall: SI-Powered Fire Safety Insights from Microgravity Combustion Data" (ver "Releitura em 14/11"). Até 12/11 a página dizia "AI-Powered". O nome que usávamos antes ("Free-Fall Flame… AI-Driven") estava errado.
 - **Dificuldade:** intermediária e avançada. **Assunto:** exploração espacial.
 
 ## O que pede
