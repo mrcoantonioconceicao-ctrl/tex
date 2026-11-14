@@ -16,8 +16,9 @@ use thiserror::Error;
 use crate::lineage::OriginCategory;
 
 const GEMINI_BASE_URL: &str = "https://generativelanguage.googleapis.com/v1beta/models";
-/// Conferir no dia 14 se o modelo segue disponível; GEMINI_MODEL troca sem recompilar
-const DEFAULT_MODEL: &str = "gemini-2.5-flash";
+/// Estável e rápido (~1 s, medido em 14/11); 3.6-flash e 3.8-flash passam do PROVIDER_TIMEOUT.
+/// GEMINI_MODEL troca sem recompilar
+const DEFAULT_MODEL: &str = "gemini-3.5-flash-lite";
 /// Abaixo do REQUEST_TIMEOUT de 10 s do api.rs: a rota responde o erro antes de ser cortada
 const PROVIDER_TIMEOUT: Duration = Duration::from_secs(8);
 
