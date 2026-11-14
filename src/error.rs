@@ -17,6 +17,9 @@ pub enum AppError {
     InvalidParameter(String),
     #[error("{0}")]
     NotFound(String),
+    /// Investigação sem texto para resumir: não há o que dizer sem inventar
+    #[error("{0}")]
+    NoSourceText(String),
     #[error("{0}")]
     Unavailable(String),
 }
@@ -32,6 +35,7 @@ impl IntoResponse for AppError {
         let (status, code) = match &self {
             AppError::InvalidParameter(_) => (StatusCode::BAD_REQUEST, "INVALID_PARAMETER"),
             AppError::NotFound(_) => (StatusCode::NOT_FOUND, "NOT_FOUND"),
+            AppError::NoSourceText(_) => (StatusCode::UNPROCESSABLE_ENTITY, "NO_SOURCE_TEXT"),
             AppError::Unavailable(_) => (StatusCode::SERVICE_UNAVAILABLE, "SERVICE_UNAVAILABLE"),
         };
         let body = ApiErrorBody {

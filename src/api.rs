@@ -1,10 +1,12 @@
 //! API HTTP v1 (Axum). Contrato documentado em docs/api-spec.yaml.
 
 use std::borrow::Cow;
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use axum::{
+    body::Bytes,
     extract::{Path, Query, State},
     http::{header, HeaderValue, Method, StatusCode, Uri},
     routing::{get, post},
@@ -20,6 +22,7 @@ use tower_http::{
 
 use crate::catalog_db;
 use crate::db::{self, DatabaseStatus};
+use crate::domain::ai::summarizer::{Summarizer, SyntheticSummarizer};
 use crate::domain::combustion::catalog::{self, Filter};
 use crate::domain::combustion::psi_dto::{Investigation, InvestigationPage, Program, ProjectType};
 use crate::engine::{
@@ -60,6 +63,11 @@ pub struct AppState {
     /// None quando o servidor sobe sem DATABASE_URL
     db: Option<PgPool>,
     catalog: Catalog,
+    /// None = resumo por IA desligado (sem GEMINI_API_KEY com o catálogo do banco): 503
+    summarizer: Option<Arc<dyn Summarizer>>,
+    /// Resumos Inferred já gerados, por código PSI: o texto da fonte não muda durante
+    /// a execução, e a demo não gasta cota do provedor a cada clique
+    summaries: Mutex<HashMap<String, AiSummaryResponse>>,
 }
 
 /// Fonte do /investigations, escolhida na subida por TEX_CATALOG_SOURCE
@@ -98,6 +106,8 @@ impl Default for AppState {
             started_at: Instant::now(),
             db: None,
             catalog: Catalog::Synthetic(catalog::synthetic()),
+            summarizer: Some(Arc::new(SyntheticSummarizer::new())),
+            summaries: Mutex::new(HashMap::new()),
         }
     }
 }
@@ -109,6 +119,15 @@ impl AppState {
             catalog,
             ..Self::default()
         }
+    }
+
+    pub fn with_summarizer(self, summarizer: Option<Arc<dyn Summarizer>>) -> Self {
+        Self { summarizer, ..self }
+    }
+
+    fn cached_summary(&self, accession: &str) -> Option<AiSummaryResponse> {
+        let cache = self.summaries.lock().expect("lock dos resumos envenenado");
+        cache.get(accession).cloned()
     }
 
     /// Um ciclo do laço de background: avança a simulação, valida a leitura
@@ -220,6 +239,17 @@ struct MetricsResponse {
     memory_safety_guarantee: &'static str,
     uptime_status: &'static str,
     uptime_seconds: u64,
+}
+
+/// AiSummary do contrato
+#[derive(Debug, Clone, Serialize)]
+pub struct AiSummaryResponse {
+    accession: String,
+    summary: String,
+    source_fields: Vec<&'static str>,
+    model: Option<String>,
+    generated_at: String,
+    origin_category: OriginCategory,
 }
 
 // ---- Handlers ----
@@ -390,6 +420,83 @@ async fn get_investigation(
     }
 }
 
+#[derive(Debug, Deserialize)]
+struct SummarizeRequest {
+    accession: String,
+}
+
+/// Corpo cru: JSON inválido também sai como 400 no formato do contrato
+fn parse_summarize_request(body: &[u8]) -> Result<String, AppError> {
+    let request: SummarizeRequest = serde_json::from_slice(body).map_err(|_| {
+        let message = r#"corpo inválido: esperado {"accession": "PSI-<número>"}"#.to_string();
+        AppError::InvalidParameter(message)
+    })?;
+    if !is_valid_accession(&request.accession) {
+        let message = format!("código fora do formato PSI-<número>: {}", request.accession);
+        return Err(AppError::InvalidParameter(message));
+    }
+    Ok(request.accession)
+}
+
+/// Só os textos da fonte que existem, cada um com o rótulo; os nomes vão para
+/// source_fields (rastreabilidade). None = nada para resumir.
+fn summary_context(investigation: &Investigation) -> Option<(String, Vec<&'static str>)> {
+    let sections = [
+        ("objective", "Objetivo", &investigation.objective),
+        ("approach", "Abordagem", &investigation.approach),
+        ("hypothesis", "Hipótese", &investigation.hypothesis),
+    ];
+    let mut context = Vec::new();
+    let mut fields = Vec::new();
+    for (field, label, text) in sections {
+        if let Some(text) = text.as_deref().map(str::trim).filter(|t| !t.is_empty()) {
+            context.push(format!("{label}: {text}"));
+            fields.push(field);
+        }
+    }
+    (!fields.is_empty()).then(|| (context.join("\n\n"), fields))
+}
+
+async fn summarize(
+    State(state): State<Arc<AppState>>,
+    body: Bytes,
+) -> Result<Json<AiSummaryResponse>, AppError> {
+    let accession = parse_summarize_request(&body)?;
+    if let Some(cached) = state.cached_summary(&accession) {
+        return Ok(Json(cached));
+    }
+    let items = state.catalog.load().await?;
+    let investigation = catalog::find(&items, &accession)
+        .ok_or_else(|| AppError::NotFound(format!("investigação {accession} não encontrada")))?;
+    let (context, source_fields) = summary_context(&investigation).ok_or_else(|| {
+        let message = format!("investigação {accession} sem objective, approach nem hypothesis");
+        AppError::NoSourceText(message)
+    })?;
+    let Some(summarizer) = state.summarizer.as_ref() else {
+        let message = "resumo por IA desligado: GEMINI_API_KEY não configurada".to_string();
+        return Err(AppError::Unavailable(message));
+    };
+    let summary = summarizer.summarize(&context).await.map_err(|error| {
+        // SummarizeError não carrega a chave nem o corpo da resposta do provedor
+        tracing::warn!(%error, %accession, "resumo por IA falhou");
+        AppError::Unavailable("resumo por IA indisponível no momento".to_string())
+    })?;
+
+    let response = AiSummaryResponse {
+        accession: accession.clone(),
+        summary: summary.text,
+        source_fields,
+        model: summarizer.model(),
+        generated_at: Utc::now().to_rfc3339_opts(SecondsFormat::Millis, true),
+        origin_category: summary.origin_category,
+    };
+    if response.origin_category == OriginCategory::Inferred {
+        let mut cache = state.summaries.lock().expect("lock dos resumos envenenado");
+        cache.insert(accession, response.clone());
+    }
+    Ok(Json(response))
+}
+
 async fn not_found(uri: Uri) -> AppError {
     AppError::NotFound(format!("rota não encontrada: {}", uri.path()))
 }
@@ -418,7 +525,8 @@ pub fn router(state: Arc<AppState>, allowed_origins: Vec<HeaderValue>) -> Router
         .route("/simulation/reset", post(reset_simulation))
         .route("/simulation/suppress", post(trigger_suppression))
         .route("/investigations", get(list_investigations))
-        .route("/investigations/:accession", get(get_investigation));
+        .route("/investigations/:accession", get(get_investigation))
+        .route("/ai/summarize", post(summarize));
 
     let cors = CorsLayer::new()
         .allow_origin(AllowOrigin::list(allowed_origins))
@@ -762,5 +870,139 @@ mod tests {
         let uri = "/api/v1/investigations/PSI-9001";
         let (status, _) = call(&state, "GET", uri, None).await;
         assert_eq!(status, StatusCode::NOT_FOUND);
+    }
+
+    // ---- POST /ai/summarize ----
+
+    use crate::domain::ai::summarizer::{SummarizeError, Summary};
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    /// Provedor falso que se comporta como o real (Inferred) e conta as chamadas
+    #[derive(Default)]
+    struct FakeModel {
+        calls: AtomicUsize,
+    }
+
+    #[async_trait::async_trait]
+    impl Summarizer for FakeModel {
+        async fn summarize(&self, context: &str) -> Result<Summary, SummarizeError> {
+            self.calls.fetch_add(1, Ordering::SeqCst);
+            Ok(Summary {
+                text: format!("resumo de: {context}"),
+                origin_category: OriginCategory::Inferred,
+            })
+        }
+
+        fn model(&self) -> Option<String> {
+            Some("modelo-teste".to_string())
+        }
+    }
+
+    struct FailingModel;
+
+    #[async_trait::async_trait]
+    impl Summarizer for FailingModel {
+        async fn summarize(&self, _context: &str) -> Result<Summary, SummarizeError> {
+            Err(SummarizeError::Status(429))
+        }
+    }
+
+    async fn summarize_call(state: &Arc<AppState>, body: Value) -> (StatusCode, Value) {
+        call(state, "POST", "/api/v1/ai/summarize", Some(body)).await
+    }
+
+    #[tokio::test]
+    async fn resumo_sintetico_segue_o_contrato() {
+        let (status, body) = summarize_call(&new_state(), json!({ "accession": "PSI-9001" })).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(body["accession"], "PSI-9001");
+        assert_eq!(body["origin_category"], "Synthetic");
+        assert_eq!(body["model"], Value::Null);
+        assert_eq!(body["source_fields"], json!(["objective"]));
+        assert!(body["summary"]
+            .as_str()
+            .unwrap()
+            .contains("Objetivo sintético"));
+        assert!(body["generated_at"].as_str().unwrap().ends_with('Z'));
+    }
+
+    #[tokio::test]
+    async fn resumo_do_modelo_sai_inferred_com_o_modelo_e_vai_para_o_cache() {
+        let model = Arc::new(FakeModel::default());
+        let summarizer: Arc<dyn Summarizer> = model.clone();
+        let state = Arc::new(AppState::default().with_summarizer(Some(summarizer)));
+        let request = json!({ "accession": "PSI-9002" });
+
+        let (status, first) = summarize_call(&state, request.clone()).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(first["origin_category"], "Inferred");
+        assert_eq!(first["model"], "modelo-teste");
+
+        let (_, second) = summarize_call(&state, request).await;
+        assert_eq!(second, first);
+        assert_eq!(model.calls.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
+    async fn resumo_rejeita_corpo_e_codigo_invalidos() {
+        let state = new_state();
+        for body in [
+            json!({}),
+            json!({ "accession": 25 }),
+            json!({ "accession": "25" }),
+        ] {
+            let (status, reply) = summarize_call(&state, body.clone()).await;
+            assert_eq!(status, StatusCode::BAD_REQUEST, "{body}");
+            assert_eq!(reply["code"], "INVALID_PARAMETER", "{body}");
+        }
+        // JSON quebrado também sai no formato do contrato
+        let reply = request(&state, "POST", "/api/v1/ai/summarize", &[], None).await;
+        assert_eq!(reply.status, StatusCode::BAD_REQUEST);
+        assert_eq!(reply.body["code"], "INVALID_PARAMETER");
+    }
+
+    #[tokio::test]
+    async fn resumo_de_codigo_inexistente_devolve_404() {
+        let (status, body) = summarize_call(&new_state(), json!({ "accession": "PSI-1" })).await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+        assert_eq!(body["code"], "NOT_FOUND");
+    }
+
+    #[tokio::test]
+    async fn resumo_sem_texto_da_fonte_devolve_422() {
+        let mut items = catalog::synthetic();
+        items[0].objective = None;
+        let state = Arc::new(AppState::new(None, Catalog::Synthetic(items)));
+        let (status, body) = summarize_call(&state, json!({ "accession": "PSI-9001" })).await;
+        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
+        assert_eq!(body["code"], "NO_SOURCE_TEXT");
+    }
+
+    #[tokio::test]
+    async fn resumo_sem_provedor_ou_com_falha_devolve_503_generico() {
+        let off = Arc::new(AppState::default().with_summarizer(None));
+        let (status, body) = summarize_call(&off, json!({ "accession": "PSI-9001" })).await;
+        assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE);
+        assert_eq!(body["code"], "SERVICE_UNAVAILABLE");
+
+        let failing: Arc<dyn Summarizer> = Arc::new(FailingModel);
+        let state = Arc::new(AppState::default().with_summarizer(Some(failing)));
+        let (status, body) = summarize_call(&state, json!({ "accession": "PSI-9001" })).await;
+        assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE);
+        assert_eq!(body["message"], "resumo por IA indisponível no momento");
+    }
+
+    #[test]
+    fn contexto_junta_so_os_textos_que_existem() {
+        let mut investigation = catalog::synthetic().remove(0);
+        investigation.objective = Some(" Medir a extinção. ".to_string());
+        investigation.approach = Some("   ".to_string());
+        investigation.hypothesis = Some("A chama encolhe.".to_string());
+        let (context, fields) = summary_context(&investigation).unwrap();
+        assert_eq!(fields, vec!["objective", "hypothesis"]);
+        assert_eq!(
+            context,
+            "Objetivo: Medir a extinção.\n\nHipótese: A chama encolhe."
+        );
     }
 }

@@ -6,8 +6,8 @@
 mod api;
 mod catalog_db;
 mod db;
-// O catálogo do PSI já serve o /api/v1/investigations; o Summarizer e a ponte
-// GraphRAG ainda não têm rota no docs/api-spec.yaml (mesmo caso de lineage.rs).
+// O catálogo do PSI serve o /api/v1/investigations e o Summarizer o /api/v1/ai/summarize;
+// a ponte GraphRAG ainda não tem rota no docs/api-spec.yaml (mesmo caso de lineage.rs).
 #[allow(dead_code)]
 mod domain;
 mod engine;
@@ -20,6 +20,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use api::{AppState, Catalog};
+use domain::ai::summarizer::{GeminiSummarizer, SummarizeError, Summarizer, SyntheticSummarizer};
 use domain::combustion::catalog::{self, CatalogSource};
 use sqlx::PgPool;
 use tokio::net::TcpListener;
@@ -44,7 +45,8 @@ async fn main() {
 
     let pool = db::pool_from_env();
     let catalog = select_catalog(pool.clone());
-    let state = Arc::new(AppState::new(pool, catalog));
+    let summarizer = select_summarizer(&catalog);
+    let state = Arc::new(AppState::new(pool, catalog).with_summarizer(summarizer));
 
     // Laço de simulação: um ciclo a cada 5 s
     let ticker = Arc::clone(&state);
@@ -112,6 +114,29 @@ fn select_catalog(pool: Option<PgPool>) -> Catalog {
         Err(message) => {
             eprintln!("[x] {message}");
             std::process::exit(1);
+        }
+    }
+}
+
+/// Provedor do /api/v1/ai/summarize. Com GEMINI_API_KEY: Gemini (Inferred). Sem chave,
+/// o catálogo sintético usa o resumo sintético (Synthetic) e o do banco desliga a rota
+/// (503): resumo de dado real da NASA nunca sai de um fake.
+fn select_summarizer(catalog: &Catalog) -> Option<Arc<dyn Summarizer>> {
+    match GeminiSummarizer::from_env() {
+        Ok(gemini) => {
+            println!("[✔] Resumo por IA: {}", gemini.model().unwrap_or_default());
+            Some(Arc::new(gemini))
+        }
+        Err(SummarizeError::MissingKey) => match catalog {
+            Catalog::Synthetic(_) => Some(Arc::new(SyntheticSummarizer::new())),
+            Catalog::Database(_) => {
+                eprintln!("[!] GEMINI_API_KEY ausente: /api/v1/ai/summarize responde 503");
+                None
+            }
+        },
+        Err(error) => {
+            eprintln!("[!] Resumo por IA desligado: {error}");
+            None
         }
     }
 }
