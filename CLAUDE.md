@@ -5,8 +5,18 @@
 - Desafio: combustão em microgravidade ("Flame in Freefall: AI-Powered Fire Safety Insights from Microgravity Combustion Data"). Enunciado oficial resumido em `docs/conhecimento/enunciado.md`.
 - Missão do sistema: monitoramento, combate inteligente e mitigação autônoma de incêndios em habitats espaciais (ex.: ISS).
 - Repositório: https://github.com/mrcoantonioconceicao-ctrl/tex
-- Datas: enunciados completos em 28/10/2026; o hackathon começa em 14/11/2026. A NASA pede que o time NÃO comece a trabalhar no desafio antes de 14/11. Até lá, limite-se a estudo, preparo de ambiente e planejamento.
-- Regras: times de 1 a 6 pessoas, todos no mesmo Local Event, um projeto por desafio.
+- Datas: enunciados completos em 28/10/2026; o hackathon vai de 14/11/2026 até a submissão em 15/11/2026. Antes de 14/11 a NASA só permitia estudo, preparo de ambiente e planejamento.
+- Regras: times de 1 a 6 pessoas, um projeto por desafio.
+- Participação **remota** (home office): o Local Event limitou o presencial e o time foi inscrito no formato remoto.
+
+## Trabalho assíncrono (time remoto)
+Haverá períodos sem call. Para ninguém travar esperando o outro:
+- Cada um na sua área: Willian em `ingestion/` e `frontend/`; Marco em `src/`. Mudança em `docs/api-spec.yaml` ou migração nova: avisar o outro antes.
+- Contrato primeiro: se uma rota muda, o PR do `api-spec.yaml` entra antes da implementação; o front segue no mock MSW enquanto isso.
+- PR pequeno por assunto, com "o que muda / como testar / o que falta". Quem estiver livre revisa e mergeia (CI verde, branch atualizada).
+- Status curto no WhatsApp ao começar e ao parar um bloco: o que fez, o que vem agora, o que está travando.
+- Dependência do outro: deixar a pergunta escrita (no PR ou no WhatsApp), marcar a hipótese no código e seguir em outra tarefa.
+- Calls obrigatórias: abertura em 14/11 e revisão/gravação do pitch em 15/11.
 
 ## Divisão de responsabilidades
 - Marco: backend em Rust (Axum), arquitetura DDD + SOA, camada de segurança/auditoria Web3. Por padrão, NÃO alterar o backend sem pedido explícito.
@@ -48,7 +58,7 @@ Em respostas, código e documentação, separar sempre:
   - SQL direto: só para cálculos exatos, médias, limites numéricos e medições validadas.
   - RAG/GraphRAG: busca bibliográfica e navegação entre entidades (ARTIGO → EXPERIMENTO → EXECUÇÃO → MATERIAL; AUTOR também é nó do grafo).
   - MCP de verdade (servidor com ferramentas `search_documents`, `get_measurements`) fica para depois de 14/11; a linguagem é decisão do Marco. Até lá, `/api/v1/mcp/context` é um **endpoint de contexto** e não deve ser chamado de MCP no pitch.
-- **Rodar:** `make up` (backend + front em http://localhost:3000 + banco), `make up-mock` (só o front com mocks), `make help` para o resto. Sem Docker (a máquina do Willian não roda Docker): `make install`, `make frontend` com `VITE_USE_MOCKS=true` e `make verify`.
+- **Rodar:** `make up` (backend + front em http://localhost:3000 + banco), `make up-mock` (só o front com mocks), `make help` para o resto. Se a porta 3000 estiver ocupada: `TEX_FRONTEND_PORT=3001 make up`. Sem Docker (reserva): `make install`, `make frontend` com `VITE_USE_MOCKS=true` e `make verify`.
 
 ## Dados: schema PostgreSQL e linhagem
 Schema **mínimo obrigatório** (nomes em minúsculas no SQL). **Extensões são permitidas, remoções não.**
@@ -98,7 +108,7 @@ Linhagem de dados:
 ## Como o Claude deve trabalhar aqui
 - Responder em português do Brasil, com tom profissional, direto e didático.
 - Trabalhar na parte do Willian (dados e front-end); no backend Rust, só com pedido explícito.
-- Respeitar a regra de 14/11: até lá, só estudo, estrutura e planejamento.
+- Seguir o roteiro de `docs/checklist-dia-14.md` e as regras de trabalho assíncrono acima.
 
 <!-- egc:start -->
 ## EGC Project Memory
