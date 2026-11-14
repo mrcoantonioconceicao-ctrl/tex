@@ -1,24 +1,13 @@
-// Detalhe de uma investigação: textos do PSI sem edição, citação e arquivos.
+// Detalhe de uma investigação: resumo por IA sob demanda, textos do PSI sem edição,
+// citação e arquivos.
 import { describeError } from '../api/client'
 import { useInvestigation } from '../api/hooks'
-import type { Investigation, InvestigationFile, OriginCategory } from '../api/types'
+import type { Investigation, InvestigationFile } from '../api/types'
+import { AiSummaryPanel } from './AiSummaryPanel'
 import { formatBytes, formatPeriod, PROJECT_TYPE_LABELS, programLabel } from './model'
+import { OriginBadge } from './OriginBadge'
 
 const CARD = 'rounded-lg border border-slate-700 bg-slate-900 p-4'
-
-// Linhagem sempre visível: mock nunca pode parecer dado do PSI
-export function OriginBadge({ origin }: { origin: OriginCategory }) {
-  const synthetic = origin === 'Synthetic'
-  return (
-    <span
-      className={`rounded-full border px-2 py-0.5 text-xs whitespace-nowrap ${
-        synthetic ? 'border-sky-600 text-sky-200' : 'border-emerald-600 text-emerald-200'
-      }`}
-    >
-      {synthetic ? 'sintético' : origin === 'Published' ? 'publicado · PSI' : origin}
-    </span>
-  )
-}
 
 function SourceText({ label, text }: { label: string; text: string | null }) {
   return (
@@ -105,6 +94,11 @@ function DetailBody({ investigation }: { investigation: Investigation }) {
         <OriginBadge origin={investigation.origin_category} />
       </div>
       {investigation.title && <p className="mt-2 text-sm text-slate-200">{investigation.title}</p>}
+
+      <div className="mt-4">
+        {/* key: trocar de investigação zera o pedido de resumo */}
+        <AiSummaryPanel key={investigation.accession} accession={investigation.accession} />
+      </div>
 
       <dl className="mt-4 space-y-3">
         <SourceText label="Objetivo" text={investigation.objective} />

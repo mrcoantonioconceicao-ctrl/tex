@@ -1,10 +1,11 @@
 // Catálogo das investigações de combustão do PSI (GET /api/v1/investigations).
-// Só metadados: ranqueamento por ambiente e resumo por IA entram depois de 14/11.
+// Só metadados; o resumo por IA fica no detalhe, sob demanda. Ranqueamento por ambiente vem depois.
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { describeError } from '../api/client'
 import { useInvestigations } from '../api/hooks'
 import type { InvestigationSummary, Program, ProjectType } from '../api/types'
-import { InvestigationDetail, OriginBadge } from './InvestigationDetail'
+import { InvestigationDetail } from './InvestigationDetail'
+import { OriginBadge } from './OriginBadge'
 import {
   formatPeriod,
   PAGE_SIZE,

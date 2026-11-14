@@ -204,7 +204,7 @@ export const handlers = [
     return HttpResponse.json(body, { status })
   }),
 
-  // Planejado no contrato: o backend ainda não serve esta rota
+  // Mesmo contrato do backend; aqui sempre o resumo sintético
   http.post(`${BASE}/ai/summarize`, async ({ request }) => {
     const failure = await applyTransport()
     if (failure) return failure
