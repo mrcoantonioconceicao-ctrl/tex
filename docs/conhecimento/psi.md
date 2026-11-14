@@ -63,5 +63,41 @@ Microgravidade (M) ou solo (S). O tamanho é o total de arquivos da investigaç�
 
   Tudo cabe em menos de 1 MB e é idempotente pelo `Accession` mais a versão.
 - **_Decisão_ proposta, base do resumo por IA:** os campos `objective`, `approach` e `hypothesis` de cada investigação, mais as publicações com DOI.
-- **_Hipótese_:** as colunas dos CSVs variam por investigação (o BASS-II mede O₂/CO₂/CO; o FLEX deve trazer diâmetro de gota e diluente). Isso precisa ser conferido CSV a CSV antes de fechar a migração 0002.
+- **Confirmado em 14/11** (era hipótese): as colunas dos CSVs variam por investigação. Ver "Tabelas baixadas em 14/11".
 - **_Decisão_ (Willian e Marco, 31/10):** os 25 CSVs só são baixados a partir de 14/11, mas o código do download (`npm run download:psi`, em `ingestion/src/psi-download.ts`) fica pronto antes, testado só com dado sintético. A CLI recusa baixar antes de 14/11.
+
+## Tabelas baixadas em 14/11 (fato)
+
+Baixadas com `npm run download:psi` no primeiro dia do hackathon: **25 CSVs, 271 KB**, todos com SHA-256 em `experiment_files`. O formato do link assinado, que era hipótese em `psi-download.ts`, funcionou de primeira com o PSI-25. Os arquivos ficam em `ingestion/data/psi/`, fora do git.
+
+**Colunas principais por investigação** (linhas = linhas do arquivo, com o cabeçalho):
+
+| PSI | Sigla | Linhas | Colunas que interessam ao Tex |
+|---|---|---|---|
+| PSI-69 | FLEX | 275 | pressão (mmHg), frações molares de O₂, N₂, CO₂ e He, diâmetro inicial e de extinção (mm), taxa de queima, tempo de queima (s), desfecho (`Test end`) |
+| PSI-68 | FLEX-2 | 9 | combustível, diâmetro inicial (mm), mistura, fração molar de O₂, pressão (atm), temperatura (°C), velocidade do fluxo (cm/s) |
+| PSI-39 | CFI | 88 | pressão, O₂, N₂, He, fibra, combustível |
+| PSI-25 | BASS-II | 130 | amostra, ventilador e ar, O₂ inicial e final (% vol.), CO₂ inicial e final (% vol.), CO inicial e final (ppm) |
+| PSI-26 | BASS | 123 | data, teste, amostra, material. **Sem condições de teste** |
+| PSI-98 | SAFFIRE-I | 5 | espessura, comprimento e largura (cm), fluxo de ar (cm/s), % O₂, potência e tempo de ignição, tempo de queima, direção do fluxo |
+| PSI-99 | SAFFIRE-II | 16 | as mesmas do I, mais comprimento queimado e taxa de espalhamento em µg e em 1 g |
+| PSI-100 | SAFFIRE-III | 3 | dimensões, fluxo de ar, direção. Sem unidades no cabeçalho |
+| PSI-20 | ACME BRE | 19 | tamanho do queimador (mm), garrafa de combustível, O₂ (%), chamas acesas |
+| PSI-10 | ACME Flame Design | 121 + 208 | XO₂, vazões (mg/s), pressão inicial, final e média (atm), Zst, Tad (K). Um CSV para chama normal e outro para inversa |
+| PSI-159 | ACME CFI-G | 1.016 + 180 | XO₂, combustível, pressão (bar), TFP, Tad (K), tempo de queima, desfecho (autoextinção ou fim do fluxo), chama fria |
+| PSI-21, 22, 23 | ACME CLD, E-FIELD, s-Flame | 19 a 33 | dia, combustível, concentração, chamas acesas, notas |
+| PSI-107 | SPICE | 470 | bocal (mm), vazão de combustível (sccm e mg/s), vazão de ar (cm/s) |
+| PSI-106 | SLICE | 13 | só data e combustível |
+| PSI-102 | SAME | 9 | material, fluxo de ar (cm/s), perda de massa (mg/min), tempo de envelhecimento |
+| PSI-101 | SAME-R | 110 | velocidade de entrada (cm/s), Rt/R0, duração e tempos de envelhecimento e mistura (s) |
+| PSI-47 | DAFT | 3 | sessão, hardware, material, local da amostra |
+| PSI-108 | STDCE-1 | 39 + 39 | fora do tema (convecção por tensão superficial). Dois arquivos com o mesmo nome e conteúdo diferente |
+| PSI-142, PSI-181 | (solo) | 9 cada | índice de dados e amostras de solda, não são tabelas de testes |
+
+**Cuidados de qualidade para a normalização:**
+- **Codificação mista:** 4 arquivos em UTF-8 com BOM (BASS, BASS-II, STDCE-1, PSI-142), o FLEX em codificação estendida não UTF-8 (provavelmente Windows-1252), o SLICE com fim de linha CRLF e o resto em ASCII. O leitor precisa remover o BOM e detectar a codificação.
+- **Unidade no texto do cabeçalho**, em formatos diferentes: `Air Flow (cm/s)`, `Ambient pressure; mmHg`, `Pressure` sem unidade. Mapear cabeçalho a cabeçalho, nunca adivinhar.
+- **O₂ em escalas diferentes:** fração molar (FLEX, FLEX-2, ACME `XO2`) e porcentagem (BASS-II, Saffire, BRE). Converter para % no `experiment_conditions` e guardar o original no `raw`.
+- **Cabeçalhos com erro de digitação ou caractere perdido**, ex.: `Samle Thickness` e `?-g Burn Length` (o µ virou `?`) no SAFFIRE-II, e espaços sobrando no fim.
+- **Valores suspeitos** para marcar como `PENDING_VALIDATION`, não para corrigir. Ex.: o teste B2 do BASS-II registra O₂ final de 1,6% contra 22,2% no início.
+- **Origem:** é dado de experimento, então `origin_category = "Measured"` com o arquivo de origem (`source_file_id`), como o checklist pede.
