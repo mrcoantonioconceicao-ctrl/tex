@@ -51,8 +51,13 @@ Tabelas experimentais em CSV (cerca de 25 arquivos, uns 230 KB, segundo o [`psi.
   - [ ] `npm run download:psi -- --dry-run` lista o que falta, sem rede.
   - [ ] `npm run download:psi -- --accession PSI-25` primeiro, para conferir o formato da resposta do link assinado (hoje é **hipótese** em `psi-download.ts`); depois `npm run download:psi` para todas.
   - [ ] Conferir: `SELECT count(*) FILTER (WHERE sha256 IS NULL) FROM experiment_files WHERE category = 'Experimental table';` deve dar 0. Os CSVs ficam em `ingestion/data/psi/`, fora do git.
-- [ ] Conferir as colunas CSV a CSV antes de gravar medições. Hoje a variação de colunas entre investigações é **hipótese**.
-- [ ] Medição de sensor entra como `Measured` com `source_file_id`; a regra do banco já recusa o que vier sem a origem.
+- [x] Conferir as colunas CSV a CSV antes de gravar medições (feito em 14/11; mapa em `ingestion/src/psi-tables.ts`).
+- [x] Gravar as medições: `npm run normalize:psi -- --dry-run` e depois `npm run normalize:psi`. O SHA-256 do disco é conferido com o do download; reexecutar não duplica.
+- [x] Medição de sensor entra como `Measured` com `source_file_id`; a regra do banco já recusa o que vier sem a origem. Conferir:
+  ```sql
+  SELECT quality_status, count(*) FROM measurements GROUP BY 1;
+  SELECT count(*) FROM measurements WHERE origin_category <> 'Measured' OR source_file_id IS NULL;  -- 0
+  ```
 
 NTRS (bibliografia):
 

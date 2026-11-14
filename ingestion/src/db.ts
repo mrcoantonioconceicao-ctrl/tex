@@ -3,6 +3,7 @@ import type { ClientBase } from 'pg'
 import type { CitationRow } from './ntrs.ts'
 import type { InvestigationRow } from './psi.ts'
 import { EXPERIMENTAL_TABLE, type PendingFile } from './psi-download.ts'
+import type { NormalizedRun } from './psi-normalize.ts'
 
 // Postgres do docker-compose.yml da raiz (credenciais só de desenvolvimento local)
 export const DEFAULT_DATABASE_URL = 'postgres://tex:tex@127.0.0.1:5433/tex'
@@ -222,6 +223,114 @@ export async function markDownloaded(client: ClientBase, fileId: number, sha256:
     [fileId, sha256],
   )
   if (rowCount !== 1) throw new Error(`experiment_files ${fileId} não existe`)
+}
+
+// ---- Normalização das tabelas do PSI (psi-normalize.ts) ----
+
+export interface DownloadedTable {
+  fileId: number
+  experimentId: number
+  accession: string
+  fileName: string
+  sha256: string
+}
+
+const LIST_DOWNLOADED_TABLES = `
+  SELECT f.file_id::int AS file_id, f.experiment_id::int AS experiment_id, e.psi_accession, f.file_name, f.sha256
+    FROM experiment_files f
+    JOIN experiments e USING (experiment_id)
+   WHERE e.psi_accession IS NOT NULL
+     AND f.category = $1
+     AND f.sha256 IS NOT NULL
+     AND ($2::text IS NULL OR e.psi_accession = $2)
+   ORDER BY substring(e.psi_accession FROM 5)::numeric, f.file_name`
+
+// Só tabelas já baixadas: o sha256 gravado no download é conferido com o arquivo em disco
+export async function listDownloadedTables(client: ClientBase, accession?: string): Promise<DownloadedTable[]> {
+  const { rows } = await client.query<{
+    file_id: number
+    experiment_id: number
+    psi_accession: string
+    file_name: string
+    sha256: string
+  }>(LIST_DOWNLOADED_TABLES, [EXPERIMENTAL_TABLE, accession ?? null])
+  return rows.map((row) => ({
+    fileId: row.file_id,
+    experimentId: row.experiment_id,
+    accession: row.psi_accession,
+    fileName: row.file_name,
+    sha256: row.sha256,
+  }))
+}
+
+const INSERT_RUN = `
+  INSERT INTO experimental_runs (
+    experiment_id, run_date, test_label, sample_description, outcome, source_file_id, raw
+  ) VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
+  RETURNING run_id`
+
+const INSERT_CONDITION = `
+  INSERT INTO experiment_conditions (run_id, o2_concentration, pressure_atm, flow_velocity_ms, diluent, flow_direction)
+  VALUES ($1, $2, $3, $4, $5, $6)`
+
+const INSERT_MEASUREMENTS = `
+  INSERT INTO measurements (run_id, variable, value, unit, quality_status, origin_category, source_file_id)
+  SELECT $1, variable, value, unit, quality, 'Measured', $2
+    FROM unnest($3::text[], $4::float8[], $5::text[], $6::text[]) AS m (variable, value, unit, quality)`
+
+export interface ReplaceOutcome {
+  runs: number
+  conditions: number
+  measurements: number
+}
+
+// Idempotente por arquivo: apaga os testes que vieram dele (condições e medições caem
+// junto, ON DELETE CASCADE) e grava de novo, tudo numa transação
+export async function replaceTableRuns(
+  client: ClientBase,
+  table: DownloadedTable,
+  runs: readonly NormalizedRun[],
+): Promise<ReplaceOutcome> {
+  const outcome: ReplaceOutcome = { runs: 0, conditions: 0, measurements: 0 }
+  await client.query('BEGIN')
+  try {
+    await client.query('DELETE FROM experimental_runs WHERE source_file_id = $1', [table.fileId])
+    for (const run of runs) {
+      const { rows } = await client.query<{ run_id: string }>(INSERT_RUN, [
+        table.experimentId,
+        run.runDate,
+        run.testLabel,
+        run.sampleDescription,
+        run.outcome,
+        table.fileId,
+        JSON.stringify(run.raw),
+      ])
+      const runId = rows[0].run_id
+      outcome.runs++
+      const c = run.condition
+      if (c) {
+        await client.query(INSERT_CONDITION, [runId, c.o2Percent, c.pressureAtm, c.flowMs, c.diluent, c.flowDirection])
+        outcome.conditions++
+      }
+      if (run.measurements.length > 0) {
+        const m = run.measurements
+        await client.query(INSERT_MEASUREMENTS, [
+          runId,
+          table.fileId,
+          m.map((x) => x.variable),
+          m.map((x) => x.value),
+          m.map((x) => x.unit),
+          m.map((x) => x.quality),
+        ])
+        outcome.measurements += m.length
+      }
+    }
+    await client.query('COMMIT')
+    return outcome
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  }
 }
 
 export async function startRun(client: ClientBase, source: string, query: string): Promise<number> {

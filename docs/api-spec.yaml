@@ -190,6 +190,148 @@ paths:
         '503':
           $ref: '#/components/responses/CatalogUnavailable'
 
+  /investigations/{accession}/runs:
+    get:
+      summary: Testes de uma investigação do PSI, com condições e medições (PLANEJADO)
+      description: >
+        Contrato definido antes da implementação. Lê experimental_runs,
+        experiment_conditions e measurements, gravados por `npm run
+        normalize:psi` a partir das tabelas experimentais (CSV) do PSI. Um item
+        = uma linha da tabela da fonte. As condições vêm em unidades comuns
+        (O₂ em %, pressão em atm, fluxo em m/s) para comparar investigações;
+        as medições ficam na unidade da fonte, sem conversão. Ordem: a da
+        tabela de origem. `variables` resume a investigação inteira, não só a
+        página. Com TEX_CATALOG_SOURCE=synthetic, só os códigos sintéticos
+        PSI-9001 a PSI-9006 respondem, e tudo sai como Synthetic.
+      x-status: planned
+      parameters:
+        - name: accession
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^PSI-\d+$'
+            example: PSI-25
+        - name: variable
+          in: query
+          required: false
+          description: >
+            Só medições desta variável em cada teste (ex.: o2_final). Os
+            testes continuam todos na lista, com measurements vazio quando não
+            têm a variável.
+          schema:
+            type: string
+            pattern: '^[a-z][a-z0-9_]*$'
+            example: o2_final
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          required: false
+          description: Até 500, para um gráfico caber numa requisição (o SPICE tem 469 testes)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 100
+      responses:
+        '200':
+          description: Uma página de testes (items vazio quando a investigação não tem tabela normalizada)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RunPage'
+        '400':
+          description: Código fora do formato PSI-<número>, variável ou página inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorBody'
+        '404':
+          description: Nenhuma investigação com esse código
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorBody'
+        '503':
+          $ref: '#/components/responses/CatalogUnavailable'
+
+  /conditions/coverage:
+    get:
+      summary: Faixa de condições testadas por investigação (PLANEJADO)
+      description: >
+        Contrato definido antes da implementação. Para cada investigação com
+        testes normalizados: quantos testes, e o mínimo e o máximo de O₂ (%),
+        pressão (atm) e fluxo (m/s) que aparecem em experiment_conditions. Base
+        do ranqueamento por ambiente que o enunciado sugere. Ex. (fato do
+        enunciado): base lunar e rovers com O₂ de 30% ou mais e 10,2 psi
+        (0,694 atm) ou menos → `o2_min=30&pressure_max_atm=0.694`. Com filtro,
+        matching_runs conta os testes cuja condição cai inteira no envelope;
+        teste sem valor numa dimensão filtrada não conta. Ordem: número do
+        código PSI, crescente.
+      x-status: planned
+      parameters:
+        - name: o2_min
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 0
+            maximum: 100
+        - name: o2_max
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 0
+            maximum: 100
+        - name: pressure_min_atm
+          in: query
+          required: false
+          schema:
+            type: number
+            exclusiveMinimum: true
+            minimum: 0
+        - name: pressure_max_atm
+          in: query
+          required: false
+          schema:
+            type: number
+            exclusiveMinimum: true
+            minimum: 0
+        - name: flow_min_ms
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 0
+        - name: flow_max_ms
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 0
+      responses:
+        '200':
+          description: Uma linha por investigação com testes normalizados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConditionCoverageList'
+        '400':
+          description: Limite inválido ou mínimo maior que o máximo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorBody'
+        '503':
+          $ref: '#/components/responses/CatalogUnavailable'
+
   /ai/summarize:
     post:
       summary: Resumo por IA dos textos de uma investigação do PSI
@@ -556,6 +698,251 @@ components:
           type: integer
           minimum: 1
           maximum: 100
+
+    # ---- Testes, condições e medições (planejado; ver /investigations/{accession}/runs) ----
+
+    QualityStatus:
+      type: string
+      enum: [EXTRACTED, PENDING_VALIDATION, VALIDATED, REJECTED]
+      description: >
+        Mesmo CHECK de measurements.quality_status. PENDING_VALIDATION = valor
+        aproximado na fonte ("~ 21.5"), fora da faixa física esperada ou de
+        coluna com dúvida de unidade; a tela deve sinalizar.
+
+    Measurement:
+      type: object
+      required: [variable, value, unit, elapsed_time_seconds, quality_status, origin_category]
+      properties:
+        variable:
+          type: string
+          pattern: '^[a-z][a-z0-9_]*$'
+          example: o2_final
+        value:
+          type: number
+          nullable: true
+          description: null = ausente na série; nunca um valor inventado
+        unit:
+          type: string
+          description: 'Unidade da fonte, sem conversão (ex.: %, ppm, mole fraction, mmHg, mg/s)'
+          example: '%'
+        elapsed_time_seconds:
+          type: number
+          nullable: true
+          description: null nas tabelas de um valor por teste (todas as do PSI hoje)
+        quality_status:
+          $ref: '#/components/schemas/QualityStatus'
+        origin_category:
+          $ref: '#/components/schemas/OriginCategory'
+
+    TestConditions:
+      type: object
+      description: Unidades comuns a todas as investigações; campo que a fonte não traz chega null
+      required: [o2_percent, pressure_atm, flow_velocity_ms, diluent, flow_direction]
+      properties:
+        o2_percent:
+          type: number
+          minimum: 0
+          maximum: 100
+          nullable: true
+          description: O₂ ambiente em % por volume (fração molar × 100)
+        pressure_atm:
+          type: number
+          nullable: true
+        flow_velocity_ms:
+          type: number
+          minimum: 0
+          nullable: true
+        diluent:
+          type: string
+          nullable: true
+          example: N2
+        flow_direction:
+          type: string
+          enum: [concurrent, opposed, quiescent, other]
+          nullable: true
+
+    SourceFile:
+      type: object
+      description: Tabela do PSI de onde o teste saiu (rastreabilidade)
+      required: [file_name, sha256]
+      properties:
+        file_name:
+          type: string
+        sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+
+    ExperimentalRun:
+      type: object
+      required:
+        - test_label
+        - run_date
+        - sample_description
+        - outcome
+        - conditions
+        - measurements
+        - source_file
+        - raw
+      properties:
+        test_label:
+          type: string
+          description: >
+            Rótulo do teste na fonte (ex.: B2). Sem rótulo, ou repetido na
+            mesma tabela, vem "registro N" (posição na tabela).
+          example: B2
+        run_date:
+          type: string
+          format: date
+          nullable: true
+        sample_description:
+          type: string
+          nullable: true
+          description: Texto original da amostra ou do combustível
+          example: 200 micron PMMA film 2 cm wide
+        outcome:
+          type: string
+          nullable: true
+          description: 'Desfecho como a fonte escreve (ex.: Extinction, Disruption)'
+        conditions:
+          allOf:
+            - $ref: '#/components/schemas/TestConditions'
+          nullable: true
+        measurements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Measurement'
+        source_file:
+          $ref: '#/components/schemas/SourceFile'
+        raw:
+          type: object
+          additionalProperties:
+            type: string
+          description: Linha original do CSV, com o cabeçalho da fonte (auditoria)
+
+    VariableSummary:
+      type: object
+      required: [variable, unit, count, min, max, pending_count]
+      properties:
+        variable:
+          type: string
+          pattern: '^[a-z][a-z0-9_]*$'
+        unit:
+          type: string
+        count:
+          type: integer
+          minimum: 0
+        min:
+          type: number
+          nullable: true
+        max:
+          type: number
+          nullable: true
+        pending_count:
+          type: integer
+          minimum: 0
+          description: Quantas estão como PENDING_VALIDATION
+
+    RunPage:
+      type: object
+      required: [accession, items, total, page, page_size, variables]
+      properties:
+        accession:
+          type: string
+          pattern: '^PSI-\d+$'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExperimentalRun'
+        total:
+          type: integer
+          minimum: 0
+        page:
+          type: integer
+          minimum: 1
+        page_size:
+          type: integer
+          minimum: 1
+          maximum: 500
+        variables:
+          type: array
+          description: Uma linha por variável e unidade, na investigação inteira (base dos seletores de gráfico)
+          items:
+            $ref: '#/components/schemas/VariableSummary'
+
+    NumberRange:
+      type: object
+      required: [min, max]
+      properties:
+        min:
+          type: number
+        max:
+          type: number
+
+    ConditionCoverage:
+      type: object
+      required:
+        - accession
+        - name
+        - program
+        - run_count
+        - o2_percent
+        - pressure_atm
+        - flow_velocity_ms
+        - diluents
+        - flow_directions
+        - matching_runs
+        - origin_category
+      properties:
+        accession:
+          type: string
+          pattern: '^PSI-\d+$'
+        name:
+          type: string
+          example: FLEX
+        program:
+          $ref: '#/components/schemas/Program'
+        run_count:
+          type: integer
+          minimum: 0
+        o2_percent:
+          allOf:
+            - $ref: '#/components/schemas/NumberRange'
+          nullable: true
+          description: null quando nenhum teste traz o O₂ ambiente
+        pressure_atm:
+          allOf:
+            - $ref: '#/components/schemas/NumberRange'
+          nullable: true
+        flow_velocity_ms:
+          allOf:
+            - $ref: '#/components/schemas/NumberRange'
+          nullable: true
+        diluents:
+          type: array
+          items:
+            type: string
+          example: [N2, He, CO2]
+        flow_directions:
+          type: array
+          items:
+            type: string
+            enum: [concurrent, opposed, quiescent, other]
+        matching_runs:
+          type: integer
+          minimum: 0
+          nullable: true
+          description: Testes dentro do envelope pedido; null quando não há filtro
+        origin_category:
+          $ref: '#/components/schemas/OriginCategory'
+
+    ConditionCoverageList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConditionCoverage'
 
     # ---- Resumo por IA (planejado; ver /ai/summarize) ----
 
