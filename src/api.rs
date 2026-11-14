@@ -31,6 +31,7 @@ use crate::engine::{
 };
 use crate::error::AppError;
 use crate::lineage::OriginCategory;
+use crate::measurements_db::{self, ConditionCoverageList, Envelope, RunPage};
 use crate::simulation::{RiskLevel, Simulation, EXPERIMENT_ID};
 
 const DEFAULT_MCP_QUERY: &str = "general_fire_safety";
@@ -40,6 +41,9 @@ pub const DEFAULT_CORS_ORIGINS: &str = "http://localhost:3000,http://localhost:5
 const DEFAULT_PAGE_SIZE: usize = 20;
 const MAX_PAGE_SIZE: usize = 100;
 const MAX_QUERY_LENGTH: usize = 200;
+/// Até 500 testes por página: um gráfico cabe numa requisição (o SPICE tem 469)
+const DEFAULT_RUNS_PAGE_SIZE: usize = 100;
+const MAX_RUNS_PAGE_SIZE: usize = 500;
 
 // ---- Estado compartilhado ----
 
@@ -497,6 +501,152 @@ async fn summarize(
     Ok(Json(response))
 }
 
+// ---- Testes, condições e medições (measurements_db.rs) ----
+
+/// Mesma mensagem do catálogo: o detalhe do sqlx fica no log
+fn measurements_unavailable(error: impl std::fmt::Display) -> AppError {
+    tracing::error!(%error, "medições indisponíveis");
+    AppError::Unavailable("catálogo indisponível no momento".to_string())
+}
+
+#[derive(Debug, Deserialize)]
+struct RunsQuery {
+    variable: Option<String>,
+    page: Option<String>,
+    page_size: Option<String>,
+}
+
+/// Nome de variável do contrato: ^[a-z][a-z0-9_]*$
+fn parse_variable(raw: Option<&str>) -> Result<Option<String>, AppError> {
+    let Some(raw) = raw else { return Ok(None) };
+    let mut chars = raw.chars();
+    let valid = chars.next().is_some_and(|c| c.is_ascii_lowercase())
+        && chars.all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '_');
+    if valid {
+        Ok(Some(raw.to_string()))
+    } else {
+        Err(AppError::InvalidParameter(format!(
+            "variable fora do formato: {raw}"
+        )))
+    }
+}
+
+async fn list_runs(
+    State(state): State<Arc<AppState>>,
+    Path(raw): Path<String>,
+    Query(query): Query<RunsQuery>,
+) -> Result<Json<RunPage>, AppError> {
+    if !is_valid_accession(&raw) {
+        let message = format!("código fora do formato PSI-<número>: {raw}");
+        return Err(AppError::InvalidParameter(message));
+    }
+    let variable = parse_variable(query.variable.as_deref())?;
+    let page = parse_bounded(query.page.as_deref(), "page", 1, usize::MAX)?;
+    let page_size = parse_bounded(
+        query.page_size.as_deref(),
+        "page_size",
+        DEFAULT_RUNS_PAGE_SIZE,
+        MAX_RUNS_PAGE_SIZE,
+    )?;
+    let not_found = || AppError::NotFound(format!("investigação {raw} não encontrada"));
+    match &state.catalog {
+        // Catálogo sintético não tem tabelas normalizadas: lista vazia, nunca teste inventado
+        Catalog::Synthetic(items) => catalog::find(items, &raw)
+            .map(|_| Json(RunPage::empty(&raw, page, page_size)))
+            .ok_or_else(not_found),
+        Catalog::Database(pool) => {
+            let mut conn = pool.acquire().await.map_err(measurements_unavailable)?;
+            measurements_db::load_runs(&mut conn, &raw, variable.as_deref(), page, page_size)
+                .await
+                .map_err(measurements_unavailable)?
+                .map(Json)
+                .ok_or_else(not_found)
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+struct CoverageQuery {
+    o2_min: Option<String>,
+    o2_max: Option<String>,
+    pressure_min_atm: Option<String>,
+    pressure_max_atm: Option<String>,
+    flow_min_ms: Option<String>,
+    flow_max_ms: Option<String>,
+}
+
+/// Número opcional que passa no limite do contrato; ausente é None
+fn parse_limit(
+    raw: Option<&str>,
+    name: &str,
+    valid: fn(f64) -> bool,
+) -> Result<Option<f64>, AppError> {
+    match raw.map(str::parse::<f64>) {
+        None => Ok(None),
+        Some(Ok(value)) if value.is_finite() && valid(value) => Ok(Some(value)),
+        Some(_) => Err(AppError::InvalidParameter(format!(
+            "{name} fora do limite do contrato"
+        ))),
+    }
+}
+
+fn parse_envelope(query: &CoverageQuery) -> Result<Envelope, AppError> {
+    let percent = |v: f64| (0.0..=100.0).contains(&v);
+    let positive = |v: f64| v > 0.0;
+    let non_negative = |v: f64| v >= 0.0;
+    let envelope = Envelope {
+        o2_min: parse_limit(query.o2_min.as_deref(), "o2_min", percent)?,
+        o2_max: parse_limit(query.o2_max.as_deref(), "o2_max", percent)?,
+        pressure_min_atm: parse_limit(
+            query.pressure_min_atm.as_deref(),
+            "pressure_min_atm",
+            positive,
+        )?,
+        pressure_max_atm: parse_limit(
+            query.pressure_max_atm.as_deref(),
+            "pressure_max_atm",
+            positive,
+        )?,
+        flow_min_ms: parse_limit(query.flow_min_ms.as_deref(), "flow_min_ms", non_negative)?,
+        flow_max_ms: parse_limit(query.flow_max_ms.as_deref(), "flow_max_ms", non_negative)?,
+    };
+    let pairs = [
+        ("o2", envelope.o2_min, envelope.o2_max),
+        (
+            "pressure",
+            envelope.pressure_min_atm,
+            envelope.pressure_max_atm,
+        ),
+        ("flow", envelope.flow_min_ms, envelope.flow_max_ms),
+    ];
+    for (name, min, max) in pairs {
+        if let (Some(min), Some(max)) = (min, max) {
+            if min > max {
+                let message = format!("{name}: mínimo maior que o máximo");
+                return Err(AppError::InvalidParameter(message));
+            }
+        }
+    }
+    Ok(envelope)
+}
+
+async fn condition_coverage(
+    State(state): State<Arc<AppState>>,
+    Query(query): Query<CoverageQuery>,
+) -> Result<Json<ConditionCoverageList>, AppError> {
+    let envelope = parse_envelope(&query)?;
+    match &state.catalog {
+        Catalog::Synthetic(_) => Ok(Json(ConditionCoverageList { items: Vec::new() })),
+        Catalog::Database(pool) => {
+            let mut conn = pool.acquire().await.map_err(measurements_unavailable)?;
+            measurements_db::load_coverage(&mut conn, &envelope)
+                .await
+                .map(Json)
+                .map_err(measurements_unavailable)
+        }
+    }
+}
+
 async fn not_found(uri: Uri) -> AppError {
     AppError::NotFound(format!("rota não encontrada: {}", uri.path()))
 }
@@ -526,6 +676,8 @@ pub fn router(state: Arc<AppState>, allowed_origins: Vec<HeaderValue>) -> Router
         .route("/simulation/suppress", post(trigger_suppression))
         .route("/investigations", get(list_investigations))
         .route("/investigations/:accession", get(get_investigation))
+        .route("/investigations/:accession/runs", get(list_runs))
+        .route("/conditions/coverage", get(condition_coverage))
         .route("/ai/summarize", post(summarize));
 
     let cors = CorsLayer::new()
@@ -1004,5 +1156,88 @@ mod tests {
             context,
             "Objetivo: Medir a extinção.\n\nHipótese: A chama encolhe."
         );
+    }
+
+    // ---- GET /investigations/{accession}/runs e /conditions/coverage ----
+
+    #[tokio::test]
+    async fn runs_no_catalogo_sintetico_e_vazio_e_nunca_inventado() {
+        let state = new_state();
+        let uri = "/api/v1/investigations/PSI-9001/runs";
+        let (status, body) = call(&state, "GET", uri, None).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(body["accession"], "PSI-9001");
+        assert_eq!(body["total"], 0);
+        assert_eq!(body["page"], 1);
+        assert_eq!(body["page_size"], 100);
+        assert_eq!(body["items"], json!([]));
+        assert_eq!(body["variables"], json!([]));
+
+        let (status, body) = call(&state, "GET", "/api/v1/investigations/PSI-1/runs", None).await;
+        assert_eq!(status, StatusCode::NOT_FOUND);
+        assert_eq!(body["code"], "NOT_FOUND");
+    }
+
+    #[tokio::test]
+    async fn runs_rejeita_parametros_fora_do_contrato() {
+        let state = new_state();
+        let cases = [
+            "/api/v1/investigations/9001/runs",
+            "/api/v1/investigations/PSI-9001/runs?variable=O2",
+            "/api/v1/investigations/PSI-9001/runs?variable=o2-final",
+            "/api/v1/investigations/PSI-9001/runs?page=0",
+            "/api/v1/investigations/PSI-9001/runs?page_size=501",
+        ];
+        for uri in cases {
+            let (status, body) = call(&state, "GET", uri, None).await;
+            assert_eq!(status, StatusCode::BAD_REQUEST, "{uri}");
+            assert_eq!(body["code"], "INVALID_PARAMETER", "{uri}");
+        }
+    }
+
+    #[tokio::test]
+    async fn cobertura_no_catalogo_sintetico_e_lista_vazia() {
+        let uri = "/api/v1/conditions/coverage?o2_min=30&pressure_max_atm=0.694";
+        let (status, body) = call(&new_state(), "GET", uri, None).await;
+        assert_eq!(status, StatusCode::OK);
+        assert_eq!(body, json!({ "items": [] }));
+    }
+
+    #[tokio::test]
+    async fn cobertura_rejeita_envelope_invalido() {
+        let state = new_state();
+        let cases = [
+            "o2_min=abc",
+            "o2_min=101",
+            "o2_min=40&o2_max=30",
+            "pressure_max_atm=0",
+            "pressure_min_atm=1&pressure_max_atm=0.5",
+            "flow_min_ms=-1",
+            "o2_max=NaN",
+        ];
+        for case in cases {
+            let uri = format!("/api/v1/conditions/coverage?{case}");
+            let (status, body) = call(&state, "GET", &uri, None).await;
+            assert_eq!(status, StatusCode::BAD_REQUEST, "{case}");
+            assert_eq!(body["code"], "INVALID_PARAMETER", "{case}");
+        }
+    }
+
+    #[tokio::test]
+    async fn medicoes_com_o_banco_fora_do_ar_devolvem_503() {
+        // Porta 1: ninguém escuta; o detalhe do sqlx fica no log, não na resposta
+        let pool = sqlx::postgres::PgPoolOptions::new()
+            .acquire_timeout(Duration::from_millis(500))
+            .connect_lazy("postgres://tex:tex@127.0.0.1:1/tex")
+            .unwrap();
+        let state = Arc::new(AppState::new(None, Catalog::Database(pool)));
+        for uri in [
+            "/api/v1/investigations/PSI-25/runs",
+            "/api/v1/conditions/coverage",
+        ] {
+            let (status, body) = call(&state, "GET", uri, None).await;
+            assert_eq!(status, StatusCode::SERVICE_UNAVAILABLE, "{uri}");
+            assert_eq!(body["message"], "catálogo indisponível no momento", "{uri}");
+        }
     }
 }

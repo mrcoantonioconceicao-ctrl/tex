@@ -74,14 +74,14 @@ describe('RunsPanel', () => {
     expect(await screen.findByText(/Sem tabela experimental normalizada/)).toBeInTheDocument()
   })
 
-  it('explica quando o backend ainda não serve a rota', async () => {
+  it('explica o 404 de rota com backend desatualizado', async () => {
     server.use(
       http.get('*/api/v1/investigations/:accession/runs', () =>
         HttpResponse.json({ code: 'NOT_FOUND', message: 'rota não encontrada' }, { status: 404 }),
       ),
     )
     renderWithQuery(<RunsPanel accession="PSI-9001" />)
-    expect(await screen.findByRole('alert')).toHaveTextContent(/ainda não serve esta rota/)
+    expect(await screen.findByRole('alert')).toHaveTextContent(/não reconheceu a rota ou a investigação/)
   })
 })
 

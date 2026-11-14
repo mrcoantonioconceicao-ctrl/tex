@@ -1,4 +1,4 @@
-// Contrato de POST /api/v1/ai/summarize (docs/api-spec.yaml, planejado) contra o mock MSW.
+// Contrato de POST /api/v1/ai/summarize (docs/api-spec.yaml) contra o mock MSW.
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 import { MOCK_INVESTIGATIONS, summarizeInvestigation as mockSummarize } from '../mocks/investigations'

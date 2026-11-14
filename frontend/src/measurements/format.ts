@@ -21,7 +21,7 @@ export function formatRange(range: NumberRange | null): string {
 // Enquanto o backend não implementa as rotas do contrato, ele responde 404 de rota
 export function routeHint(error: Error): string | null {
   if (error instanceof ApiError && error.code === 'NOT_FOUND') {
-    return 'O backend ainda não serve esta rota (planejada no contrato). Com os mocks, a tela já funciona.'
+    return 'O backend não reconheceu a rota ou a investigação. Confira se ele está atualizado com a main.'
   }
   return null
 }
