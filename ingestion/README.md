@@ -30,6 +30,8 @@ npm run db:up        # só o Postgres (porta 5433)
 npm run db:migrate
 npm run ingest:ntrs -- --dry-run --max 10
 npm run ingest:psi -- --dry-run --max 5     # metadados das investigações do PSI
+npm run download:psi -- --dry-run           # tabelas experimentais (CSV), a partir de 14/11
+npm run normalize:psi -- --dry-run          # CSVs baixados -> testes, condições e medições
 ```
 
 `DATABASE_URL` sobrescreve o banco padrão (`postgres://tex:tex@127.0.0.1:5433/tex`).
@@ -73,6 +75,7 @@ TEX_TEST_DATABASE_URL=postgres://tex:tex@127.0.0.1:5433/tex npm test
 | `src/db.ts` | Upsert por `id_ntrs` em transação, autores em tabela própria, registro de execuções |
 | `src/migrations.ts` | Executor de migrações (ordem, transação, hash, trava contra execução simultânea) |
 | `src/psi.ts` | Busca e metadados do PSI (API JSON `geode-py`), validação com Zod, programa e datas normalizados |
+| `src/psi-normalize.ts` / `src/psi-tables.ts` | CSVs do PSI → `experimental_runs` (linha original no `raw`), `experiment_conditions` (O₂ em %, pressão em atm, fluxo em m/s) e `measurements` (`Measured` + `source_file_id`), com mapa de colunas explícito por arquivo. Célula que não é número limpo fica só no `raw`; aproximado (`~`), fora da faixa ou coluna em revisão entra como `PENDING_VALIDATION` |
 | `src/cli.ts` / `src/psi-cli.ts` / `src/migrate-cli.ts` | Linhas de comando da coleta (NTRS, PSI) e das migrações |
 | `db/migrations/` | `0001`: schema mínimo do `CLAUDE.md` + `raw` JSONB e `ingestion_runs`; `0002`: investigações do PSI (`experiments` estendida, `experiment_files`), lacunas de condições e medições |
 
