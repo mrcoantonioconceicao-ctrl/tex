@@ -61,7 +61,7 @@ NTRS (bibliografia):
 
 ## 3. Backend (Marco)
 
-- [ ] Ligar o catálogo no banco: `TEX_CATALOG_SOURCE=database` no `environment` do backend no `docker-compose.yml` (ou no `.env`). Depois, `make restart`.
+- [ ] Ligar o catálogo no banco: `TEX_CATALOG_SOURCE=database` no `.env` (o `docker-compose.yml` repassa ao backend). Depois, `make up` (o `make restart` não relê variáveis).
 - [ ] `curl -s localhost:8080/api/v1/investigations | jq '.total, .items[0].origin_category'`. Esperado: o mesmo total da seção 2 e `"Published"`.
 - [ ] `curl -s localhost:8080/api/v1/investigations/PSI-25 | jq '.files | length'` (ou outro código real) traz os arquivos.
 - [ ] Banco parado (`docker compose stop db`): o catálogo responde **503** e o `/health` continua `ok` com `database: down`. Depois, `docker compose start db`.
