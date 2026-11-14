@@ -4,6 +4,7 @@ import { describeError } from '../api/client'
 import { useInvestigation } from '../api/hooks'
 import type { Investigation, InvestigationFile } from '../api/types'
 import { AiSummaryPanel } from './AiSummaryPanel'
+import { RunsPanel } from '../measurements/RunsPanel'
 import { formatBytes, formatPeriod, PROJECT_TYPE_LABELS, programLabel } from './model'
 import { OriginBadge } from './OriginBadge'
 
@@ -128,6 +129,10 @@ function DetailBody({ investigation }: { investigation: Investigation }) {
           <dd className="mt-1">{investigation.license ?? <Missing>não informada</Missing>}</dd>
         </div>
       </dl>
+
+      <div className="mt-5">
+        <RunsPanel key={investigation.accession} accession={investigation.accession} />
+      </div>
 
       <h3 className="mt-5 text-xs font-medium uppercase tracking-wide text-slate-400">
         Arquivos ({formatBytes(investigation.total_file_bytes)} no total)

@@ -135,7 +135,7 @@ export interface InvestigationQuery {
   page_size?: number
 }
 
-// POST /api/v1/ai/summarize (PLANEJADO: o backend ainda não serve, só o mock MSW)
+// POST /api/v1/ai/summarize
 export interface SummarizeRequest {
   accession: string
 }
@@ -158,6 +158,109 @@ export interface AiSummary {
 export interface ApiErrorBody {
   code: 'INVALID_PARAMETER' | 'NOT_FOUND' | 'NO_SOURCE_TEXT' | 'SERVICE_UNAVAILABLE'
   message: string
+}
+
+// ---- Testes, condições e medições das tabelas do PSI (PLANEJADO no backend; mock MSW) ----
+
+// Unidade da fonte, sem conversão (%, ppm, mole fraction, mmHg...)
+export interface Measurement {
+  variable: string
+  // null = ausente na série; nunca um valor inventado
+  value: number | null
+  unit: string
+  elapsed_time_seconds: number | null
+  quality_status: QualityStatus
+  origin_category: OriginCategory
+}
+
+export type FlowDirection = 'concurrent' | 'opposed' | 'quiescent' | 'other'
+
+// Unidades comuns a todas as investigações (O₂ em %, pressão em atm, fluxo em m/s)
+export interface TestConditions {
+  o2_percent: number | null
+  pressure_atm: number | null
+  flow_velocity_ms: number | null
+  diluent: string | null
+  flow_direction: FlowDirection | null
+}
+
+export interface SourceFile {
+  file_name: string
+  sha256: string
+}
+
+// Um teste = uma linha da tabela experimental da fonte
+export interface ExperimentalRun {
+  test_label: string
+  run_date: string | null
+  sample_description: string | null
+  outcome: string | null
+  conditions: TestConditions | null
+  measurements: Measurement[]
+  source_file: SourceFile
+  // Linha original do CSV, com o cabeçalho da fonte
+  raw: Record<string, string>
+}
+
+export interface VariableSummary {
+  variable: string
+  unit: string
+  count: number
+  min: number | null
+  max: number | null
+  pending_count: number
+}
+
+// GET /api/v1/investigations/{accession}/runs
+export interface RunPage {
+  accession: string
+  items: ExperimentalRun[]
+  total: number
+  page: number
+  page_size: number
+  // Investigação inteira, não só a página
+  variables: VariableSummary[]
+}
+
+export interface RunQuery {
+  variable?: string
+  page?: number
+  page_size?: number
+}
+
+export interface NumberRange {
+  min: number
+  max: number
+}
+
+export interface ConditionCoverage {
+  accession: string
+  name: string
+  program: Program
+  run_count: number
+  o2_percent: NumberRange | null
+  pressure_atm: NumberRange | null
+  flow_velocity_ms: NumberRange | null
+  diluents: string[]
+  flow_directions: FlowDirection[]
+  // Testes dentro do envelope pedido; null quando não há filtro
+  matching_runs: number | null
+  origin_category: OriginCategory
+}
+
+// GET /api/v1/conditions/coverage
+export interface ConditionCoverageList {
+  items: ConditionCoverage[]
+}
+
+// Filtros de /conditions/coverage (todos opcionais)
+export interface CoverageEnvelope {
+  o2_min?: number
+  o2_max?: number
+  pressure_min_atm?: number
+  pressure_max_atm?: number
+  flow_min_ms?: number
+  flow_max_ms?: number
 }
 
 // ---- Relatório de predições (não é endpoint) ----

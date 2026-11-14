@@ -10,6 +10,7 @@ import type {
   SystemPerformanceMetrics,
 } from '../api/types'
 import { findInvestigation, listInvestigations, summarizeInvestigation } from './investigations'
+import { conditionCoverage, listRuns } from './measurements'
 import { getMockScenario, type MockScenario } from './scenario'
 
 // '*' casa com qualquer origem: URL relativa no navegador, absoluta nos testes
@@ -201,6 +202,20 @@ export const handlers = [
     const failure = await applyTransport()
     if (failure) return failure
     const { status, body } = findInvestigation(String(params.accession))
+    return HttpResponse.json(body, { status })
+  }),
+
+  http.get(`${BASE}/investigations/:accession/runs`, async ({ params, request }) => {
+    const failure = await applyTransport()
+    if (failure) return failure
+    const { status, body } = listRuns(String(params.accession), new URL(request.url).searchParams)
+    return HttpResponse.json(body, { status })
+  }),
+
+  http.get(`${BASE}/conditions/coverage`, async ({ request }) => {
+    const failure = await applyTransport()
+    if (failure) return failure
+    const { status, body } = conditionCoverage(new URL(request.url).searchParams)
     return HttpResponse.json(body, { status })
   }),
 

@@ -1,7 +1,9 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  getConditionCoverage,
   getInvestigation,
   getInvestigations,
+  getRuns,
   getLatestTelemetry,
   getPredictionReport,
   getSystemMetrics,
@@ -10,7 +12,7 @@ import {
   summarizeInvestigation,
   triggerSuppression,
 } from './client'
-import type { InvestigationQuery } from './types'
+import type { CoverageEnvelope, InvestigationQuery, RunQuery } from './types'
 
 export const TELEMETRY_POLL_MS = Number(import.meta.env.VITE_TELEMETRY_POLL_MS ?? 2000)
 // Métricas mudam pouco: polling mais espaçado
@@ -64,6 +66,24 @@ export function useInvestigations(query: InvestigationQuery) {
   return useQuery({
     queryKey: ['investigations', query],
     queryFn: () => getInvestigations(query),
+    placeholderData: keepPreviousData,
+  })
+}
+
+// Medições só mudam quando a normalização roda: sem polling; ao trocar de variável ou
+// página, a tabela anterior fica na tela até a nova chegar
+export function useRuns(accession: string, query: RunQuery) {
+  return useQuery({
+    queryKey: ['runs', accession, query],
+    queryFn: () => getRuns(accession, query),
+    placeholderData: keepPreviousData,
+  })
+}
+
+export function useConditionCoverage(envelope: CoverageEnvelope) {
+  return useQuery({
+    queryKey: ['coverage', envelope],
+    queryFn: () => getConditionCoverage(envelope),
     placeholderData: keepPreviousData,
   })
 }
