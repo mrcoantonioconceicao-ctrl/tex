@@ -160,7 +160,7 @@ export interface ApiErrorBody {
   message: string
 }
 
-// ---- Testes, condições e medições das tabelas do PSI (PLANEJADO no backend; mock MSW) ----
+// ---- Testes, condições e medições das tabelas do PSI (src/measurements_db.rs no backend) ----
 
 // Unidade da fonte, sem conversão (%, ppm, mole fraction, mmHg...)
 export interface Measurement {

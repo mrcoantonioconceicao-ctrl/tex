@@ -192,9 +192,9 @@ paths:
 
   /investigations/{accession}/runs:
     get:
-      summary: Testes de uma investigação do PSI, com condições e medições (PLANEJADO)
+      summary: Testes de uma investigação do PSI, com condições e medições
       description: >
-        Contrato definido antes da implementação. Lê experimental_runs,
+        Implementado em src/measurements_db.rs. Lê experimental_runs,
         experiment_conditions e measurements, gravados por `npm run
         normalize:psi` a partir das tabelas experimentais (CSV) do PSI. Um item
         = uma linha da tabela da fonte. As condições vêm em unidades comuns
@@ -203,7 +203,6 @@ paths:
         tabela de origem. `variables` resume a investigação inteira, não só a
         página. Com TEX_CATALOG_SOURCE=synthetic, só os códigos sintéticos
         PSI-9001 a PSI-9006 respondem, e tudo sai como Synthetic.
-      x-status: planned
       parameters:
         - name: accession
           in: path
@@ -263,9 +262,9 @@ paths:
 
   /conditions/coverage:
     get:
-      summary: Faixa de condições testadas por investigação (PLANEJADO)
+      summary: Faixa de condições testadas por investigação
       description: >
-        Contrato definido antes da implementação. Para cada investigação com
+        Implementado em src/measurements_db.rs. Para cada investigação com
         testes normalizados: quantos testes, e o mínimo e o máximo de O₂ (%),
         pressão (atm) e fluxo (m/s) que aparecem em experiment_conditions. Base
         do ranqueamento por ambiente que o enunciado sugere. Ex. (fato do
@@ -274,7 +273,6 @@ paths:
         matching_runs conta os testes cuja condição cai inteira no envelope;
         teste sem valor numa dimensão filtrada não conta. Ordem: número do
         código PSI, crescente.
-      x-status: planned
       parameters:
         - name: o2_min
           in: query
@@ -699,7 +697,7 @@ components:
           minimum: 1
           maximum: 100
 
-    # ---- Testes, condições e medições (planejado; ver /investigations/{accession}/runs) ----
+    # ---- Testes, condições e medições (ver /investigations/{accession}/runs e /conditions/coverage) ----
 
     QualityStatus:
       type: string
@@ -944,7 +942,7 @@ components:
           items:
             $ref: '#/components/schemas/ConditionCoverage'
 
-    # ---- Resumo por IA (planejado; ver /ai/summarize) ----
+    # ---- Resumo por IA (ver /ai/summarize) ----
 
     SummarizeRequest:
       type: object

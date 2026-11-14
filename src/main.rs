@@ -13,6 +13,7 @@ mod domain;
 mod engine;
 mod error;
 mod lineage;
+mod measurements_db;
 mod simulation;
 
 use std::net::SocketAddr;

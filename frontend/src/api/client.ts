@@ -161,12 +161,12 @@ export function getInvestigations(query: InvestigationQuery = {}): Promise<Inves
   return request(`/investigations${searchFrom(query)}`, investigationPageSchema)
 }
 
-// PLANEJADO no backend (contrato pronto): hoje só o mock MSW responde
+// Testes de uma investigação (src/measurements_db.rs); catálogo sintético = lista vazia
 export function getRuns(accession: string, query: RunQuery = {}): Promise<RunPage> {
   return request(`/investigations/${encodeURIComponent(accession)}/runs${searchFrom(query)}`, runPageSchema)
 }
 
-// PLANEJADO no backend (contrato pronto): hoje só o mock MSW responde
+// Faixa de condições por investigação; catálogo sintético = lista vazia
 export function getConditionCoverage(envelope: CoverageEnvelope = {}): Promise<ConditionCoverageList> {
   return request(`/conditions/coverage${searchFrom(envelope)}`, conditionCoverageListSchema)
 }
