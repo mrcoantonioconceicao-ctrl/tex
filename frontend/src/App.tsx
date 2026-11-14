@@ -1,4 +1,4 @@
-// Casca do painel: cabeçalho e duas abas. O catálogo do PSI é o centro do desafio
+// Casca do painel: cabeçalho e três abas. O catálogo do PSI é o centro do desafio
 // (docs/conhecimento/enunciado.md); a simulação de monitoramento é contexto.
 // A aba fica na URL (?tela=simulacao) para dar para compartilhar o link.
 import { useState, type MouseEvent } from 'react'
@@ -6,19 +6,22 @@ import texLogo from './assets/texlabs.jpeg'
 import { InvestigationsCatalog } from './catalog/InvestigationsCatalog'
 import { MonitoringView } from './dashboard/MonitoringView'
 import { ScenarioPicker } from './dashboard/panels'
+import { CoverageView } from './measurements/CoverageView'
 
 const usingMocks = import.meta.env.VITE_USE_MOCKS === 'true'
 const dataSource = usingMocks ? 'mock (MSW)' : 'backend Axum'
 
-type View = 'catalogo' | 'simulacao'
+type View = 'catalogo' | 'cobertura' | 'simulacao'
 
 const VIEWS: { id: View; label: string }[] = [
   { id: 'catalogo', label: 'Investigações do PSI' },
+  { id: 'cobertura', label: 'Cobertura por ambiente' },
   { id: 'simulacao', label: 'Simulação de monitoramento' },
 ]
 
 function viewFromUrl(): View {
-  return new URLSearchParams(window.location.search).get('tela') === 'simulacao' ? 'simulacao' : 'catalogo'
+  const tela = new URLSearchParams(window.location.search).get('tela')
+  return VIEWS.find((v) => v.id === tela)?.id ?? 'catalogo'
 }
 
 function hrefFor(view: View): string {
@@ -79,7 +82,9 @@ function App() {
           })}
         </nav>
 
-        {view === 'catalogo' ? <InvestigationsCatalog /> : <MonitoringView usingMocks={usingMocks} />}
+        {view === 'catalogo' && <InvestigationsCatalog />}
+        {view === 'cobertura' && <CoverageView />}
+        {view === 'simulacao' && <MonitoringView usingMocks={usingMocks} />}
       </main>
     </div>
   )

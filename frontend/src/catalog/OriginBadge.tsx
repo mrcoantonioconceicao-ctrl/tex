@@ -5,6 +5,7 @@ import type { OriginCategory } from '../api/types'
 const STYLES: Partial<Record<OriginCategory, { label: string; className: string }>> = {
   Synthetic: { label: 'sintético', className: 'border-sky-600 text-sky-200' },
   Published: { label: 'publicado · PSI', className: 'border-emerald-600 text-emerald-200' },
+  Measured: { label: 'medido · PSI', className: 'border-emerald-600 text-emerald-200' },
   Inferred: { label: 'inferido · IA', className: 'border-amber-500 text-amber-200' },
 }
 

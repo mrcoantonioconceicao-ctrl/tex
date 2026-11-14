@@ -6,11 +6,13 @@ import type {
   AiSummary,
   ApiErrorBody,
   CombustionTelemetry,
+  ConditionCoverageList,
   Investigation,
   InvestigationPage,
   InvestigationSummary,
   McpContextResponse,
   PredictionReport,
+  RunPage,
   SystemPerformanceMetrics,
 } from './types'
 
@@ -131,6 +133,79 @@ export const aiSummarySchema = z.object({
   generated_at: z.iso.datetime(),
   origin_category: z.enum(['Inferred', 'Synthetic']),
 }) satisfies z.ZodType<AiSummary>
+
+// ---- Testes, condições e medições (GET /investigations/{accession}/runs e /conditions/coverage) ----
+
+const VARIABLE_PATTERN = /^[a-z][a-z0-9_]*$/
+const qualityStatusSchema = z.enum(['EXTRACTED', 'PENDING_VALIDATION', 'VALIDATED', 'REJECTED'])
+const flowDirectionSchema = z.enum(['concurrent', 'opposed', 'quiescent', 'other'])
+const countSchema = z.number().int().nonnegative()
+
+const measurementSchema = z.object({
+  variable: z.string().regex(VARIABLE_PATTERN),
+  value: z.number().nullable(),
+  unit: z.string(),
+  elapsed_time_seconds: z.number().nullable(),
+  quality_status: qualityStatusSchema,
+  origin_category: originCategorySchema,
+})
+
+const testConditionsSchema = z.object({
+  o2_percent: z.number().min(0).max(100).nullable(),
+  pressure_atm: z.number().nullable(),
+  flow_velocity_ms: z.number().nonnegative().nullable(),
+  diluent: z.string().nullable(),
+  flow_direction: flowDirectionSchema.nullable(),
+})
+
+const variableSummarySchema = z.object({
+  variable: z.string().regex(VARIABLE_PATTERN),
+  unit: z.string(),
+  count: countSchema,
+  min: z.number().nullable(),
+  max: z.number().nullable(),
+  pending_count: countSchema,
+})
+
+export const runPageSchema = z.object({
+  accession: z.string().regex(ACCESSION_PATTERN),
+  items: z.array(
+    z.object({
+      test_label: z.string(),
+      run_date: z.iso.date().nullable(),
+      sample_description: z.string().nullable(),
+      outcome: z.string().nullable(),
+      conditions: testConditionsSchema.nullable(),
+      measurements: z.array(measurementSchema),
+      source_file: z.object({ file_name: z.string(), sha256: z.string().regex(/^[0-9a-f]{64}$/) }),
+      raw: z.record(z.string(), z.string()),
+    }),
+  ),
+  total: countSchema,
+  page: z.number().int().positive(),
+  page_size: z.number().int().positive().max(500),
+  variables: z.array(variableSummarySchema),
+}) satisfies z.ZodType<RunPage>
+
+const numberRangeSchema = z.object({ min: z.number(), max: z.number() })
+
+export const conditionCoverageListSchema = z.object({
+  items: z.array(
+    z.object({
+      accession: z.string().regex(ACCESSION_PATTERN),
+      name: z.string(),
+      program: programSchema,
+      run_count: countSchema,
+      o2_percent: numberRangeSchema.nullable(),
+      pressure_atm: numberRangeSchema.nullable(),
+      flow_velocity_ms: numberRangeSchema.nullable(),
+      diluents: z.array(z.string()),
+      flow_directions: z.array(flowDirectionSchema),
+      matching_runs: countSchema.nullable(),
+      origin_category: originCategorySchema,
+    }),
+  ),
+}) satisfies z.ZodType<ConditionCoverageList>
 
 // ---- Corpo de erro (4xx/5xx) ----
 

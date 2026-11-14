@@ -82,13 +82,13 @@ function toSummary(item: Investigation): InvestigationSummary {
 
 export type MockResult<T> = { status: 200; body: T } | { status: 400 | 404 | 422; body: ApiErrorBody }
 
-const invalid = (message: string): MockResult<never> => ({
+export const invalid = (message: string): MockResult<never> => ({
   status: 400,
   body: { code: 'INVALID_PARAMETER', message },
 })
 
 // null = parâmetro presente mas inválido; ausente usa o padrão
-function boundedInt(raw: string | null, fallback: number, max: number): number | null {
+export function boundedInt(raw: string | null, fallback: number, max: number): number | null {
   if (raw === null) return fallback
   const n = Number(raw)
   return Number.isInteger(n) && n >= 1 && n <= max ? n : null

@@ -6,22 +6,28 @@ import {
   aiSummarySchema,
   apiErrorBodySchema,
   combustionTelemetrySchema,
+  conditionCoverageListSchema,
   investigationPageSchema,
   investigationSchema,
   mcpContextResponseSchema,
   predictionReportSchema,
+  runPageSchema,
   systemPerformanceMetricsSchema,
 } from './schemas'
 import type {
   AiSummary,
   ApiErrorBody,
   CombustionTelemetry,
+  ConditionCoverageList,
+  CoverageEnvelope,
   Investigation,
   InvestigationPage,
   InvestigationQuery,
   McpContextRequest,
   McpContextResponse,
   PredictionReport,
+  RunPage,
+  RunQuery,
   SummarizeRequest,
   SystemPerformanceMetrics,
 } from './types'
@@ -142,14 +148,27 @@ export async function getPredictionReport(raw: unknown = predictionReportJson): 
   return result.data
 }
 
-// Catálogo do PSI: só os filtros informados vão para a query string
-export function getInvestigations(query: InvestigationQuery = {}): Promise<InvestigationPage> {
+// Só os filtros informados vão para a query string
+function searchFrom(query: object): string {
   const params = new URLSearchParams()
   for (const [key, value] of Object.entries(query)) {
     if (value !== undefined && value !== '') params.set(key, String(value))
   }
-  const search = params.size > 0 ? `?${params}` : ''
-  return request(`/investigations${search}`, investigationPageSchema)
+  return params.size > 0 ? `?${params}` : ''
+}
+
+export function getInvestigations(query: InvestigationQuery = {}): Promise<InvestigationPage> {
+  return request(`/investigations${searchFrom(query)}`, investigationPageSchema)
+}
+
+// PLANEJADO no backend (contrato pronto): hoje só o mock MSW responde
+export function getRuns(accession: string, query: RunQuery = {}): Promise<RunPage> {
+  return request(`/investigations/${encodeURIComponent(accession)}/runs${searchFrom(query)}`, runPageSchema)
+}
+
+// PLANEJADO no backend (contrato pronto): hoje só o mock MSW responde
+export function getConditionCoverage(envelope: CoverageEnvelope = {}): Promise<ConditionCoverageList> {
+  return request(`/conditions/coverage${searchFrom(envelope)}`, conditionCoverageListSchema)
 }
 
 export function getInvestigation(accession: string): Promise<Investigation> {
