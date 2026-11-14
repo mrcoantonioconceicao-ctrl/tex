@@ -2,7 +2,7 @@
 
 ## Contexto do projeto
 - Hackathon: NASA Space Apps Challenge 2026. Time Tex Labs, formado por Willian (LokusS) e Marco.
-- Desafio: combustão em microgravidade ("Flame in Freefall: AI-Powered Fire Safety Insights from Microgravity Combustion Data"). Enunciado oficial resumido em `docs/conhecimento/enunciado.md`.
+- Desafio: combustão em microgravidade ("Flame in Freefall: SI-Powered Fire Safety Insights from Microgravity Combustion Data"; até 12/11 a página dizia "AI-Powered"). Enunciado oficial resumido em `docs/conhecimento/enunciado.md`.
 - Missão do sistema: monitoramento, combate inteligente e mitigação autônoma de incêndios em habitats espaciais (ex.: ISS).
 - Repositório: https://github.com/mrcoantonioconceicao-ctrl/tex
 - Datas: enunciados completos em 28/10/2026; o hackathon vai de 14/11/2026 até a submissão em 15/11/2026. Antes de 14/11 a NASA só permitia estudo, preparo de ambiente e planejamento.
