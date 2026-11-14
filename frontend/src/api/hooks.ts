@@ -7,6 +7,7 @@ import {
   getSystemMetrics,
   postMcpContext,
   resetSimulation,
+  summarizeInvestigation,
   triggerSuppression,
 } from './client'
 import type { InvestigationQuery } from './types'
@@ -64,6 +65,18 @@ export function useInvestigations(query: InvestigationQuery) {
     queryKey: ['investigations', query],
     queryFn: () => getInvestigations(query),
     placeholderData: keepPreviousData,
+  })
+}
+
+// Resumo por IA só depois do clique (cada pedido pode gastar cota do provedor). Fica em
+// cache na sessão, e erro não repete sozinho: 503 sem chave não melhora tentando de novo.
+export function useAiSummary(accession: string, requested: boolean) {
+  return useQuery({
+    queryKey: ['ai-summary', accession],
+    queryFn: () => summarizeInvestigation(accession),
+    enabled: requested,
+    staleTime: Infinity,
+    retry: false,
   })
 }
 

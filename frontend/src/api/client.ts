@@ -156,7 +156,7 @@ export function getInvestigation(accession: string): Promise<Investigation> {
   return request(`/investigations/${encodeURIComponent(accession)}`, investigationSchema)
 }
 
-// PLANEJADO no contrato: hoje só o mock MSW responde (o backend devolve 404)
+// Resumo por IA (Gemini no backend; sem chave, 503 com o catálogo do banco)
 export function summarizeInvestigation(accession: string): Promise<AiSummary> {
   const body: SummarizeRequest = { accession }
   return request('/ai/summarize', aiSummarySchema, { method: 'POST', body: JSON.stringify(body) })
