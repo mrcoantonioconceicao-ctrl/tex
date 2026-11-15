@@ -1,45 +1,93 @@
 # 🛰️ Tex Labs, NASA Space Apps Challenge 2026
-Solução Preditiva e Auditoria de Segurança contra Incêndios em Microgravidade.
 
-🚀 Sobre o Projeto
-O Tex Labs é um ecossistema de software de alta performance desenvolvido para o NASA Space Apps Challenge 2026. O projeto foca em **simulações preditivas calibradas em dados publicados de missões** (Saffire IV a VI), auditoria normativa (NASA-STD-3001 e SMAC) e processamento descentralizado para ambientes espaciais, operando de forma autónoma e independente de telemetria em tempo real.
+Fire safety insights from NASA microgravity combustion data.
+Challenge: "Flame in Freefall: SI-Powered Fire Safety Insights from Microgravity Combustion Data". Team: Willian and Marco.
 
-## O que é fato e o que é simulação
+## What it does
 
-| Na tela | Origem | `origin_category` |
+Tex Labs is a web dashboard that answers three questions a spacecraft fire safety engineer asks: what did NASA test in microgravity, under which conditions, and which conditions of my habitat were never tested?
+
+1. **PSI investigations:** a searchable catalog of 26 combustion investigations from NASA's Physical Sciences Informatics (ACME, BASS, FLEX, Saffire and others), with objective, approach, hypothesis, hardware, DOI and license. When PSI provides that text, an on-demand AI summary is shown next to it.
+2. **Tests and measurements:** 2,077 tests and 12,880 measurements loaded from the PSI data files, each traced to its source file. Values that need a human check are flagged "pending validation" instead of being silently fixed.
+3. **Coverage by environment:** compares the oxygen, pressure and flow ranges tested by each investigation with the envelope of a target habitat. For a lunar base atmosphere (oxygen at 30% or more, 10.2 psi or less, from the challenge statement), PSI holds only 20 tests, all gas flames from ACME CFI-G, and no solid-fuel tests.
+4. **Monitoring simulation:** a demonstration of habitat fire alerts. It runs on **synthetic data** and says so on screen. Its carbon monoxide model is calibrated on published Saffire IV to VI results.
+
+## What is fact and what is simulation
+
+Every value carries an `origin_category`: `Measured` (sensor), `Published` (paper), `Derived` (calculation), `Inferred` (AI) or `Synthetic` (test, mock or simulation).
+
+| On screen | Source | `origin_category` |
 |---|---|---|
-| Testes do Saffire IV a VI (pressão, O₂, ΔCO medido) | NTRS 20240002981, Tabelas 1 e 2 | `Published` |
-| Limites SMAC de CO (100 ppm em 24 h, 425 ppm em 1 h) | NTRS 20240002981 p.5, citando JSC 20584 Rev. A | referência |
-| Projeção de CO por material e fração de O₂ | modelo em `simulation/predicoes.py` (hipótese, não validado) | `Synthetic` |
-| Telemetria da câmara (temperatura, O₂, chama) | simulação do backend (`src/simulation.rs`) | `Synthetic` |
+| Investigation metadata (objective, approach, files) | NASA PSI | `Published` |
+| Test measurements (O₂, pressure, flow, results) | NASA PSI data files, SHA-256 checked | `Measured` |
+| AI summary of an investigation | Google Gemini, from the PSI text only | `Inferred` |
+| Saffire IV to VI tests (pressure, O₂, measured ΔCO) | NTRS 20240002981, Tables 1 and 2 | `Published` |
+| SMAC CO limits (100 ppm in 24 h, 425 ppm in 1 h) | NTRS 20240002981 p.5, citing JSC 20584 Rev. A | reference |
+| CO projection by material and O₂ fraction | model in `simulation/predicoes.py` (hypothesis, not validated) | `Synthetic` |
+| Chamber telemetry (temperature, O₂, flame) | backend simulation (`src/simulation.rs`) | `Synthetic` |
 
-Não há telemetria real da ISS. Detalhes das fontes em [`docs/conhecimento/`](docs/conhecimento/README.md).
+There is no live ISS telemetry, and the system does not predict real fires. Microgravity does not put flames out, and flames are not always spherical: the dashboard only reports what the experiments measured.
 
-## Como rodar
+## Known limits
 
-Com Docker (stack completa: backend, painel e PostgreSQL):
+- 546 measurements are still `PENDING_VALIDATION`; there is no validation screen yet.
+- Two PSI investigations (PSI-142 and PSI-181) have tables we could not map, so they have metadata but no measurements.
+- NTRS full-text processing (PDFs, chunking, embeddings, GraphRAG) and a real MCP server are planned, not built. `/api/v1/mcp/context` is a context endpoint, not MCP.
+
+## Use of AI
+
+The team defined the problem, the solution and the data rules. AI tools were used as follows:
+
+- **Code and documentation:** written with the help of Claude Code (Anthropic), under the team's direction and review. Every change went through a pull request with automated tests before merging.
+- **In-app summaries:** Google Gemini (`gemini-3.5-flash-lite`) rewrites the objective, approach and hypothesis of each PSI investigation in plain Portuguese. Each summary is labeled `Inferred` on screen and in the API response, records the model and time, and is shown next to the original NASA text. The AI never produces measurements or numbers.
+- **Data:** all measurements come from NASA PSI files; no data is generated by AI. Synthetic data is labeled `Synthetic`.
+- **Demo video:** a screen recording of the real dashboard, not AI-generated; its English captions were drafted with AI help.
+
+## NASA data and other resources
+
+- [NASA Physical Sciences Informatics (PSI)](https://psi.nasa.gov): 26 combustion investigations and 25 data tables.
+- [NASA Technical Reports Server (NTRS)](https://ntrs.nasa.gov): search API, and "Preliminary Results from the Saffire VI Experiment" (Urban et al., ICES-2024-365, [NTRS 20240002981](https://ntrs.nasa.gov/citations/20240002981)).
+- Open source stack: Rust (Axum, Tokio, SQLx), TypeScript (Node.js, React, Vite, TanStack Query, Zod, MSW, Tailwind CSS), Python standard library, PostgreSQL 16 with pgvector, Docker Compose, GitHub Actions.
+
+## How to run
+
+With Docker (backend, dashboard and PostgreSQL):
 
 ```bash
-make up        # painel em http://localhost:3000
-make up-mock   # só o painel, com mocks (sem backend)
-make help      # todos os comandos
+make up        # dashboard at http://localhost:3000 (TEX_FRONTEND_PORT=3001 make up if 3000 is busy)
+make up-mock   # dashboard only, with mocks (no backend)
+make help      # every command
 ```
 
-Sem Docker (só Node 22+ e Python 3.10+):
+By default the backend serves a synthetic catalog. To use the real PSI data, load it and switch the catalog to the database (variables in the root env file; see the example file there):
 
 ```bash
-make install   # dependências do frontend e da ingestão
-make frontend  # painel em http://localhost:5173 (use VITE_USE_MOCKS=true sem backend)
-make verify    # lint, testes (frontend, ingestão, simulação) e build
-make simulate  # regera frontend/src/data/predicoes.json depois de mudar o modelo
+cd ingestion
+npm run ingest:psi      # investigation metadata
+npm run download:psi    # data tables, with SHA-256
+npm run normalize:psi   # tests and measurements
+# then set TEX_CATALOG_SOURCE=database (and GEMINI_API_KEY for the AI summaries) and run make up again
 ```
 
-## Estrutura
+Without Docker (Node 22+ and Python 3.10+):
 
-| Pasta | Conteúdo |
+```bash
+make install   # frontend and ingestion dependencies
+make frontend  # dashboard at http://localhost:5173 (VITE_USE_MOCKS=true without a backend)
+make verify    # lint, tests (frontend, ingestion, simulation) and build
+make simulate  # regenerates frontend/src/data/predicoes.json after changing the model
+```
+
+## Structure
+
+| Folder | Contents |
 |---|---|
-| `src/` | Backend Rust (Axum), API `/api/v1` descrita em `docs/api-spec.yaml` |
-| `frontend/` | Painel React + TypeScript |
-| `ingestion/` | Ingestão NTRS → PostgreSQL (TypeScript, Node 22) |
-| `simulation/` | Modelo de predição de CO (Python, só biblioteca padrão) |
-| `docs/` | Contrato da API, estudo de fontes e base de conhecimento |
+| `src/` | Rust backend (Axum), `/api/v1` API described in `docs/api-spec.yaml` |
+| `frontend/` | React + TypeScript dashboard (interface in Portuguese) |
+| `ingestion/` | NTRS and PSI ingestion into PostgreSQL (TypeScript, Node) |
+| `simulation/` | CO prediction model (Python, standard library only) |
+| `docs/` | API contract, source study and knowledge base (in Portuguese) |
+
+## License
+
+MIT, see [LICENSE](LICENSE). NASA PSI data keeps the license shown on each investigation (for example, BASS-II is CC0 1.0).
