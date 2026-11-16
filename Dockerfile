@@ -1,7 +1,7 @@
 # --- Etapa 1: Construção do Backend em Rust ---
 # 1.89+ é exigido pelo Cargo.lock (formato v4, uuid 1.28). Builder e imagem final
 # usam o mesmo Debian (bookworm) para o binário encontrar a mesma glibc.
-FROM rust:1.99-slim-bookworm AS rust-builder
+FROM rust:1.100-slim-bookworm AS rust-builder
 WORKDIR /app
 # O sqlx usa TLS nativo (openssl-sys): precisa dos cabeçalhos do OpenSSL para compilar
 RUN apt-get update && apt-get install -y --no-install-recommends pkg-config libssl-dev \
